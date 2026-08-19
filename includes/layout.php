@@ -61,7 +61,17 @@ function renderSidebar($usuario, $pagina_actual = '') {
     
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>ImpMartínez</h2>
+            <?php
+            $conn = getConexion();
+            $logo_empresa = $conn->query("SELECT logo_empresa FROM sucursales WHERE id = 1")->fetch_assoc()['logo_empresa'] ?? null;
+            $conn->close();
+            
+            if ($logo_empresa && file_exists(__DIR__ . '/../uploads/logos/' . $logo_empresa)):
+            ?>
+                <img src="/impMartines/uploads/logos/<?= $logo_empresa ?>" alt="Logo" style="max-width: 100%; max-height: 80px; margin-bottom: 10px;">
+            <?php else: ?>
+                <h2>ImpMartínez</h2>
+            <?php endif; ?>
             <p><?= sanitizar($sucursal_nombre) ?></p>
         </div>
         
