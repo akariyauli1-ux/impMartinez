@@ -23,14 +23,22 @@ Sistema web para gestión de cadena de servicio técnico de dispositivos electr�
 3. Importar `database.sql` en phpMyAdmin o ejecutar con MySQL CLI
 4. Acceder a `http://localhost/impMartines/`
 
-## Usuarios de Prueba (Apellido / Carnet)
-| Rol | Apellido | Carnet |
-|-----|----------|--------|
-| Gerente | Admin | 0001 |
-| RRHH | Admin | 0002 |
-| Admin Sucursal 1 | Sucursal1 | 1001 |
-| Admin Sucursal 2 | Sucursal2 | 1002 |
-| Admin Sucursal 3 | Sucursal3 | 1003 |
+## Usuarios de Prueba
+| Rol | Apellido | Carnet | Contraseña |
+|-----|----------|--------|------------|
+| Gerente | Admin | 0001 | 123456 |
+| RRHH | Admin | 0002 | 123456 |
+| Admin Sucursal 1 | Sucursal1 | 1001 | 123456 |
+| Admin Sucursal 2 | Sucursal2 | 1002 | 123456 |
+| Admin Sucursal 3 | Sucursal3 | 1003 | 123456 |
+
+**Nota:** El login requiere ingresar el código captcha que aparece en la imagen.
+
+## Seguridad
+- Contraseñas encriptadas con bcrypt (password_hash)
+- Captcha visual para prevenir ataques automatizados
+- Validación de sesión en todos los módulos
+- Sanitización de entradas para prevenir inyección SQL
 
 ## Flujo de Trabajo
 1. Recepcionista registra cliente y equipo → pasa a estado "pendiente_asignacion"

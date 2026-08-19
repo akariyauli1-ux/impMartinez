@@ -15,15 +15,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = sanitizar($_POST['email']);
     $telefono = sanitizar($_POST['telefono']);
     $rol = sanitizar($_POST['rol']);
+    $password = $_POST['password'];
     
-    $stmt = $conn->prepare("INSERT INTO usuarios (nombre, apellido_paterno, apellido_materno, carnet, email, telefono, rol, sucursal_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssssssi", $nombre, $ap, $am, $carnet, $email, $telefono, $rol, $sucursal_id);
-    if ($stmt->execute()) {
-        $mensaje = 'Usuario creado correctamente';
+    if (strlen($password) < 6) {
+        $mensaje = 'Error: La contraseña debe tener al menos 6 caracteres';
     } else {
-        $mensaje = 'Error: ' . $conn->error;
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+        
+        $stmt = $conn->prepare("INSERT INTO usuarios (nombre, apellido_paterno, apellido_materno, carnet, email, telefono, rol, sucursal_id, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssssssis", $nombre, $ap, $am, $carnet, $email, $telefono, $rol, $sucursal_id, $password_hash);
+        if ($stmt->execute()) {
+            $mensaje = 'Usuario creado correctamente';
+        } else {
+            $mensaje = 'Error: ' . $conn->error;
+        }
+        $stmt->close();
     }
-    $stmt->close();
 }
 
 $usuarios = $conn->query("SELECT * FROM usuarios WHERE sucursal_id = $sucursal_id AND activo = 1 ORDER BY rol, apellido_paterno")->fetch_all(MYSQLI_ASSOC);
@@ -43,7 +50,9 @@ $conn->close();
         <div class="main-content">
             <?php renderTopbar('Gestión de Usuarios'); ?>
             <div class="content-area">
-                <?php if ($mensaje): ?><div class="alert alert-success"><?= $mensaje ?></div><?php endif; ?>
+                <?php if ($mensaje): ?>
+                    <div class="alert <?= strpos($mensaje, 'Error') !== false ? 'alert-error' : 'alert-success' ?>"><?= $mensaje ?></div>
+                <?php endif; ?>
                 
                 <div class="card">
                     <div class="card-header"><h2>Crear Nuevo Usuario</h2></div>
@@ -68,23 +77,29 @@ $conn->close();
                                 <input type="text" name="carnet" required>
                             </div>
                             <div class="form-group">
+                                <label>Contraseña *</label>
+                                <input type="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                            </div>
+                            <div class="form-group">
                                 <label>Email</label>
                                 <input type="email" name="email">
                             </div>
+                        </div>
+                        <div class="form-row">
                             <div class="form-group">
                                 <label>Teléfono</label>
                                 <input type="tel" name="telefono">
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Rol *</label>
-                            <select name="rol" required>
-                                <option value="">Seleccione</option>
-                                <option value="recepcionista">Recepcionista</option>
-                                <option value="tecnico">Técnico</option>
-                                <option value="jefe_tecnico">Jefe Técnico</option>
-                                <option value="almacenista">Almacenista</option>
-                            </select>
+                            <div class="form-group">
+                                <label>Rol *</label>
+                                <select name="rol" required>
+                                    <option value="">Seleccione</option>
+                                    <option value="recepcionista">Recepcionista</option>
+                                    <option value="tecnico">Técnico</option>
+                                    <option value="jefe_tecnico">Jefe Técnico</option>
+                                    <option value="almacenista">Almacenista</option>
+                                </select>
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Crear Usuario</button>
                     </form>
