@@ -1,0 +1,23 @@
+<?php
+class AsignacionTecnico extends Model {
+    protected $table = 'asignaciones_tecnico';
+    
+    public function asignar($equipo_id, $tecnico_id, $jefe_tecnico_id) {
+        return $this->insert([
+            'equipo_id' => $equipo_id,
+            'tecnico_id' => $tecnico_id,
+            'jefe_tecnico_id' => $jefe_tecnico_id
+        ]);
+    }
+    
+    public function contarTrabajosActivos($tecnico_id) {
+        $sql = "SELECT COUNT(*) as total FROM asignaciones_tecnico at JOIN equipos e ON at.equipo_id = e.id WHERE at.tecnico_id = ? AND e.estado NOT IN ('completado', 'entregado')";
+        $result = $this->fetchOne($sql, [$tecnico_id]);
+        return $result['total'] ?? 0;
+    }
+    
+    public function obtenerPorSucursal($sucursal_id) {
+        $sql = "SELECT at.*, e.estado as equipo_estado, u.nombre as tecnico_nombre, u.apellido_paterno as tecnico_ap FROM asignaciones_tecnico at JOIN equipos e ON at.equipo_id = e.id JOIN usuarios u ON at.tecnico_id = u.id WHERE e.sucursal_actual_id = ? ORDER BY at.fecha_asignacion DESC";
+        return $this->fetchAll($sql, [$sucursal_id]);
+    }
+}
