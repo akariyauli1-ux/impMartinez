@@ -274,6 +274,25 @@ body {
     color: var(--negro);
 }
 
+.user-welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.welcome-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--negro);
+}
+
+.welcome-role {
+    font-size: 0.85rem;
+    color: var(--rojo);
+    font-weight: 500;
+}
+
 .content-area {
     padding: 30px;
 }

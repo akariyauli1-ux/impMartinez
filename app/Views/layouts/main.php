@@ -13,6 +13,10 @@
         <div class="main-content">
             <div class="topbar">
                 <h1><?= $titulo ?? '' ?></h1>
+                <div class="user-welcome">
+                    <span class="welcome-name"><?= htmlspecialchars($_SESSION['usuario_nombre'] ?? 'Usuario') ?></span>
+                    <span class="welcome-role"><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['usuario_rol'] ?? ''))) ?></span>
+                </div>
             </div>
             
             <div class="content-area">
