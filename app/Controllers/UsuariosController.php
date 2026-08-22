@@ -27,7 +27,7 @@ class UsuariosController extends Controller {
     }
     
     public function index() {
-        $usuarios = $this->usuarioModel->obtenerTodos();
+        $usuarios = $this->usuarioModel->obtenerTodosIncluyendoInactivos();
         $sucursales = $this->sucursalModel->obtenerTodas();
         
         $this->view('usuarios/index', [
@@ -62,10 +62,76 @@ class UsuariosController extends Controller {
             'rol' => $_POST['rol'],
             'sucursal_id' => $_POST['sucursal_id'],
             'password' => $password_hash,
-            'foto' => $foto_nombre
+            'foto' => $foto_nombre,
+            'registrado_por' => $_SESSION['usuario_id']
         ];
         
         $this->usuarioModel->crear($data);
+        $this->redirect('usuarios');
+    }
+    
+    public function editar() {
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            $this->redirect('usuarios');
+            return;
+        }
+        
+        $usuario_editar = $this->usuarioModel->obtenerPorId($id);
+        if (!$usuario_editar) {
+            $this->redirect('usuarios');
+            return;
+        }
+        
+        $sucursales = $this->sucursalModel->obtenerTodas();
+        
+        $this->view('usuarios/editar', [
+            'usuario' => $this->obtenerUsuarioActual(),
+            'usuario_editar' => $usuario_editar,
+            'sucursales' => $sucursales
+        ]);
+    }
+    
+    public function actualizar() {
+        $id = $_POST['id'];
+        
+        $data = [
+            'nombre' => $_POST['nombre'],
+            'apellido_paterno' => $_POST['apellido_paterno'],
+            'apellido_materno' => $_POST['apellido_materno'] ?? '',
+            'carnet' => $_POST['carnet'],
+            'email' => $_POST['email'] ?? '',
+            'telefono' => $_POST['telefono'] ?? '',
+            'rol' => $_POST['rol'],
+            'sucursal_id' => $_POST['sucursal_id']
+        ];
+        
+        if (!empty($_POST['password'])) {
+            $data['password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        }
+        
+        if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = __DIR__ . '/../../uploads/fotos_usuarios/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+            
+            $ext = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
+            $foto_nombre = uniqid('foto_') . '.' . $ext;
+            if (move_uploaded_file($_FILES['foto']['tmp_name'], $upload_dir . $foto_nombre)) {
+                $data['foto'] = $foto_nombre;
+            }
+        }
+        
+        $this->usuarioModel->actualizar($id, $data);
+        $this->redirect('usuarios');
+    }
+    
+    public function toggleEstado() {
+        $id = $_POST['id'] ?? null;
+        if ($id) {
+            $this->usuarioModel->toggleEstado($id);
+        }
         $this->redirect('usuarios');
     }
     

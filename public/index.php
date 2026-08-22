@@ -72,5 +72,8 @@ $router->add('GET', '/rrhh/productividad', 'RRHHController', 'productividad');
 
 $router->add('GET', '/usuarios', 'UsuariosController', 'index');
 $router->add('POST', '/usuarios/guardar', 'UsuariosController', 'guardar');
+$router->add('GET', '/usuarios/editar', 'UsuariosController', 'editar');
+$router->add('POST', '/usuarios/actualizar', 'UsuariosController', 'actualizar');
+$router->add('POST', '/usuarios/toggle-estado', 'UsuariosController', 'toggleEstado');
 
 $router->dispatch($uri, $method);

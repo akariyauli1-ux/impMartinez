@@ -3,7 +3,7 @@ class Usuario extends Model {
     protected $table = 'usuarios';
     
     public function obtenerPorId($id) {
-        return $this->fetchOne("SELECT u.*, s.nombre as sucursal_nombre FROM usuarios u LEFT JOIN sucursales s ON u.sucursal_id = s.id WHERE u.id = ? AND u.activo = 1", [$id]);
+        return $this->fetchOne("SELECT u.*, s.nombre as sucursal_nombre FROM usuarios u LEFT JOIN sucursales s ON u.sucursal_id = s.id WHERE u.id = ?", [$id]);
     }
     
     public function obtenerPorApellidoYCarnet($apellido, $carnet) {
@@ -15,7 +15,11 @@ class Usuario extends Model {
     }
     
     public function obtenerTodos() {
-        return $this->fetchAll("SELECT u.*, s.nombre as sucursal_nombre FROM usuarios u LEFT JOIN sucursales s ON u.sucursal_id = s.id WHERE u.activo = 1 ORDER BY u.apellido_paterno");
+        return $this->fetchAll("SELECT u.*, s.nombre as sucursal_nombre, CONCAT(reg.nombre, ' ', reg.apellido_paterno) as registrado_por_nombre FROM usuarios u LEFT JOIN sucursales s ON u.sucursal_id = s.id LEFT JOIN usuarios reg ON u.registrado_por = reg.id ORDER BY u.activo DESC, u.apellido_paterno");
+    }
+    
+    public function obtenerTodosIncluyendoInactivos() {
+        return $this->fetchAll("SELECT u.*, s.nombre as sucursal_nombre, CONCAT(reg.nombre, ' ', reg.apellido_paterno) as registrado_por_nombre FROM usuarios u LEFT JOIN sucursales s ON u.sucursal_id = s.id LEFT JOIN usuarios reg ON u.registrado_por = reg.id ORDER BY u.activo DESC, u.apellido_paterno");
     }
     
     public function obtenerTecnicosPorSucursal($sucursal_id) {
@@ -30,7 +34,20 @@ class Usuario extends Model {
         return $this->update($data, "id = ?", [$id]);
     }
     
+    public function activar($id) {
+        return $this->update(['activo' => 1], "id = ?", [$id]);
+    }
+    
     public function desactivar($id) {
         return $this->update(['activo' => 0], "id = ?", [$id]);
+    }
+    
+    public function toggleEstado($id) {
+        $usuario = $this->obtenerPorId($id);
+        if ($usuario['activo']) {
+            return $this->desactivar($id);
+        } else {
+            return $this->activar($id);
+        }
     }
 }
