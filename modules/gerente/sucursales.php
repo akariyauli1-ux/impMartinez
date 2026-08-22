@@ -76,6 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $sucursales = $conn->query("SELECT * FROM sucursales WHERE activo = 1 ORDER BY nombre")->fetch_all(MYSQLI_ASSOC);
+$logo_empresa_data = $conn->query("SELECT logo_empresa FROM sucursales WHERE id = 1")->fetch_assoc();
+$logo_empresa = $logo_empresa_data['logo_empresa'] ?? null;
 $conn->close();
 ?>
 <!DOCTYPE html>
@@ -127,10 +129,7 @@ $conn->close();
                         <input type="hidden" name="accion" value="cambiar_logo_empresa">
                         <div class="logo-section">
                             <div>
-                                <?php
-                                $logo_empresa = $conn->query("SELECT logo_empresa FROM sucursales WHERE id = 1")->fetch_assoc()['logo_empresa'] ?? null;
-                                if ($logo_empresa && file_exists(__DIR__ . '/../../uploads/logos/' . $logo_empresa)):
-                                ?>
+                                <?php if ($logo_empresa && file_exists(__DIR__ . '/../../uploads/logos/' . $logo_empresa)): ?>
                                     <img src="/impMartines/uploads/logos/<?= $logo_empresa ?>" alt="Logo Empresa" class="logo-preview">
                                 <?php else: ?>
                                     <div style="width: 100px; height: 100px; background: var(--gris-claro); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
