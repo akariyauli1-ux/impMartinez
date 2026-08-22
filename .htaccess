@@ -1,27 +1,6 @@
 RewriteEngine On
 RewriteBase /impMartines/
 
-# Redirigir URLs antiguas a nuevas URLs MVC
-RewriteRule ^usuarios/?$ public/usuarios [R=301,L]
-RewriteRule ^recepcion/?$ public/recepcion [R=301,L]
-RewriteRule ^admin-sucursal/?$ public/admin-sucursal [R=301,L]
-RewriteRule ^tecnico/?$ public/tecnico [R=301,L]
-RewriteRule ^jefe-tecnico/?$ public/jefe-tecnico [R=301,L]
-RewriteRule ^almacen/?$ public/almacen [R=301,L]
-RewriteRule ^gerente/?$ public/gerente [R=301,L]
-RewriteRule ^rrhh/?$ public/rrhh [R=301,L]
-
-# Redirigir módulos antiguos
-RewriteRule ^modules/usuarios/?$ public/usuarios [R=301,L]
-RewriteRule ^modules/recepcion/?$ public/recepcion [R=301,L]
-RewriteRule ^modules/admin_sucursal/?$ public/admin-sucursal [R=301,L]
-RewriteRule ^modules/tecnico/?$ public/tecnico [R=301,L]
-RewriteRule ^modules/jefe_tecnico/?$ public/jefe-tecnico [R=301,L]
-RewriteRule ^modules/almacen/?$ public/almacen [R=301,L]
-RewriteRule ^modules/gerente/?$ public/gerente [R=301,L]
-RewriteRule ^modules/rrhh/?$ public/rrhh [R=301,L]
-
-# Redirigir todo lo demás a public/
+# Redirigir todo a public/
 RewriteCond %{REQUEST_URI} !^public/
-RewriteCond %{REQUEST_URI} !^\.htaccess$
 RewriteRule ^(.*)$ public/$1 [L]

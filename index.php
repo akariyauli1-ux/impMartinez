@@ -1,4 +1,5 @@
 <?php
-header('Location: http://localhost/impMartines/public/');
+// Redirigir a la carpeta public
+header('Location: /impMartines/public/');
 exit;
 ?>
