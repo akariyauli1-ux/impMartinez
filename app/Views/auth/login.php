@@ -11,10 +11,13 @@
             align-items: center;
             gap: 10px;
             margin-bottom: 15px;
+            flex-wrap: wrap;
         }
         .captcha-container img {
             border-radius: 8px;
             border: 2px solid #E0E0E0;
+            max-width: 100%;
+            height: auto;
         }
         .captcha-refresh {
             background: none;
@@ -23,6 +26,40 @@
             cursor: pointer;
             color: #D32F2F;
             padding: 5px;
+        }
+        .captcha-container input {
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .login-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .login-header p {
+                font-size: 0.85rem;
+            }
+            
+            .captcha-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .captcha-container img {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            }
+            
+            .captcha-refresh {
+                align-self: center;
+            }
         }
     </style>
 </head>
