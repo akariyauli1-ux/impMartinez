@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/layout.php';
-$usuario = verificarRol(['rrhh']);
+$usuario = verificarRol(['gerente']);
 
 $conn = getConexion();
 $fecha_filtro = $_GET['fecha'] ?? date('Y-m-d');
@@ -14,10 +14,12 @@ if ($sucursal_filtro) {
 }
 
 $asistencias = $conn->query("
-    SELECT a.*, u.nombre, u.apellido_paterno, u.rol, s.nombre as sucursal_nombre
+    SELECT a.*, u.nombre, u.apellido_paterno, u.rol, s.nombre as sucursal_nombre,
+           CONCAT(reg.nombre, ' ', reg.apellido_paterno) as registrado_por_nombre
     FROM asistencia a
     JOIN usuarios u ON a.usuario_id = u.id
     LEFT JOIN sucursales s ON u.sucursal_id = s.id
+    LEFT JOIN usuarios reg ON a.registrado_por = reg.id
     $where
     ORDER BY s.nombre, u.apellido_paterno
 ")->fetch_all(MYSQLI_ASSOC);
@@ -43,7 +45,7 @@ $conn->close();
     <div class="app-layout">
         <?php renderSidebar($usuario, 'asistencia'); ?>
         <div class="main-content">
-            <?php renderTopbar('Reporte de Asistencia - Todas las Sucursales'); ?>
+            <?php renderTopbar('Reporte de Asistencia - Vista Gerencial'); ?>
             <div class="content-area">
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -100,7 +102,7 @@ $conn->close();
                                     <th>Entrada</th>
                                     <th>Salida</th>
                                     <th>Estado</th>
-                                    <th>Observaciones</th>
+                                    <th>Registrado por</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -126,7 +128,7 @@ $conn->close();
                                         ?>
                                         <span class="badge <?= $badges[$a['estado']] ?? 'badge-gris' ?>"><?= ucfirst($a['estado']) ?></span>
                                     </td>
-                                    <td><?= sanitizar($a['observaciones'] ?? '-') ?></td>
+                                    <td><?= sanitizar($a['registrado_por_nombre'] ?? '-') ?></td>
                                 </tr>
                                 <?php endforeach; ?>
                                 <?php if (empty($asistencias)): ?>

@@ -15,6 +15,8 @@ function renderSidebar($usuario, $pagina_actual = '') {
             ['url' => '/impMartines/modules/admin_sucursal/dashboard.php', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
             ['url' => '/impMartines/modules/admin_sucursal/pendientes.php', 'icon' => '📥', 'label' => 'Equipos Pendientes', 'key' => 'pendientes'],
             ['url' => '/impMartines/modules/admin_sucursal/asignar.php', 'icon' => '🔀', 'label' => 'Asignar a Sucursal', 'key' => 'asignar'],
+            ['url' => '/impMartines/modules/admin_sucursal/asistencia.php', 'icon' => '📅', 'label' => 'Asistencia', 'key' => 'asistencia'],
+            ['url' => '/impMartines/modules/admin_sucursal/inspecciones.php', 'icon' => '👔', 'label' => 'Limpieza/Uniforme', 'key' => 'inspecciones'],
             ['url' => '/impMartines/modules/admin_sucursal/reportes.php', 'icon' => '📈', 'label' => 'Reportes', 'key' => 'reportes'],
         ],
         'jefe_tecnico' => [
@@ -32,6 +34,8 @@ function renderSidebar($usuario, $pagina_actual = '') {
             ['url' => '/impMartines/modules/gerente/dashboard.php', 'icon' => '📊', 'label' => 'Dashboard General', 'key' => 'dashboard'],
             ['url' => '/impMartines/modules/usuarios/index.php', 'icon' => '👥', 'label' => 'Gestión Usuarios', 'key' => 'usuarios'],
             ['url' => '/impMartines/modules/gerente/sucursales.php', 'icon' => '🏢', 'label' => 'Sucursales', 'key' => 'sucursales'],
+            ['url' => '/impMartines/modules/gerente/asistencia.php', 'icon' => '📅', 'label' => 'Reporte Asistencia', 'key' => 'asistencia'],
+            ['url' => '/impMartines/modules/gerente/inspecciones.php', 'icon' => '👔', 'label' => 'Reporte Inspecciones', 'key' => 'inspecciones'],
             ['url' => '/impMartines/modules/gerente/tecnicos.php', 'icon' => '🔧', 'label' => 'Trabajo Técnicos', 'key' => 'tecnicos'],
             ['url' => '/impMartines/modules/gerente/almacen.php', 'icon' => '📦', 'label' => 'Estado Almacén', 'key' => 'almacen'],
             ['url' => '/impMartines/modules/gerente/administradores.php', 'icon' => '👔', 'label' => 'Admin. Sucursales', 'key' => 'administradores'],

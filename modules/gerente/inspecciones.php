@@ -1,33 +1,34 @@
 <?php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/layout.php';
-$usuario = verificarRol(['rrhh']);
+$usuario = verificarRol(['gerente']);
 
 $conn = getConexion();
 $fecha_filtro = $_GET['fecha'] ?? date('Y-m-d');
 $sucursal_filtro = $_GET['sucursal'] ?? '';
 
-$where = "WHERE a.fecha = '$fecha_filtro'";
+$where = "WHERE i.fecha = '$fecha_filtro'";
 if ($sucursal_filtro) {
     $sucursal_filtro = intval($sucursal_filtro);
     $where .= " AND u.sucursal_id = $sucursal_filtro";
 }
 
-$asistencias = $conn->query("
-    SELECT a.*, u.nombre, u.apellido_paterno, u.rol, s.nombre as sucursal_nombre
-    FROM asistencia a
-    JOIN usuarios u ON a.usuario_id = u.id
+$inspecciones = $conn->query("
+    SELECT i.*, u.nombre, u.apellido_paterno, u.rol, s.nombre as sucursal_nombre,
+           CONCAT(reg.nombre, ' ', reg.apellido_paterno) as registrado_por_nombre
+    FROM inspecciones i
+    JOIN usuarios u ON i.usuario_id = u.id
     LEFT JOIN sucursales s ON u.sucursal_id = s.id
+    LEFT JOIN usuarios reg ON i.registrado_por = reg.id
     $where
     ORDER BY s.nombre, u.apellido_paterno
 ")->fetch_all(MYSQLI_ASSOC);
 
 $sucursales = $conn->query("SELECT id, nombre FROM sucursales WHERE activo = 1")->fetch_all(MYSQLI_ASSOC);
 
-$total = count($asistencias);
-$presentes = count(array_filter($asistencias, fn($a) => $a['estado'] === 'presente'));
-$tardanzas = count(array_filter($asistencias, fn($a) => $a['estado'] === 'tardanza'));
-$ausentes = count(array_filter($asistencias, fn($a) => $a['estado'] === 'ausente'));
+$total = count($inspecciones);
+$limpieza_ok = count(array_filter($inspecciones, fn($i) => $i['limpieza'] === 'aprobado'));
+$uniforme_ok = count(array_filter($inspecciones, fn($i) => $i['uniforme'] === 'completo'));
 
 $conn->close();
 ?>
@@ -36,31 +37,27 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte Asistencia - ImpMartínez</title>
+    <title>Reporte Inspecciones - ImpMartinez</title>
     <link rel="stylesheet" href="/impMartines/assets/css/style.css">
 </head>
 <body>
     <div class="app-layout">
-        <?php renderSidebar($usuario, 'asistencia'); ?>
+        <?php renderSidebar($usuario, 'inspecciones'); ?>
         <div class="main-content">
-            <?php renderTopbar('Reporte de Asistencia - Todas las Sucursales'); ?>
+            <?php renderTopbar('Reporte de Inspecciones - Vista Gerencial'); ?>
             <div class="content-area">
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value"><?= $total ?></div>
-                        <div class="stat-label">Total Registros</div>
+                        <div class="stat-label">Total Inspecciones</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value"><?= $presentes ?></div>
-                        <div class="stat-label">Presentes</div>
+                        <div class="stat-value"><?= $limpieza_ok ?></div>
+                        <div class="stat-label">Limpieza Aprobada</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value"><?= $tardanzas ?></div>
-                        <div class="stat-label">Tardanzas</div>
-                    </div>
-                    <div class="stat-card negro">
-                        <div class="stat-value"><?= $ausentes ?></div>
-                        <div class="stat-label">Ausentes</div>
+                        <div class="stat-value"><?= $uniforme_ok ?></div>
+                        <div class="stat-label">Uniforme Completo</div>
                     </div>
                 </div>
                 
@@ -88,7 +85,7 @@ $conn->close();
                 
                 <div class="card">
                     <div class="card-header">
-                        <h2>Asistencia - <?= date('d/m/Y', strtotime($fecha_filtro)) ?></h2>
+                        <h2>Inspecciones - <?= date('d/m/Y', strtotime($fecha_filtro)) ?></h2>
                     </div>
                     <div class="table-container">
                         <table>
@@ -97,40 +94,43 @@ $conn->close();
                                     <th>Empleado</th>
                                     <th>Cargo</th>
                                     <th>Sucursal</th>
-                                    <th>Entrada</th>
-                                    <th>Salida</th>
-                                    <th>Estado</th>
-                                    <th>Observaciones</th>
+                                    <th>Limpieza</th>
+                                    <th>Hora</th>
+                                    <th>Uniforme</th>
+                                    <th>Hora</th>
+                                    <th>Registrado por</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php 
                                 $rol_labels = [
-                                    'tecnico' => 'Técnico',
+                                    'tecnico' => 'Tecnico',
                                     'recepcionista' => 'Recepcionista',
                                     'almacenista' => 'Almacenista',
-                                    'jefe_tecnico' => 'Jefe Técnico',
+                                    'jefe_tecnico' => 'Jefe Tecnico',
                                     'admin_sucursal' => 'Admin. Sucursal'
                                 ];
-                                foreach ($asistencias as $a): 
+                                foreach ($inspecciones as $i): 
                                 ?>
                                 <tr>
-                                    <td><strong><?= sanitizar($a['nombre'] . ' ' . $a['apellido_paterno']) ?></strong></td>
-                                    <td><span class="badge badge-negro"><?= $rol_labels[$a['rol']] ?? $a['rol'] ?></span></td>
-                                    <td><?= sanitizar($a['sucursal_nombre'] ?? '-') ?></td>
-                                    <td><?= $a['hora_entrada'] ? date('H:i', strtotime($a['hora_entrada'])) : '-' ?></td>
-                                    <td><?= $a['hora_salida'] ? date('H:i', strtotime($a['hora_salida'])) : '-' ?></td>
+                                    <td><strong><?= sanitizar($i['nombre'] . ' ' . $i['apellido_paterno']) ?></strong></td>
+                                    <td><span class="badge badge-negro"><?= $rol_labels[$i['rol']] ?? $i['rol'] ?></span></td>
+                                    <td><?= sanitizar($i['sucursal_nombre'] ?? '-') ?></td>
                                     <td>
-                                        <?php
-                                        $badges = ['presente' => 'badge-verde', 'tardanza' => 'badge-amarillo', 'ausente' => 'badge-rojo', 'permiso' => 'badge-gris'];
-                                        ?>
-                                        <span class="badge <?= $badges[$a['estado']] ?? 'badge-gris' ?>"><?= ucfirst($a['estado']) ?></span>
+                                        <?php $b = ['aprobado'=>'badge-verde','observado'=>'badge-amarillo','rechazado'=>'badge-rojo']; ?>
+                                        <span class="badge <?= $b[$i['limpieza']] ?? 'badge-gris' ?>"><?= ucfirst($i['limpieza']) ?></span>
                                     </td>
-                                    <td><?= sanitizar($a['observaciones'] ?? '-') ?></td>
+                                    <td><?= $i['hora_revision_limpieza'] ? date('H:i', strtotime($i['hora_revision_limpieza'])) : '-' ?></td>
+                                    <td>
+                                        <?php $b2 = ['completo'=>'badge-verde','incompleto'=>'badge-rojo','observado'=>'badge-amarillo']; ?>
+                                        <span class="badge <?= $b2[$i['uniforme']] ?? 'badge-gris' ?>"><?= ucfirst($i['uniforme']) ?></span>
+                                    </td>
+                                    <td><?= $i['hora_revision_uniforme'] ? date('H:i', strtotime($i['hora_revision_uniforme'])) : '-' ?></td>
+                                    <td><?= sanitizar($i['registrado_por_nombre'] ?? '-') ?></td>
                                 </tr>
                                 <?php endforeach; ?>
-                                <?php if (empty($asistencias)): ?>
-                                <tr><td colspan="7" style="text-align:center; padding: 20px;">No hay registros para esta fecha</td></tr>
+                                <?php if (empty($inspecciones)): ?>
+                                <tr><td colspan="8" style="text-align:center; padding: 20px;">No hay registros para esta fecha</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
