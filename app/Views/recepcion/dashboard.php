@@ -20,8 +20,7 @@
         <h2>Acciones Rápidas</h2>
     </div>
     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-        <a href="<?= APP_URL ?>/public/recepcion/nuevo-cliente" class="btn btn-primary">Nuevo Cliente</a>
-        <a href="<?= APP_URL ?>/public/recepcion/nuevo-equipo" class="btn btn-secondary">Registrar Equipo</a>
+        <a href="<?= APP_URL ?>/public/recepcion/nuevo-equipo" class="btn btn-primary">Registrar Cliente y Equipo</a>
         <a href="<?= APP_URL ?>/public/recepcion/mis-registros" class="btn btn-outline">Ver Mis Registros</a>
     </div>
 </div>

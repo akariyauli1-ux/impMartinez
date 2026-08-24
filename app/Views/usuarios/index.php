@@ -95,8 +95,8 @@
                 <?php foreach ($usuarios as $u): ?>
                 <tr>
                     <td>
-                        <?php if ($u['foto'] && file_exists(__DIR__ . '/../../../uploads/fotos_usuarios/' . $u['foto'])): ?>
-                            <img src="<?= APP_URL ?>/uploads/fotos_usuarios/<?= $u['foto'] ?>" alt="Foto" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        <?php if ($u['foto']): ?>
+                            <img src="<?= APP_URL ?>/public/imagen/foto-usuario?id=<?= $u['id'] ?>" alt="Foto" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                         <?php else: ?>
                             <div style="width: 40px; height: 40px; border-radius: 50%; background: #E0E0E0;"></div>
                         <?php endif; ?>

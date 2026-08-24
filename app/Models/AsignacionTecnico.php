@@ -17,7 +17,21 @@ class AsignacionTecnico extends Model {
     }
     
     public function obtenerPorSucursal($sucursal_id) {
-        $sql = "SELECT at.*, e.estado as equipo_estado, u.nombre as tecnico_nombre, u.apellido_paterno as tecnico_ap FROM asignaciones_tecnico at JOIN equipos e ON at.equipo_id = e.id JOIN usuarios u ON at.tecnico_id = u.id WHERE e.sucursal_actual_id = ? ORDER BY at.fecha_asignacion DESC";
+        $sql = "SELECT at.*, 
+                e.estado as equipo_estado,
+                e.tipo_equipo as equipo_tipo,
+                e.marca as equipo_marca,
+                e.modelo as equipo_modelo,
+                c.nombre as cliente_nombre,
+                c.apellido_paterno as cliente_apellido,
+                u.nombre as tecnico_nombre,
+                u.apellido_paterno as tecnico_apellido
+                FROM asignaciones_tecnico at 
+                JOIN equipos e ON at.equipo_id = e.id 
+                JOIN usuarios u ON at.tecnico_id = u.id
+                JOIN clientes c ON e.cliente_id = c.id
+                WHERE e.sucursal_actual_id = ? 
+                ORDER BY at.fecha_asignacion DESC";
         return $this->fetchAll($sql, [$sucursal_id]);
     }
 }

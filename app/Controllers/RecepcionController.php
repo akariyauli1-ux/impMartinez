@@ -2,14 +2,19 @@
 require_once __DIR__ . '/../Core/Controller.php';
 require_once __DIR__ . '/../Models/Equipo.php';
 require_once __DIR__ . '/../Models/Cliente.php';
+require_once __DIR__ . '/../Models/EquipoFoto.php';
+require_once __DIR__ . '/../Models/Usuario.php';
+require_once __DIR__ . '/../Models/Sucursal.php';
 
 class RecepcionController extends Controller {
     private $equipoModel;
     private $clienteModel;
+    private $equipoFotoModel;
     
     public function __construct() {
         $this->equipoModel = new Equipo();
         $this->clienteModel = new Cliente();
+        $this->equipoFotoModel = new EquipoFoto();
         $this->verificarSesion();
         $this->verificarRol(['recepcionista']);
     }
@@ -63,43 +68,75 @@ class RecepcionController extends Controller {
     public function nuevoEquipo() {
         $clientes = $this->clienteModel->obtenerTodos();
         
-        $this->view('recepcion/nuevo_equipo', [
+        $this->view('recepcion/nuevo_registro', [
             'usuario' => $this->obtenerUsuarioActual(),
             'clientes' => $clientes
         ]);
     }
     
     public function guardarEquipo() {
-        $fotos = [];
-        if (!empty($_FILES['fotos']['name'][0])) {
-            $upload_dir = __DIR__ . '/../../uploads/fotos_equipos/';
-            for ($i = 0; $i < count($_FILES['fotos']['name']); $i++) {
-                if ($_FILES['fotos']['error'][$i] === 0) {
-                    $ext = pathinfo($_FILES['fotos']['name'][$i], PATHINFO_EXTENSION);
-                    $nombre = uniqid('foto_') . '.' . $ext;
-                    if (move_uploaded_file($_FILES['fotos']['tmp_name'][$i], $upload_dir . $nombre)) {
-                        $fotos[] = $nombre;
-                    }
-                }
-            }
+        // Determinar si es cliente existente o nuevo
+        $cliente_option = $_POST['cliente_option'] ?? 'existente';
+        
+        if ($cliente_option === 'nuevo') {
+            // Crear nuevo cliente
+            $cliente_data = [
+                'nombre' => $_POST['cliente_nombre'],
+                'apellido_paterno' => $_POST['cliente_apellido_paterno'],
+                'apellido_materno' => $_POST['cliente_apellido_materno'] ?? '',
+                'dni' => $_POST['cliente_dni'] ?? '',
+                'telefono' => $_POST['cliente_telefono'],
+                'email' => $_POST['cliente_email'] ?? '',
+                'direccion' => $_POST['cliente_direccion'] ?? ''
+            ];
+            
+            $cliente_id = $this->clienteModel->crear($cliente_data);
+        } else {
+            // Usar cliente existente
+            $cliente_id = $_POST['cliente_id'];
         }
         
         $data = [
-            'cliente_id' => $_POST['cliente_id'],
+            'cliente_id' => $cliente_id,
             'tipo_equipo' => $_POST['tipo_equipo'],
             'marca' => $_POST['marca'] ?? '',
             'modelo' => $_POST['modelo'] ?? '',
             'numero_serie' => $_POST['numero_serie'] ?? '',
             'accesorios' => $_POST['accesorios'] ?? '',
             'descripcion_falla' => $_POST['descripcion_falla'],
-            'fotos' => json_encode($fotos),
+            'estado_pantalla' => $_POST['estado_pantalla'] ?? null,
+            'estado_carga' => $_POST['estado_carga'] ?? null,
+            'estado_puertos' => $_POST['estado_puertos'] ?? null,
+            'estado_case' => $_POST['estado_case'] ?? null,
+            'estado_touch' => $_POST['estado_touch'] ?? null,
+            'estado_camara' => $_POST['estado_camara'] ?? null,
+            'estado_encendido' => $_POST['estado_encendido'] ?? null,
+            'marco_doblado' => $_POST['marco_doblado'] ?? null,
+            'estado_parlantes' => $_POST['estado_parlantes'] ?? null,
+            'estado_imagenes' => $_POST['estado_imagenes'] ?? null,
+            'previamente_abierto' => $_POST['previamente_abierto'] ?? null,
+            'contacto_liquidos' => $_POST['contacto_liquidos'] ?? null,
+            'equipo_reacondicionado' => $_POST['equipo_reacondicionado'] ?? null,
+            'fotos' => '[]',
             'estado' => 'pendiente_asignacion',
             'recepcionista_id' => $_SESSION['usuario_id'],
             'sucursal_origen_id' => $_SESSION['sucursal_id'],
             'sucursal_actual_id' => $_SESSION['sucursal_id']
         ];
         
-        $this->equipoModel->crear($data);
+        $equipo_id = $this->equipoModel->crear($data);
+        
+        if (!empty($_FILES['fotos']['name'][0])) {
+            $orden = 0;
+            for ($i = 0; $i < count($_FILES['fotos']['name']); $i++) {
+                if ($_FILES['fotos']['error'][$i] === 0) {
+                    $foto_data = file_get_contents($_FILES['fotos']['tmp_name'][$i]);
+                    $foto_tipo = $_FILES['fotos']['type'][$i];
+                    $this->equipoFotoModel->guardar($equipo_id, $foto_data, $foto_tipo, $orden++);
+                }
+            }
+        }
+        
         $this->redirect('recepcion/nuevo-equipo');
     }
     

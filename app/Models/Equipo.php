@@ -59,4 +59,15 @@ class Equipo extends Model {
         }
         return $result['total'] ?? 0;
     }
+    
+    public function obtenerCountPorFecha($fecha, $sucursal_id = null) {
+        if ($sucursal_id) {
+            $sql = "SELECT COUNT(*) as total FROM equipos WHERE DATE(fecha_registro) = ? AND sucursal_actual_id = ?";
+            $result = $this->fetchOne($sql, [$fecha, $sucursal_id]);
+        } else {
+            $sql = "SELECT COUNT(*) as total FROM equipos WHERE DATE(fecha_registro) = ?";
+            $result = $this->fetchOne($sql, [$fecha]);
+        }
+        return $result['total'] ?? 0;
+    }
 }

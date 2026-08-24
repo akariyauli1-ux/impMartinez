@@ -39,15 +39,14 @@ class UsuariosController extends Controller {
     
     public function guardar() {
         $foto_nombre = null;
+        $foto_data = null;
+        $foto_tipo = null;
+        
         if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-            $upload_dir = __DIR__ . '/../../uploads/fotos_usuarios/';
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-            
             $ext = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
             $foto_nombre = uniqid('foto_') . '.' . $ext;
-            move_uploaded_file($_FILES['foto']['tmp_name'], $upload_dir . $foto_nombre);
+            $foto_data = file_get_contents($_FILES['foto']['tmp_name']);
+            $foto_tipo = $_FILES['foto']['type'];
         }
         
         $password_hash = password_hash($_POST['password'], PASSWORD_DEFAULT);
@@ -63,6 +62,8 @@ class UsuariosController extends Controller {
             'sucursal_id' => $_POST['sucursal_id'],
             'password' => $password_hash,
             'foto' => $foto_nombre,
+            'foto_data' => $foto_data,
+            'foto_tipo' => $foto_tipo,
             'registrado_por' => $_SESSION['usuario_id']
         ];
         
@@ -111,16 +112,14 @@ class UsuariosController extends Controller {
         }
         
         if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-            $upload_dir = __DIR__ . '/../../uploads/fotos_usuarios/';
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-            
             $ext = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
             $foto_nombre = uniqid('foto_') . '.' . $ext;
-            if (move_uploaded_file($_FILES['foto']['tmp_name'], $upload_dir . $foto_nombre)) {
-                $data['foto'] = $foto_nombre;
-            }
+            $foto_data = file_get_contents($_FILES['foto']['tmp_name']);
+            $foto_tipo = $_FILES['foto']['type'];
+            
+            $data['foto'] = $foto_nombre;
+            $data['foto_data'] = $foto_data;
+            $data['foto_tipo'] = $foto_tipo;
         }
         
         $this->usuarioModel->actualizar($id, $data);

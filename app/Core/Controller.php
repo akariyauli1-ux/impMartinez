@@ -11,7 +11,7 @@ class Controller {
     }
     
     protected function redirect($url) {
-        header('Location: ' . APP_URL . '/' . $url);
+        header('Location: ' . APP_URL . '/public/' . ltrim($url, '/'));
         exit;
     }
     

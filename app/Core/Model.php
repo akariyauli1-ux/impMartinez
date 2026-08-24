@@ -16,6 +16,8 @@ class Model {
                     $types .= 'i';
                 } elseif (is_float($param)) {
                     $types .= 'd';
+                } elseif (is_null($param)) {
+                    $types .= 's';
                 } else {
                     $types .= 's';
                 }
@@ -24,6 +26,31 @@ class Model {
         }
         $stmt->execute();
         return $stmt;
+    }
+    
+    protected function insertBlob($data) {
+        $fields = array_keys($data);
+        $values = array_values($data);
+        $placeholders = str_repeat('?,', count($fields) - 1) . '?';
+        
+        $sql = "INSERT INTO {$this->table} (" . implode(',', $fields) . ") VALUES ($placeholders)";
+        $stmt = $this->db->prepare($sql);
+        
+        $types = '';
+        foreach ($values as $value) {
+            if (is_int($value)) {
+                $types .= 'i';
+            } elseif (is_null($value)) {
+                $types .= 's';
+            } else {
+                $types .= 's';
+            }
+        }
+        
+        $stmt->bind_param($types, ...$values);
+        $stmt->send_long_data(0, 0, $values[0]);
+        $stmt->execute();
+        return $this->db->insert_id;
     }
     
     protected function fetchAll($sql, $params = []) {

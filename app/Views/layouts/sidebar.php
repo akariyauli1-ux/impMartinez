@@ -2,8 +2,7 @@
 $menus = [
     'recepcionista' => [
         ['url' => APP_URL . '/public/recepcion', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
-        ['url' => APP_URL . '/public/recepcion/nuevo-cliente', 'icon' => '👤', 'label' => 'Nuevo Cliente', 'key' => 'nuevo_cliente'],
-        ['url' => APP_URL . '/public/recepcion/nuevo-equipo', 'icon' => '📱', 'label' => 'Registrar Equipo', 'key' => 'nuevo_equipo'],
+        ['url' => APP_URL . '/public/recepcion/nuevo-equipo', 'icon' => '📝', 'label' => 'Registrar Cliente y Equipo', 'key' => 'nuevo_equipo'],
         ['url' => APP_URL . '/public/recepcion/mis-registros', 'icon' => '📋', 'label' => 'Mis Registros', 'key' => 'mis_registros'],
     ],
     'tecnico' => [
@@ -26,8 +25,8 @@ $menus = [
     'almacenista' => [
         ['url' => APP_URL . '/public/almacen', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
         ['url' => APP_URL . '/public/almacen/inventario', 'icon' => '📦', 'label' => 'Inventario', 'key' => 'inventario'],
-        ['url' => APP_URL . '/public/almacen/movimientos', 'icon' => '🔄', 'label' => 'Movimientos', 'key' => 'movimientos'],
         ['url' => APP_URL . '/public/almacen/pedidos', 'icon' => '📝', 'label' => 'Pedidos', 'key' => 'pedidos'],
+        ['url' => APP_URL . '/public/almacen/historial', 'icon' => '📋', 'label' => 'Historial', 'key' => 'historial'],
     ],
     'gerente' => [
         ['url' => APP_URL . '/public/gerente', 'icon' => '📊', 'label' => 'Dashboard General', 'key' => 'dashboard'],

@@ -68,9 +68,9 @@
         
         <div class="form-group">
             <label>Foto (dejar vacío para mantener la actual)</label>
-            <?php if ($usuario_editar['foto'] && file_exists(__DIR__ . '/../../../uploads/fotos_usuarios/' . $usuario_editar['foto'])): ?>
+            <?php if ($usuario_editar['foto']): ?>
                 <div style="margin-bottom: 10px;">
-                    <img src="<?= APP_URL ?>/uploads/fotos_usuarios/<?= $usuario_editar['foto'] ?>" alt="Foto actual" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+                    <img src="<?= APP_URL ?>/public/imagen/foto-usuario?id=<?= $usuario_editar['id'] ?>" alt="Foto actual" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
                 </div>
             <?php endif; ?>
             <input type="file" name="foto" accept="image/*">

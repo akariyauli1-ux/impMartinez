@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../app/Core/Database.php';
 require_once __DIR__ . '/../app/Core/Controller.php';
@@ -50,10 +53,13 @@ $router->add('GET', '/jefe-tecnico/seguimiento', 'JefeTecnicoController', 'segui
 $router->add('GET', '/almacen', 'AlmacenController', 'dashboard');
 $router->add('GET', '/almacen/inventario', 'AlmacenController', 'inventario');
 $router->add('POST', '/almacen/guardar-repuesto', 'AlmacenController', 'guardarRepuesto');
-$router->add('GET', '/almacen/movimientos', 'AlmacenController', 'movimientos');
-$router->add('POST', '/almacen/guardar-movimiento', 'AlmacenController', 'guardarMovimiento');
+$router->add('POST', '/almacen/actualizar-repuesto', 'AlmacenController', 'actualizarRepuesto');
+$router->add('POST', '/almacen/toggle-descontinuado', 'AlmacenController', 'toggleDescontinuado');
+$router->add('POST', '/almacen/editar-categoria', 'AlmacenController', 'editarCategoria');
+$router->add('POST', '/almacen/eliminar-categoria', 'AlmacenController', 'eliminarCategoria');
 $router->add('GET', '/almacen/pedidos', 'AlmacenController', 'pedidos');
 $router->add('POST', '/almacen/guardar-pedido', 'AlmacenController', 'guardarPedido');
+$router->add('GET', '/almacen/historial', 'AlmacenController', 'historial');
 
 $router->add('GET', '/gerente', 'GerenteController', 'dashboard');
 $router->add('GET', '/gerente/sucursales', 'GerenteController', 'sucursales');
@@ -69,6 +75,11 @@ $router->add('GET', '/rrhh', 'RRHHController', 'dashboard');
 $router->add('GET', '/rrhh/asistencia', 'RRHHController', 'asistencia');
 $router->add('GET', '/rrhh/inspecciones', 'RRHHController', 'inspecciones');
 $router->add('GET', '/rrhh/productividad', 'RRHHController', 'productividad');
+
+$router->add('GET', '/imagen/logo', 'ImagenController', 'logo');
+$router->add('GET', '/imagen/foto-usuario', 'ImagenController', 'fotoUsuario');
+$router->add('GET', '/imagen/foto-equipo', 'ImagenController', 'fotoEquipo');
+$router->add('GET', '/imagen/fotos-equipo', 'ImagenController', 'fotosEquipo');
 
 $router->add('GET', '/usuarios', 'UsuariosController', 'index');
 $router->add('POST', '/usuarios/guardar', 'UsuariosController', 'guardar');

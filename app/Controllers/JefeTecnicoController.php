@@ -3,6 +3,7 @@ require_once __DIR__ . '/../Core/Controller.php';
 require_once __DIR__ . '/../Models/Equipo.php';
 require_once __DIR__ . '/../Models/Usuario.php';
 require_once __DIR__ . '/../Models/AsignacionTecnico.php';
+require_once __DIR__ . '/../Models/Sucursal.php';
 
 class JefeTecnicoController extends Controller {
     private $equipoModel;
@@ -30,6 +31,9 @@ class JefeTecnicoController extends Controller {
     }
     
     public function dashboard() {
+        error_reporting(E_ALL);
+        ini_set('display_errors', 1);
+        
         $sucursal_id = $_SESSION['sucursal_id'];
         $tecnicos = $this->usuarioModel->obtenerTecnicosPorSucursal($sucursal_id);
         $pendientes = $this->equipoModel->obtenerAsignadosSinTecnico($sucursal_id);
