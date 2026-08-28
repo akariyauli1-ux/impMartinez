@@ -4,28 +4,25 @@ require_once __DIR__ . '/../Models/Equipo.php';
 require_once __DIR__ . '/../Models/Usuario.php';
 require_once __DIR__ . '/../Models/AsignacionTecnico.php';
 require_once __DIR__ . '/../Models/Sucursal.php';
+require_once __DIR__ . '/../Models/SeguimientoTrabajo.php';
 
 class JefeTecnicoController extends Controller {
     private $equipoModel;
     private $usuarioModel;
     private $asignacionTecnicoModel;
+    private $seguimientoModel;
     
     public function __construct() {
         $this->equipoModel = new Equipo();
         $this->usuarioModel = new Usuario();
         $this->asignacionTecnicoModel = new AsignacionTecnico();
+        $this->seguimientoModel = new SeguimientoTrabajo();
         $this->verificarSesion();
         $this->verificarRol(['jefe_tecnico']);
     }
     
     private function verificarSesion() {
         if (!isset($_SESSION['usuario_id'])) {
-            $this->redirect('');
-        }
-    }
-    
-    private function verificarRol($roles) {
-        if (!in_array($_SESSION['usuario_rol'], $roles)) {
             $this->redirect('');
         }
     }
@@ -69,7 +66,6 @@ class JefeTecnicoController extends Controller {
         }
         
         $this->asignacionTecnicoModel->asignar($equipo_id, $tecnico_id, $_SESSION['usuario_id']);
-        $this->equipoModel->actualizar($equipo_id, ['estado' => 'en_reparacion']);
         
         $this->redirect('jefe-tecnico/asignar-tecnicos');
     }
@@ -82,6 +78,26 @@ class JefeTecnicoController extends Controller {
             'usuario' => $this->obtenerUsuarioActual(),
             'asignaciones' => $asignaciones
         ]);
+    }
+    
+    public function obtenerDetallesEquipo() {
+        $equipo_id = $_GET['equipo_id'] ?? 0;
+        
+        $seguimiento = $this->seguimientoModel->obtenerPorEquipo($equipo_id);
+        
+        echo json_encode([
+            'seguimiento' => $seguimiento
+        ]);
+        exit;
+    }
+    
+    public function aprobarTrabajo() {
+        $equipo_id = $_POST['equipo_id'];
+        
+        $this->equipoModel->actualizar($equipo_id, ['estado' => 'entregado']);
+        
+        header('HTTP/1.1 200 OK');
+        exit;
     }
     
     private function obtenerUsuarioActual() {

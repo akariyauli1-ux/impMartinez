@@ -13,12 +13,13 @@
                     <th>Equipo</th>
                     <th>Falla</th>
                     <th>Estado</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($registros)): ?>
                     <tr>
-                        <td colspan="5" style="text-align: center; padding: 20px;">No has registrado equipos aún</td>
+                        <td colspan="6" style="text-align: center; padding: 20px;">No has registrado equipos aún</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($registros as $registro): ?>
@@ -53,6 +54,13 @@
                                 }
                                 ?>
                                 <span class="badge <?= $estado_class ?>"><?= $estado_texto ?></span>
+                            </td>
+                            <td>
+                                <a href="<?= APP_URL ?>/public/recepcion/ver-recibo?id=<?= $registro['id'] ?>" 
+                                   class="btn btn-primary btn-sm" 
+                                   target="_blank">
+                                    📄 Ver Recibo
+                                </a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

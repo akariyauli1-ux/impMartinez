@@ -145,6 +145,19 @@ body {
     color: var(--blanco);
 }
 
+.btn-danger:hover {
+    background-color: var(--rojo-oscuro);
+}
+
+.btn-success {
+    background-color: #2E7D32;
+    color: var(--blanco);
+}
+
+.btn-success:hover {
+    background-color: #1B5E20;
+}
+
 /* ALERTAS */
 .alert {
     padding: 12px 16px;
@@ -430,6 +443,11 @@ table tbody tr:hover {
 .badge-gris {
     background-color: var(--gris-claro);
     color: var(--gris-oscuro);
+}
+
+.badge-azul {
+    background-color: #E3F2FD;
+    color: #1565C0;
 }
 
 /* FORMULARIOS */

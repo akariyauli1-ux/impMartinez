@@ -11,13 +11,13 @@ class AsignacionTecnico extends Model {
     }
     
     public function contarTrabajosActivos($tecnico_id) {
-        $sql = "SELECT COUNT(*) as total FROM asignaciones_tecnico at JOIN equipos e ON at.equipo_id = e.id WHERE at.tecnico_id = ? AND e.estado NOT IN ('completado', 'entregado')";
+        $sql = "SELECT COUNT(*) as total FROM asignaciones_tecnico at JOIN equipos e ON at.equipo_id = e.id WHERE at.tecnico_id = ? AND e.estado NOT IN ('completado', 'entregado', 'asignado_sucursal')";
         $result = $this->fetchOne($sql, [$tecnico_id]);
         return $result['total'] ?? 0;
     }
     
     public function obtenerPorSucursal($sucursal_id) {
-        $sql = "SELECT at.*, 
+        $sql = "SELECT at.equipo_id, at.tecnico_id, at.fecha_asignacion,
                 e.estado as equipo_estado,
                 e.tipo_equipo as equipo_tipo,
                 e.marca as equipo_marca,
@@ -33,5 +33,9 @@ class AsignacionTecnico extends Model {
                 WHERE e.sucursal_actual_id = ? 
                 ORDER BY at.fecha_asignacion DESC";
         return $this->fetchAll($sql, [$sucursal_id]);
+    }
+    
+    public function eliminarPorEquipo($equipo_id) {
+        return $this->query("DELETE FROM asignaciones_tecnico WHERE equipo_id = ?", [$equipo_id]);
     }
 }

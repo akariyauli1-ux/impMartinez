@@ -26,12 +26,6 @@ class TecnicoController extends Controller {
         }
     }
     
-    private function verificarRol($roles) {
-        if (!in_array($_SESSION['usuario_rol'], $roles)) {
-            $this->redirect('');
-        }
-    }
-    
     public function dashboard() {
         $tecnico_id = $_SESSION['usuario_id'];
         $mis_trabajos = $this->asignacionTecnicoModel->contarTrabajosActivos($tecnico_id);
@@ -64,6 +58,28 @@ class TecnicoController extends Controller {
         if ($accion === 'completado') {
             $this->equipoModel->actualizar($equipo_id, ['estado' => 'completado']);
         }
+        
+        $this->redirect('tecnico/mis-trabajos');
+    }
+    
+    public function confirmarRecibido() {
+        $equipo_id = $_POST['equipo_id'];
+        
+        $this->seguimientoModel->registrar($equipo_id, $_SESSION['usuario_id'], 'recibido', 'El técnico confirma que ha recibido el trabajo');
+        $this->equipoModel->actualizar($equipo_id, ['estado' => 'recibido']);
+        
+        header('HTTP/1.1 200 OK');
+        exit;
+    }
+    
+    public function rechazarTrabajo() {
+        $equipo_id = $_POST['equipo_id'];
+        $motivo = $_POST['motivo'] ?? '';
+        
+        $this->seguimientoModel->registrar($equipo_id, $_SESSION['usuario_id'], 'rechazado', $motivo);
+        $this->equipoModel->actualizar($equipo_id, ['estado' => 'asignado_sucursal']);
+        
+        $this->asignacionTecnicoModel->eliminarPorEquipo($equipo_id);
         
         $this->redirect('tecnico/mis-trabajos');
     }

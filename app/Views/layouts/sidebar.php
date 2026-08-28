@@ -4,6 +4,8 @@ $menus = [
         ['url' => APP_URL . '/public/recepcion', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
         ['url' => APP_URL . '/public/recepcion/nuevo-equipo', 'icon' => '📝', 'label' => 'Registrar Cliente y Equipo', 'key' => 'nuevo_equipo'],
         ['url' => APP_URL . '/public/recepcion/mis-registros', 'icon' => '📋', 'label' => 'Mis Registros', 'key' => 'mis_registros'],
+        ['url' => APP_URL . '/public/recepcion/equipos-listos', 'icon' => '📦', 'label' => 'Equipos Listos', 'key' => 'equipos_listos'],
+        ['url' => APP_URL . '/public/recepcion/historial-entregas', 'icon' => '✅', 'label' => 'Historial Entregas', 'key' => 'historial_entregas'],
     ],
     'tecnico' => [
         ['url' => APP_URL . '/public/tecnico', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
@@ -15,7 +17,9 @@ $menus = [
         ['url' => APP_URL . '/public/admin-sucursal/asignar', 'icon' => '🔀', 'label' => 'Asignar a Sucursal', 'key' => 'asignar'],
         ['url' => APP_URL . '/public/admin-sucursal/asistencia', 'icon' => '📅', 'label' => 'Asistencia', 'key' => 'asistencia'],
         ['url' => APP_URL . '/public/admin-sucursal/inspecciones', 'icon' => '👔', 'label' => 'Limpieza/Uniforme', 'key' => 'inspecciones'],
+        ['url' => APP_URL . '/public/admin-sucursal/limpieza-local', 'icon' => '🧹', 'label' => 'Limpieza del Local', 'key' => 'limpieza_local'],
         ['url' => APP_URL . '/public/admin-sucursal/reportes', 'icon' => '📈', 'label' => 'Reportes', 'key' => 'reportes'],
+        ['url' => APP_URL . '/public/admin-sucursal/entregas', 'icon' => '✅', 'label' => 'Control Entregas', 'key' => 'entregas'],
     ],
     'jefe_tecnico' => [
         ['url' => APP_URL . '/public/jefe-tecnico', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
@@ -57,15 +61,34 @@ $rol_labels = [
     'rrhh' => 'Recursos Humanos'
 ];
 
-$items = $menus[$usuario['rol']] ?? [];
+// Verificar si $usuario está definido
+if (!isset($usuario) || !is_array($usuario)) {
+    $usuario = [
+        'rol' => $_SESSION['usuario_rol'] ?? 'invitado',
+        'sucursal_nombre' => $_SESSION['sucursal_nombre'] ?? 'Central',
+        'nombre' => $_SESSION['usuario_nombre'] ?? 'Usuario',
+        'apellido_paterno' => ''
+    ];
+}
+
+// Obtener rol activo (el que el usuario seleccionó)
+$rol_activo = $_SESSION['rol_activo'] ?? $_SESSION['usuario_rol'] ?? 'invitado';
+$roles_usuario = $_SESSION['usuario_roles'] ?? [$rol_activo];
+
+// Obtener menús solo del rol activo
+$items = $menus[$rol_activo] ?? [];
+
 $sucursal_nombre = $usuario['sucursal_nombre'] ?? 'Central';
 ?>
 
 <div class="sidebar">
     <div class="sidebar-header">
         <?php
-        $sucursalModel = new Sucursal();
-        $logo_empresa = $sucursalModel->obtenerLogoEmpresa();
+        $logo_empresa = null;
+        if (class_exists('Sucursal')) {
+            $sucursalModel = new Sucursal();
+            $logo_empresa = $sucursalModel->obtenerLogoEmpresa();
+        }
         
         if ($logo_empresa && file_exists(__DIR__ . '/../../../uploads/logos/' . $logo_empresa)):
         ?>
@@ -88,7 +111,26 @@ $sucursal_nombre = $usuario['sucursal_nombre'] ?? 'Central';
     <div class="sidebar-footer">
         <div class="user-info">
             <div class="name"><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellido_paterno']) ?></div>
-            <div class="role"><?= $rol_labels[$usuario['rol']] ?? $usuario['rol'] ?></div>
+            <div class="role" style="margin-bottom: 10px;">
+                <?php 
+                // Mostrar rol activo
+                echo '<strong>' . ($rol_labels[$rol_activo] ?? $rol_activo) . '</strong>';
+                
+                // Si tiene múltiples roles, mostrar selector
+                if (count($roles_usuario) > 1):
+                ?>
+                    <div style="margin-top: 10px;">
+                        <select onchange="window.location.href='<?= APP_URL ?>/public/auth/cambiar-rol?rol=' + this.value" 
+                                style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--gris-claro); font-size: 13px; cursor: pointer;">
+                            <?php foreach ($roles_usuario as $rol): ?>
+                                <option value="<?= $rol ?>" <?= $rol === $rol_activo ? 'selected' : '' ?>>
+                                    <?= $rol_labels[$rol] ?? $rol ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
         <a href="<?= APP_URL ?>/public/logout" class="btn btn-outline btn-sm btn-block">Cerrar Sesión</a>
     </div>

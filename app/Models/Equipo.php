@@ -4,11 +4,17 @@ class Equipo extends Model {
     
     public function obtenerPorId($id) {
         $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel FROM equipos e JOIN clientes c ON e.cliente_id = c.id WHERE e.id = ?";
-        return $this->fetchOne($sql, [$id]);
+        $equipo = $this->fetchOne($sql, [$id]);
+        
+        if ($equipo && !empty($equipo['firma_entrega'])) {
+            $equipo['firma_entrega'] = 'data:image/png;base64,' . base64_encode($equipo['firma_entrega']);
+        }
+        
+        return $equipo;
     }
     
     public function obtenerPendientesPorSucursal($sucursal_id) {
-        $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap FROM equipos e JOIN clientes c ON e.cliente_id = c.id WHERE e.sucursal_actual_id = ? AND e.estado = 'pendiente_asignacion' ORDER BY e.fecha_registro ASC";
+        $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap FROM equipos e JOIN clientes c ON e.cliente_id = c.id WHERE e.sucursal_actual_id = ? AND e.estado IN ('pendiente_asignacion', 'recibido') ORDER BY e.fecha_registro ASC";
         return $this->fetchAll($sql, [$sucursal_id]);
     }
     
@@ -69,5 +75,15 @@ class Equipo extends Model {
             $result = $this->fetchOne($sql, [$fecha]);
         }
         return $result['total'] ?? 0;
+    }
+    
+    public function obtenerCompletadosPorSucursal($sucursal_id) {
+        $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, c.dni as cliente_dni FROM equipos e JOIN clientes c ON e.cliente_id = c.id WHERE e.sucursal_actual_id = ? AND e.estado = 'completado' ORDER BY e.fecha_registro DESC";
+        return $this->fetchAll($sql, [$sucursal_id]);
+    }
+    
+    public function obtenerEntregadosPorSucursal($sucursal_id) {
+        $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, c.dni as cliente_dni, CONCAT(u.nombre, ' ', u.apellido_paterno) as recepcionista_nombre FROM equipos e JOIN clientes c ON e.cliente_id = c.id LEFT JOIN usuarios u ON e.entregado_por = u.id WHERE e.sucursal_actual_id = ? AND e.estado = 'entregado' ORDER BY e.fecha_entrega DESC";
+        return $this->fetchAll($sql, [$sucursal_id]);
     }
 }

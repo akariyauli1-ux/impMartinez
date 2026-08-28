@@ -7,6 +7,7 @@ require_once __DIR__ . '/../Models/AsignacionSucursal.php';
 require_once __DIR__ . '/../Models/AsignacionTecnico.php';
 require_once __DIR__ . '/../Models/Asistencia.php';
 require_once __DIR__ . '/../Models/Inspeccion.php';
+require_once __DIR__ . '/../Models/LimpiezaLocal.php';
 
 class AdminSucursalController extends Controller {
     private $equipoModel;
@@ -16,6 +17,7 @@ class AdminSucursalController extends Controller {
     private $asignacionTecnicoModel;
     private $asistenciaModel;
     private $inspeccionModel;
+    private $limpiezaLocalModel;
     
     public function __construct() {
         $this->equipoModel = new Equipo();
@@ -25,18 +27,13 @@ class AdminSucursalController extends Controller {
         $this->asignacionTecnicoModel = new AsignacionTecnico();
         $this->asistenciaModel = new Asistencia();
         $this->inspeccionModel = new Inspeccion();
+        $this->limpiezaLocalModel = new LimpiezaLocal();
         $this->verificarSesion();
         $this->verificarRol(['admin_sucursal']);
     }
     
     private function verificarSesion() {
         if (!isset($_SESSION['usuario_id'])) {
-            $this->redirect('');
-        }
-    }
-    
-    private function verificarRol($roles) {
-        if (!in_array($_SESSION['usuario_rol'], $roles)) {
             $this->redirect('');
         }
     }
@@ -135,10 +132,13 @@ class AdminSucursalController extends Controller {
         $sucursal_id = $_SESSION['sucursal_id'];
         $personal = $this->inspeccionModel->obtenerPorFechaYSucursal($fecha, $sucursal_id);
         
+        $historial = $this->inspeccionModel->obtenerHistorialPorSucursal($sucursal_id);
+        
         $this->view('admin_sucursal/inspecciones', [
             'usuario' => $this->obtenerUsuarioActual(),
             'personal' => $personal,
-            'fecha' => $fecha
+            'fecha' => $fecha,
+            'historial' => $historial
         ]);
     }
     
@@ -173,6 +173,60 @@ class AdminSucursalController extends Controller {
             'usuario' => $this->obtenerUsuarioActual(),
             'reportes' => $reportes
         ]);
+    }
+    
+    public function entregas() {
+        $sucursal_id = $_SESSION['sucursal_id'];
+        $completados = $this->equipoModel->obtenerCompletadosPorSucursal($sucursal_id);
+        $entregados = $this->equipoModel->obtenerEntregadosPorSucursal($sucursal_id);
+        
+        $this->view('admin_sucursal/entregas', [
+            'usuario' => $this->obtenerUsuarioActual(),
+            'completados' => $completados,
+            'entregados' => $entregados
+        ]);
+    }
+    
+    public function limpiezaLocal() {
+        $sucursal_id = $_SESSION['sucursal_id'];
+        $historial = $this->limpiezaLocalModel->obtenerPorSucursal($sucursal_id);
+        
+        $this->view('admin_sucursal/limpieza_local', [
+            'usuario' => $this->obtenerUsuarioActual(),
+            'historial' => $historial
+        ]);
+    }
+    
+    public function guardarLimpiezaLocal() {
+        $areas = $_POST['areas_limpiadas'] ?? [];
+        $otra_area = trim($_POST['otra_area'] ?? '');
+        
+        if (!empty($otra_area)) {
+            $areas[] = $otra_area;
+        }
+        
+        $areas_texto = implode(', ', $areas);
+        
+        $productos = $_POST['productos_utilizados'] ?? [];
+        $otro_producto = trim($_POST['otro_producto'] ?? '');
+        
+        if (!empty($otro_producto)) {
+            $productos[] = $otro_producto;
+        }
+        
+        $productos_texto = implode(', ', $productos);
+        
+        $this->limpiezaLocalModel->registrar([
+            'fecha' => $_POST['fecha'],
+            'hora' => $_POST['hora'],
+            'areas_limpiadas' => $areas_texto,
+            'productos_utilizados' => $productos_texto,
+            'observaciones' => $_POST['observaciones'] ?? '',
+            'registrado_por' => $_SESSION['usuario_id'],
+            'sucursal_id' => $_SESSION['sucursal_id']
+        ]);
+        
+        $this->redirect('admin-sucursal/limpieza-local');
     }
     
     private function obtenerUsuarioActual() {

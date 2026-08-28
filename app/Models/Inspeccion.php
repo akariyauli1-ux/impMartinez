@@ -19,7 +19,7 @@ class Inspeccion extends Model {
     }
     
     public function obtenerPorFechaYSucursal($fecha, $sucursal_id) {
-        $sql = "SELECT i.*, u.nombre, u.apellido_paterno, u.rol FROM inspecciones i JOIN usuarios u ON i.usuario_id = u.id WHERE i.fecha = ? AND u.sucursal_id = ? AND u.activo = 1 AND u.rol IN ('tecnico', 'recepcionista', 'almacenista', 'jefe_tecnico') ORDER BY u.apellido_paterno";
+        $sql = "SELECT u.id as usuario_id, u.nombre, u.apellido_paterno, u.rol, i.limpieza, i.uniforme, i.observaciones, i.hora_revision_limpieza, i.hora_revision_uniforme, i.obs_limpieza, i.obs_uniforme FROM usuarios u LEFT JOIN inspecciones i ON u.id = i.usuario_id AND i.fecha = ? WHERE u.sucursal_id = ? AND u.activo = 1 AND u.rol IN ('tecnico', 'recepcionista', 'almacenista', 'jefe_tecnico') ORDER BY u.apellido_paterno";
         return $this->fetchAll($sql, [$fecha, $sucursal_id]);
     }
     
@@ -30,5 +30,22 @@ class Inspeccion extends Model {
         }
         $sql = "SELECT i.*, u.nombre, u.apellido_paterno, u.rol, s.nombre as sucursal_nombre, CONCAT(reg.nombre, ' ', reg.apellido_paterno) as registrado_por_nombre FROM inspecciones i JOIN usuarios u ON i.usuario_id = u.id LEFT JOIN sucursales s ON u.sucursal_id = s.id LEFT JOIN usuarios reg ON i.registrado_por = reg.id WHERE i.fecha = ? ORDER BY s.nombre, u.apellido_paterno";
         return $this->fetchAll($sql, [$fecha]);
+    }
+    
+    public function obtenerHistorialPorSucursal($sucursal_id, $fecha_inicio = null, $fecha_fin = null) {
+        $params = [$sucursal_id];
+        $where = "WHERE u.sucursal_id = ?";
+        
+        if ($fecha_inicio) {
+            $where .= " AND i.fecha >= ?";
+            $params[] = $fecha_inicio;
+        }
+        if ($fecha_fin) {
+            $where .= " AND i.fecha <= ?";
+            $params[] = $fecha_fin;
+        }
+        
+        $sql = "SELECT i.*, u.nombre, u.apellido_paterno, u.rol, CONCAT(reg.nombre, ' ', reg.apellido_paterno) as registrado_por_nombre FROM inspecciones i JOIN usuarios u ON i.usuario_id = u.id LEFT JOIN usuarios reg ON i.registrado_por = reg.id $where ORDER BY i.fecha DESC, u.apellido_paterno";
+        return $this->fetchAll($sql, $params);
     }
 }

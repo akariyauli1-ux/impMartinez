@@ -6,8 +6,9 @@ class Controller {
     }
     
     protected function view($view, $data = []) {
+        // Extraer las variables para que estén disponibles en la vista
         extract($data);
-        require_once __DIR__ . '/../Views/' . $view . '.php';
+        require __DIR__ . '/../Views/' . $view . '.php';
     }
     
     protected function redirect($url) {
@@ -19,5 +20,17 @@ class Controller {
         header('Content-Type: application/json');
         echo json_encode($data);
         exit;
+    }
+    
+    protected function verificarRol($roles_requeridos) {
+        // Usar el rol activo seleccionado por el usuario
+        $rol_activo = $_SESSION['rol_activo'] ?? $_SESSION['usuario_rol'] ?? null;
+        
+        if ($rol_activo && in_array($rol_activo, $roles_requeridos)) {
+            return true;
+        }
+        
+        $this->redirect('');
+        return false;
     }
 }

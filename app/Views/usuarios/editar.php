@@ -52,23 +52,23 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="form-group">
-                <label>Cargo *</label>
-                <select name="rol" required>
-                    <option value="recepcionista" <?= $usuario_editar['rol'] === 'recepcionista' ? 'selected' : '' ?>>Recepcionista</option>
-                    <option value="tecnico" <?= $usuario_editar['rol'] === 'tecnico' ? 'selected' : '' ?>>Técnico</option>
-                    <option value="jefe_tecnico" <?= $usuario_editar['rol'] === 'jefe_tecnico' ? 'selected' : '' ?>>Jefe Técnico</option>
-                    <option value="almacenista" <?= $usuario_editar['rol'] === 'almacenista' ? 'selected' : '' ?>>Almacenista</option>
-                    <option value="admin_sucursal" <?= $usuario_editar['rol'] === 'admin_sucursal' ? 'selected' : '' ?>>Admin. Sucursal</option>
-                    <option value="rrhh" <?= $usuario_editar['rol'] === 'rrhh' ? 'selected' : '' ?>>Recursos Humanos</option>
-                    <option value="gerente" <?= $usuario_editar['rol'] === 'gerente' ? 'selected' : '' ?>>Gerente</option>
-                </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Roles *</label>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <?php foreach ($roles as $rol): ?>
+                    <label style="display: flex; align-items: center; gap: 5px;">
+                        <input type="checkbox" name="roles[]" value="<?= $rol['id'] ?>" <?= in_array($rol['id'], $roles_usuario) ? 'checked' : '' ?>>
+                        <?= htmlspecialchars($rol['descripcion']) ?>
+                    </label>
+                <?php endforeach; ?>
             </div>
         </div>
         
         <div class="form-group">
             <label>Foto (dejar vacío para mantener la actual)</label>
-            <?php if ($usuario_editar['foto']): ?>
+            <?php if (!empty($usuario_editar['foto'])): ?>
                 <div style="margin-bottom: 10px;">
                     <img src="<?= APP_URL ?>/public/imagen/foto-usuario?id=<?= $usuario_editar['id'] ?>" alt="Foto actual" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
                 </div>

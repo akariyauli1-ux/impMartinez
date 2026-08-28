@@ -38,12 +38,6 @@ class GerenteController extends Controller {
         }
     }
     
-    private function verificarRol($roles) {
-        if (!in_array($_SESSION['usuario_rol'], $roles)) {
-            $this->redirect('');
-        }
-    }
-    
     public function dashboard() {
         $total_equipos = $this->equipoModel->obtenerCountPorEstado('registrado');
         $en_reparacion = $this->equipoModel->obtenerCountPorEstado('en_reparacion');

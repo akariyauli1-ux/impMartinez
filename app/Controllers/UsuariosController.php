@@ -11,7 +11,9 @@ class UsuariosController extends Controller {
         $this->usuarioModel = new Usuario();
         $this->sucursalModel = new Sucursal();
         $this->verificarSesion();
-        $this->verificarRol(['gerente', 'rrhh']);
+        if (!$this->verificarRol(['gerente', 'rrhh'])) {
+            $this->redirect('');
+        }
     }
     
     private function verificarSesion() {
@@ -20,20 +22,16 @@ class UsuariosController extends Controller {
         }
     }
     
-    private function verificarRol($roles) {
-        if (!in_array($_SESSION['usuario_rol'], $roles)) {
-            $this->redirect('');
-        }
-    }
-    
     public function index() {
-        $usuarios = $this->usuarioModel->obtenerTodosIncluyendoInactivos();
+        $usuarios = $this->usuarioModel->obtenerUsuariosConRoles();
         $sucursales = $this->sucursalModel->obtenerTodas();
+        $roles = $this->usuarioModel->obtenerTodosRoles();
         
         $this->view('usuarios/index', [
             'usuario' => $this->obtenerUsuarioActual(),
             'usuarios' => $usuarios,
-            'sucursales' => $sucursales
+            'sucursales' => $sucursales,
+            'roles' => $roles
         ]);
     }
     
@@ -51,6 +49,19 @@ class UsuariosController extends Controller {
         
         $password_hash = password_hash($_POST['password'], PASSWORD_DEFAULT);
         
+        // Obtener el primer rol para mantener compatibilidad con la columna rol
+        $roles_ids = $_POST['roles'] ?? [];
+        $primer_rol = 'recepcionista'; // Rol por defecto
+        if (!empty($roles_ids)) {
+            $roles = $this->usuarioModel->obtenerTodosRoles();
+            foreach ($roles as $rol) {
+                if ($rol['id'] == $roles_ids[0]) {
+                    $primer_rol = $rol['nombre'];
+                    break;
+                }
+            }
+        }
+        
         $data = [
             'nombre' => $_POST['nombre'],
             'apellido_paterno' => $_POST['apellido_paterno'],
@@ -58,7 +69,7 @@ class UsuariosController extends Controller {
             'carnet' => $_POST['carnet'],
             'email' => $_POST['email'] ?? '',
             'telefono' => $_POST['telefono'] ?? '',
-            'rol' => $_POST['rol'],
+            'rol' => $primer_rol, // Mantener compatibilidad
             'sucursal_id' => $_POST['sucursal_id'],
             'password' => $password_hash,
             'foto' => $foto_nombre,
@@ -67,7 +78,13 @@ class UsuariosController extends Controller {
             'registrado_por' => $_SESSION['usuario_id']
         ];
         
-        $this->usuarioModel->crear($data);
+        $usuario_id = $this->usuarioModel->crear($data);
+        
+        // Asignar múltiples roles
+        if (!empty($roles_ids) && $usuario_id) {
+            $this->usuarioModel->actualizarRoles($usuario_id, $roles_ids);
+        }
+        
         $this->redirect('usuarios');
     }
     
@@ -85,16 +102,33 @@ class UsuariosController extends Controller {
         }
         
         $sucursales = $this->sucursalModel->obtenerTodas();
+        $roles = $this->usuarioModel->obtenerTodosRoles();
+        $roles_usuario = $this->usuarioModel->obtenerRolesIds($id);
         
         $this->view('usuarios/editar', [
             'usuario' => $this->obtenerUsuarioActual(),
             'usuario_editar' => $usuario_editar,
-            'sucursales' => $sucursales
+            'sucursales' => $sucursales,
+            'roles' => $roles,
+            'roles_usuario' => $roles_usuario
         ]);
     }
     
     public function actualizar() {
         $id = $_POST['id'];
+        
+        // Obtener el primer rol para mantener compatibilidad con la columna rol
+        $roles_ids = $_POST['roles'] ?? [];
+        $primer_rol = 'recepcionista'; // Rol por defecto
+        if (!empty($roles_ids)) {
+            $roles = $this->usuarioModel->obtenerTodosRoles();
+            foreach ($roles as $rol) {
+                if ($rol['id'] == $roles_ids[0]) {
+                    $primer_rol = $rol['nombre'];
+                    break;
+                }
+            }
+        }
         
         $data = [
             'nombre' => $_POST['nombre'],
@@ -103,7 +137,7 @@ class UsuariosController extends Controller {
             'carnet' => $_POST['carnet'],
             'email' => $_POST['email'] ?? '',
             'telefono' => $_POST['telefono'] ?? '',
-            'rol' => $_POST['rol'],
+            'rol' => $primer_rol, // Mantener compatibilidad
             'sucursal_id' => $_POST['sucursal_id']
         ];
         
@@ -123,6 +157,12 @@ class UsuariosController extends Controller {
         }
         
         $this->usuarioModel->actualizar($id, $data);
+        
+        // Actualizar múltiples roles
+        if (!empty($roles_ids)) {
+            $this->usuarioModel->actualizarRoles($id, $roles_ids);
+        }
+        
         $this->redirect('usuarios');
     }
     
@@ -132,6 +172,29 @@ class UsuariosController extends Controller {
             $this->usuarioModel->toggleEstado($id);
         }
         $this->redirect('usuarios');
+    }
+    
+    public function gestionarRoles() {
+        $id = $_POST['id'] ?? null;
+        $roles_ids = $_POST['roles'] ?? [];
+        
+        if ($id) {
+            $this->usuarioModel->actualizarRoles($id, $roles_ids);
+        }
+        
+        $this->redirect('usuarios');
+    }
+    
+    public function obtenerRoles() {
+        $id = $_GET['id'] ?? null;
+        
+        if ($id) {
+            $roles_ids = $this->usuarioModel->obtenerRolesIds($id);
+            echo json_encode($roles_ids);
+        } else {
+            echo json_encode([]);
+        }
+        exit;
     }
     
     private function obtenerUsuarioActual() {

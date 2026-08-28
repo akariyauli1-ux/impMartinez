@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../Core/Controller.php';
 require_once __DIR__ . '/../Models/Usuario.php';
+require_once __DIR__ . '/../Models/Sucursal.php';
 
 class AuthController extends Controller {
     private $usuarioModel;
@@ -11,7 +12,14 @@ class AuthController extends Controller {
     
     public function login() {
         if (isset($_SESSION['usuario_id'])) {
-            $this->redirect($this->obtenerRedireccion($_SESSION['usuario_rol']));
+            // Si tiene múltiples roles y no ha seleccionado uno, ir a selección de roles
+            if (isset($_SESSION['usuario_roles']) && count($_SESSION['usuario_roles']) > 1 && !isset($_SESSION['rol_activo'])) {
+                $this->redirect('auth/seleccionar-rol');
+            } else {
+                // Si ya tiene un rol activo o solo tiene un rol, ir al dashboard correspondiente
+                $rol = $_SESSION['rol_activo'] ?? $_SESSION['usuario_rol'] ?? 'recepcionista';
+                $this->redirect($this->obtenerRedireccion($rol));
+            }
         }
         
         $this->view('auth/login', [
@@ -48,12 +56,63 @@ class AuthController extends Controller {
             return;
         }
         
+        // Obtener roles del usuario
+        $roles = $this->usuarioModel->obtenerRolesUsuario($usuario['id']);
+        $roles_nombres = array_column($roles, 'nombre');
+        
         $_SESSION['usuario_id'] = $usuario['id'];
         $_SESSION['usuario_nombre'] = $usuario['nombre'] . ' ' . $usuario['apellido_paterno'];
-        $_SESSION['usuario_rol'] = $usuario['rol'];
+        $_SESSION['usuario_rol'] = $usuario['rol']; // Mantener compatibilidad con el primer rol
+        $_SESSION['usuario_roles'] = $roles_nombres; // Array con todos los roles
         $_SESSION['sucursal_id'] = $usuario['sucursal_id'];
         
-        $this->redirect($this->obtenerRedireccion($usuario['rol']));
+        // Si tiene múltiples roles, mostrar selector
+        if (count($roles_nombres) > 1) {
+            $this->redirect('auth/seleccionar-rol');
+        } else {
+            // Si solo tiene un rol, usarlo directamente
+            $_SESSION['rol_activo'] = $roles_nombres[0];
+            $this->redirect($this->obtenerRedireccion($roles_nombres[0]));
+        }
+    }
+    
+    public function seleccionarRol() {
+        if (!isset($_SESSION['usuario_id'])) {
+            $this->redirect('');
+            return;
+        }
+        
+        $rol = $_GET['rol'] ?? null;
+        
+        if ($rol && in_array($rol, $_SESSION['usuario_roles'])) {
+            $_SESSION['rol_activo'] = $rol;
+            $this->redirect($this->obtenerRedireccion($rol));
+        } else {
+            // Obtener datos del usuario para la vista
+            $usuario = $this->usuarioModel->obtenerPorId($_SESSION['usuario_id']);
+            
+            // Mostrar vista de selección de roles
+            $this->view('auth/seleccionar_rol', [
+                'usuario' => $usuario,
+                'roles' => $_SESSION['usuario_roles']
+            ]);
+        }
+    }
+    
+    public function cambiarRol() {
+        if (!isset($_SESSION['usuario_id'])) {
+            $this->redirect('');
+            return;
+        }
+        
+        $rol = $_GET['rol'] ?? null;
+        
+        if ($rol && in_array($rol, $_SESSION['usuario_roles'])) {
+            $_SESSION['rol_activo'] = $rol;
+            $this->redirect($this->obtenerRedireccion($rol));
+        } else {
+            $this->redirect('auth/seleccionar-rol');
+        }
     }
     
     public function logout() {
