@@ -86,4 +86,162 @@ class Equipo extends Model {
         $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, c.dni as cliente_dni, CONCAT(u.nombre, ' ', u.apellido_paterno) as recepcionista_nombre FROM equipos e JOIN clientes c ON e.cliente_id = c.id LEFT JOIN usuarios u ON e.entregado_por = u.id WHERE e.sucursal_actual_id = ? AND e.estado = 'entregado' ORDER BY e.fecha_entrega DESC";
         return $this->fetchAll($sql, [$sucursal_id]);
     }
+    
+    public function obtenerTodosConDetalles($filtros = []) {
+        $sql = "SELECT e.*, 
+                c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, c.dni as cliente_dni,
+                CONCAT(r.nombre, ' ', r.apellido_paterno, ' ', r.apellido_materno) as recepcionista_nombre,
+                s_actual.nombre as sucursal_actual_nombre,
+                CONCAT(at2.nombre, ' ', at2.apellido_paterno) as tecnico_nombre,
+                CONCAT(jt.nombre, ' ', jt.apellido_paterno) as jefe_tecnico_nombre,
+                asig_tec.fecha_asignacion as fecha_asignacion_tecnico,
+                CONCAT(ent.nombre, ' ', ent.apellido_paterno) as entregado_por_nombre,
+                e.fecha_entrega
+                FROM equipos e
+                JOIN clientes c ON e.cliente_id = c.id
+                LEFT JOIN usuarios r ON e.recepcionista_id = r.id
+                LEFT JOIN sucursales s_actual ON e.sucursal_actual_id = s_actual.id
+                LEFT JOIN asignaciones_tecnico asig_tec ON e.id = asig_tec.equipo_id
+                LEFT JOIN usuarios at2 ON asig_tec.tecnico_id = at2.id
+                LEFT JOIN usuarios jt ON asig_tec.jefe_tecnico_id = jt.id
+                LEFT JOIN usuarios ent ON e.entregado_por = ent.id";
+        
+        $where = [];
+        $params = [];
+        
+        if (!empty($filtros['estado'])) {
+            $where[] = "e.estado = ?";
+            $params[] = $filtros['estado'];
+        }
+        if (!empty($filtros['sucursal_id'])) {
+            $where[] = "e.sucursal_actual_id = ?";
+            $params[] = $filtros['sucursal_id'];
+        }
+        if (!empty($filtros['busqueda'])) {
+            $where[] = "(c.nombre LIKE ? OR c.apellido_paterno LIKE ? OR c.dni LIKE ? OR e.marca LIKE ? OR e.modelo LIKE ? OR e.numero_serie LIKE ?)";
+            $busqueda = '%' . $filtros['busqueda'] . '%';
+            $params[] = $busqueda;
+            $params[] = $busqueda;
+            $params[] = $busqueda;
+            $params[] = $busqueda;
+            $params[] = $busqueda;
+            $params[] = $busqueda;
+        }
+        if (!empty($filtros['fecha_desde'])) {
+            $where[] = "DATE(e.fecha_registro) >= ?";
+            $params[] = $filtros['fecha_desde'];
+        }
+        if (!empty($filtros['fecha_hasta'])) {
+            $where[] = "DATE(e.fecha_registro) <= ?";
+            $params[] = $filtros['fecha_hasta'];
+        }
+        
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(" AND ", $where);
+        }
+        
+        $sql .= " ORDER BY e.fecha_registro DESC";
+        
+        return $this->fetchAll($sql, $params);
+    }
+    
+    public function obtenerTrazabilidadCompleta($equipo_id) {
+        $sql = "SELECT e.*, 
+                c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, c.dni as cliente_dni,
+                CONCAT(r.nombre, ' ', r.apellido_paterno) as recepcionista_nombre,
+                s_actual.nombre as sucursal_actual_nombre
+                FROM equipos e
+                JOIN clientes c ON e.cliente_id = c.id
+                LEFT JOIN usuarios r ON e.recepcionista_id = r.id
+                LEFT JOIN sucursales s_actual ON e.sucursal_actual_id = s_actual.id
+                WHERE e.id = ?";
+        return $this->fetchOne($sql, [$equipo_id]);
+    }
+    
+    public function obtenerTimelineEquipo($equipo_id) {
+        $timeline = [];
+        
+        $sql = "SELECT 'registro' as evento, e.fecha_registro as fecha, 
+                CONCAT(r.nombre, ' ', r.apellido_paterno) as persona_nombre,
+                'Recepcionista' as persona_rol,
+                s.nombre as sucursal_nombre,
+                'Equipo registrado en el sistema' as descripcion
+                FROM equipos e
+                LEFT JOIN usuarios r ON e.recepcionista_id = r.id
+                LEFT JOIN sucursales s ON e.sucursal_origen_id = s.id
+                WHERE e.id = ?";
+        $registro = $this->fetchOne($sql, [$equipo_id]);
+        if ($registro) {
+            $timeline[] = $registro;
+        }
+        
+        $sql = "SELECT 'asignacion_sucursal' as evento, asig.fecha_asignacion as fecha,
+                CONCAT(u.nombre, ' ', u.apellido_paterno) as persona_nombre,
+                'Admin. Sucursal' as persona_rol,
+                CONCAT(s_dest.nombre, ' (desde ', s_orig.nombre, ')') as sucursal_nombre,
+                asig.motivo as descripcion
+                FROM asignaciones_sucursal asig
+                LEFT JOIN usuarios u ON asig.admin_origen_id = u.id
+                LEFT JOIN sucursales s_orig ON asig.sucursal_origen_id = s_orig.id
+                LEFT JOIN sucursales s_dest ON asig.sucursal_destino_id = s_dest.id
+                WHERE asig.equipo_id = ?
+                ORDER BY asig.fecha_asignacion ASC";
+        $asignaciones = $this->fetchAll($sql, [$equipo_id]);
+        foreach ($asignaciones as $asig) {
+            $timeline[] = $asig;
+        }
+        
+        $sql = "SELECT CONCAT('asignacion_tecnico_', at2.id) as evento, at2.fecha_asignacion as fecha,
+                CONCAT(jt.nombre, ' ', jt.apellido_paterno) as persona_nombre,
+                'Jefe Técnico' as persona_rol,
+                s.nombre as sucursal_nombre,
+                CONCAT('Asignado a técnico: ', tec.nombre, ' ', tec.apellido_paterno) as descripcion
+                FROM asignaciones_tecnico at2
+                LEFT JOIN usuarios jt ON at2.jefe_tecnico_id = jt.id
+                LEFT JOIN usuarios tec ON at2.tecnico_id = tec.id
+                LEFT JOIN equipos e ON at2.equipo_id = e.id
+                LEFT JOIN sucursales s ON e.sucursal_actual_id = s.id
+                WHERE at2.equipo_id = ?
+                ORDER BY at2.fecha_asignacion ASC";
+        $asignaciones_tec = $this->fetchAll($sql, [$equipo_id]);
+        foreach ($asignaciones_tec as $asig) {
+            $timeline[] = $asig;
+        }
+        
+        $sql = "SELECT st.accion as evento, st.fecha_registro as fecha,
+                CONCAT(u.nombre, ' ', u.apellido_paterno) as persona_nombre,
+                'Técnico' as persona_rol,
+                s.nombre as sucursal_nombre,
+                st.descripcion as descripcion
+                FROM seguimiento_trabajos st
+                LEFT JOIN usuarios u ON st.tecnico_id = u.id
+                LEFT JOIN equipos e ON st.equipo_id = e.id
+                LEFT JOIN sucursales s ON e.sucursal_actual_id = s.id
+                WHERE st.equipo_id = ?
+                ORDER BY st.fecha_registro ASC";
+        $seguimientos = $this->fetchAll($sql, [$equipo_id]);
+        foreach ($seguimientos as $seg) {
+            $timeline[] = $seg;
+        }
+        
+        $sql = "SELECT 'entrega' as evento, e.fecha_entrega as fecha,
+                CONCAT(u.nombre, ' ', u.apellido_paterno) as persona_nombre,
+                'Recepcionista' as persona_rol,
+                s.nombre as sucursal_nombre,
+                CONCAT('Equipo entregado al cliente. Costo: $', IFNULL(e.costo_final, 0)) as descripcion
+                FROM equipos e
+                LEFT JOIN usuarios u ON e.entregado_por = u.id
+                LEFT JOIN sucursales s ON e.sucursal_actual_id = s.id
+                WHERE e.id = ? AND e.estado = 'entregado' AND e.fecha_entrega IS NOT NULL";
+        $entrega = $this->fetchOne($sql, [$equipo_id]);
+        if ($entrega) {
+            $timeline[] = $entrega;
+        }
+        
+        usort($timeline, function($a, $b) {
+            return strtotime($a['fecha']) - strtotime($b['fecha']);
+        });
+        
+        return $timeline;
+    }
 }

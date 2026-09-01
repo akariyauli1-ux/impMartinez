@@ -184,6 +184,50 @@ class GerenteController extends Controller {
         ]);
     }
     
+    public function trazabilidad() {
+        $filtros = [
+            'estado' => $_GET['estado'] ?? null,
+            'sucursal_id' => $_GET['sucursal'] ?? null,
+            'busqueda' => $_GET['busqueda'] ?? null,
+            'fecha_desde' => $_GET['fecha_desde'] ?? null,
+            'fecha_hasta' => $_GET['fecha_hasta'] ?? null,
+        ];
+        
+        $equipos = $this->equipoModel->obtenerTodosConDetalles($filtros);
+        $sucursales = $this->sucursalModel->obtenerTodas();
+        
+        $this->view('gerente/trazabilidad', [
+            'usuario' => $this->obtenerUsuarioActual(),
+            'equipos' => $equipos,
+            'sucursales' => $sucursales,
+            'filtros' => $filtros
+        ]);
+    }
+    
+    public function trazabilidadDetalle() {
+        $equipo_id = $_GET['id'] ?? null;
+        
+        if (!$equipo_id) {
+            $this->redirect('gerente/trazabilidad');
+            return;
+        }
+        
+        $equipo = $this->equipoModel->obtenerTrazabilidadCompleta($equipo_id);
+        
+        if (!$equipo) {
+            $this->redirect('gerente/trazabilidad');
+            return;
+        }
+        
+        $timeline = $this->equipoModel->obtenerTimelineEquipo($equipo_id);
+        
+        $this->view('gerente/trazabilidad_detalle', [
+            'usuario' => $this->obtenerUsuarioActual(),
+            'equipo' => $equipo,
+            'timeline' => $timeline
+        ]);
+    }
+    
     private function obtenerUsuarioActual() {
         return $this->usuarioModel->obtenerPorId($_SESSION['usuario_id']);
     }

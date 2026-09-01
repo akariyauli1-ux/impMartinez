@@ -34,6 +34,7 @@ $menus = [
     ],
     'gerente' => [
         ['url' => APP_URL . '/public/gerente', 'icon' => '📊', 'label' => 'Dashboard General', 'key' => 'dashboard'],
+        ['url' => APP_URL . '/public/gerente/trazabilidad', 'icon' => '🔍', 'label' => 'Trazabilidad Equipos', 'key' => 'trazabilidad'],
         ['url' => APP_URL . '/public/usuarios', 'icon' => '👥', 'label' => 'Gestión Usuarios', 'key' => 'usuarios'],
         ['url' => APP_URL . '/public/gerente/sucursales', 'icon' => '🏢', 'label' => 'Sucursales', 'key' => 'sucursales'],
         ['url' => APP_URL . '/public/gerente/asistencia', 'icon' => '📅', 'label' => 'Reporte Asistencia', 'key' => 'asistencia'],
