@@ -61,6 +61,9 @@ $router->add('GET', '/tecnico/mis-trabajos', 'TecnicoController', 'misTrabajos')
 $router->add('POST', '/tecnico/actualizar-trabajo', 'TecnicoController', 'actualizarTrabajo');
 $router->add('POST', '/tecnico/confirmar-recibido', 'TecnicoController', 'confirmarRecibido');
 $router->add('POST', '/tecnico/rechazar-trabajo', 'TecnicoController', 'rechazarTrabajo');
+$router->add('POST', '/tecnico/solicitar-componente', 'TecnicoController', 'solicitarComponente');
+$router->add('GET', '/tecnico/obtener-repuestos', 'TecnicoController', 'obtenerRepuestos');
+$router->add('GET', '/tecnico/obtener-costo-equipo', 'TecnicoController', 'obtenerCostoEquipo');
 
 $router->add('GET', '/jefe-tecnico', 'JefeTecnicoController', 'dashboard');
 $router->add('GET', '/jefe-tecnico/asignar-tecnicos', 'JefeTecnicoController', 'asignarTecnicos');
@@ -78,7 +81,20 @@ $router->add('POST', '/almacen/editar-categoria', 'AlmacenController', 'editarCa
 $router->add('POST', '/almacen/eliminar-categoria', 'AlmacenController', 'eliminarCategoria');
 $router->add('GET', '/almacen/pedidos', 'AlmacenController', 'pedidos');
 $router->add('POST', '/almacen/guardar-pedido', 'AlmacenController', 'guardarPedido');
+$router->add('POST', '/almacen/entregar-solicitud', 'AlmacenController', 'entregarSolicitud');
 $router->add('GET', '/almacen/historial', 'AlmacenController', 'historial');
+
+$router->add('GET', '/pedidos', 'PedidoController', 'index');
+$router->add('GET', '/pedidos/nuevo', 'PedidoController', 'nuevo');
+$router->add('POST', '/pedidos/guardar', 'PedidoController', 'guardar');
+$router->add('GET', '/pedidos/historial', 'PedidoController', 'historial');
+$router->add('GET', '/pedidos/almacen', 'PedidoController', 'almacen');
+$router->add('POST', '/pedidos/responder', 'PedidoController', 'responder');
+$router->add('POST', '/pedidos/confirmar-recibido', 'PedidoController', 'confirmarRecibido');
+$router->add('POST', '/pedidos/confirmar-leido', 'PedidoController', 'confirmarLeido');
+$router->add('POST', '/pedidos/entregar-solicitud', 'PedidoController', 'entregarSolicitud');
+$router->add('POST', '/pedidos/confirmar-recibido-solicitud', 'PedidoController', 'confirmarRecibidoSolicitud');
+$router->add('GET', '/pedidos/notificacion', 'PedidoController', 'notificacion');
 
 $router->add('GET', '/gerente', 'GerenteController', 'dashboard');
 $router->add('GET', '/gerente/sucursales', 'GerenteController', 'sucursales');
@@ -96,6 +112,8 @@ $router->add('GET', '/rrhh', 'RRHHController', 'dashboard');
 $router->add('GET', '/rrhh/asistencia', 'RRHHController', 'asistencia');
 $router->add('GET', '/rrhh/inspecciones', 'RRHHController', 'inspecciones');
 $router->add('GET', '/rrhh/productividad', 'RRHHController', 'productividad');
+
+$router->add('GET', '/notificacion/verificar', 'NotificacionController', 'verificar');
 
 $router->add('GET', '/imagen/logo', 'ImagenController', 'logo');
 $router->add('GET', '/imagen/foto-usuario', 'ImagenController', 'fotoUsuario');

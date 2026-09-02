@@ -4,18 +4,24 @@ require_once __DIR__ . '/../Models/Equipo.php';
 require_once __DIR__ . '/../Models/Usuario.php';
 require_once __DIR__ . '/../Models/AsignacionTecnico.php';
 require_once __DIR__ . '/../Models/SeguimientoTrabajo.php';
+require_once __DIR__ . '/../Models/SolicitudComponente.php';
+require_once __DIR__ . '/../Models/Repuesto.php';
 
 class TecnicoController extends Controller {
     private $equipoModel;
     private $usuarioModel;
     private $asignacionTecnicoModel;
     private $seguimientoModel;
+    private $solicitudModel;
+    private $repuestoModel;
     
     public function __construct() {
         $this->equipoModel = new Equipo();
         $this->usuarioModel = new Usuario();
         $this->asignacionTecnicoModel = new AsignacionTecnico();
         $this->seguimientoModel = new SeguimientoTrabajo();
+        $this->solicitudModel = new SolicitudComponente();
+        $this->repuestoModel = new Repuesto();
         $this->verificarSesion();
         $this->verificarRol(['tecnico']);
     }
@@ -41,11 +47,75 @@ class TecnicoController extends Controller {
     public function misTrabajos() {
         $tecnico_id = $_SESSION['usuario_id'];
         $trabajos = $this->equipoModel->obtenerTrabajosTecnico($tecnico_id);
+        $solicitudes_enviadas = $this->solicitudModel->obtenerEnviadasTecnico($tecnico_id);
+        
+        $this->solicitudModel->marcarNotificacionesLeidas($tecnico_id);
         
         $this->view('tecnico/mis_trabajos', [
             'usuario' => $this->obtenerUsuarioActual(),
-            'trabajos' => $trabajos
+            'trabajos' => $trabajos,
+            'solicitudes_enviadas' => $solicitudes_enviadas
         ]);
+    }
+    
+    public function solicitarComponente() {
+        $equipo_id = $_POST['equipo_id'];
+        $repuesto_id = $_POST['repuesto_id'];
+        $cantidad = $_POST['cantidad'];
+        $motivo = $_POST['motivo'] ?? '';
+        
+        $repuesto = $this->repuestoModel->obtenerPorId($repuesto_id);
+        if (!$repuesto) {
+            $this->redirect('tecnico/mis-trabajos');
+            return;
+        }
+        
+        $precio_unitario = $repuesto['precio_unitario'] ?? 0;
+        $total = $precio_unitario * $cantidad;
+        
+        $this->solicitudModel->crear([
+            'equipo_id' => $equipo_id,
+            'tecnico_id' => $_SESSION['usuario_id'],
+            'repuesto_id' => $repuesto_id,
+            'cantidad' => $cantidad,
+            'precio_unitario' => $precio_unitario,
+            'total' => $total,
+            'motivo' => $motivo,
+            'estado' => 'solicitado'
+        ]);
+        
+        $this->solicitudModel->actualizarCostoEquipo($equipo_id);
+        
+        $this->redirect('tecnico/mis-trabajos');
+    }
+    
+    public function obtenerRepuestos() {
+        $sucursal_id = $_SESSION['sucursal_id'];
+        $repuestos = $this->repuestoModel->obtenerPorSucursal($sucursal_id);
+        
+        header('Content-Type: application/json');
+        echo json_encode($repuestos);
+        exit;
+    }
+    
+    public function obtenerCostoEquipo() {
+        $equipo_id = $_GET['equipo_id'] ?? null;
+        
+        if (!$equipo_id) {
+            header('Content-Type: application/json');
+            echo json_encode(['total' => 0, 'solicitudes' => []]);
+            exit;
+        }
+        
+        $total = $this->solicitudModel->obtenerCostoTotalEquipo($equipo_id);
+        $solicitudes = $this->solicitudModel->obtenerPorEquipo($equipo_id);
+        
+        header('Content-Type: application/json');
+        echo json_encode([
+            'total' => $total,
+            'solicitudes' => $solicitudes
+        ]);
+        exit;
     }
     
     public function actualizarTrabajo() {

@@ -6,10 +6,14 @@ $menus = [
         ['url' => APP_URL . '/public/recepcion/mis-registros', 'icon' => '📋', 'label' => 'Mis Registros', 'key' => 'mis_registros'],
         ['url' => APP_URL . '/public/recepcion/equipos-listos', 'icon' => '📦', 'label' => 'Equipos Listos', 'key' => 'equipos_listos'],
         ['url' => APP_URL . '/public/recepcion/historial-entregas', 'icon' => '✅', 'label' => 'Historial Entregas', 'key' => 'historial_entregas'],
+        ['url' => APP_URL . '/public/pedidos', 'icon' => '🛒', 'label' => 'Pedidos Almacen', 'key' => 'pedidos'],
+        ['url' => APP_URL . '/public/pedidos/historial', 'icon' => '📜', 'label' => 'Historial Pedidos', 'key' => 'historial_pedidos'],
     ],
     'tecnico' => [
         ['url' => APP_URL . '/public/tecnico', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
         ['url' => APP_URL . '/public/tecnico/mis-trabajos', 'icon' => '🔧', 'label' => 'Mis Trabajos', 'key' => 'mis_trabajos'],
+        ['url' => APP_URL . '/public/pedidos', 'icon' => '🛒', 'label' => 'Pedidos Almacen', 'key' => 'pedidos'],
+        ['url' => APP_URL . '/public/pedidos/historial', 'icon' => '📜', 'label' => 'Historial Pedidos', 'key' => 'historial_pedidos'],
     ],
     'admin_sucursal' => [
         ['url' => APP_URL . '/public/admin-sucursal', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
@@ -20,16 +24,20 @@ $menus = [
         ['url' => APP_URL . '/public/admin-sucursal/limpieza-local', 'icon' => '🧹', 'label' => 'Limpieza del Local', 'key' => 'limpieza_local'],
         ['url' => APP_URL . '/public/admin-sucursal/reportes', 'icon' => '📈', 'label' => 'Reportes', 'key' => 'reportes'],
         ['url' => APP_URL . '/public/admin-sucursal/entregas', 'icon' => '✅', 'label' => 'Control Entregas', 'key' => 'entregas'],
+        ['url' => APP_URL . '/public/pedidos', 'icon' => '🛒', 'label' => 'Pedidos Almacen', 'key' => 'pedidos'],
+        ['url' => APP_URL . '/public/pedidos/historial', 'icon' => '📜', 'label' => 'Historial Pedidos', 'key' => 'historial_pedidos'],
     ],
     'jefe_tecnico' => [
         ['url' => APP_URL . '/public/jefe-tecnico', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
         ['url' => APP_URL . '/public/jefe-tecnico/asignar-tecnicos', 'icon' => '👷', 'label' => 'Asignar a Técnicos', 'key' => 'asignar'],
         ['url' => APP_URL . '/public/jefe-tecnico/seguimiento', 'icon' => '📋', 'label' => 'Seguimiento', 'key' => 'seguimiento'],
+        ['url' => APP_URL . '/public/pedidos', 'icon' => '🛒', 'label' => 'Pedidos Almacen', 'key' => 'pedidos'],
+        ['url' => APP_URL . '/public/pedidos/historial', 'icon' => '📜', 'label' => 'Historial Pedidos', 'key' => 'historial_pedidos'],
     ],
     'almacenista' => [
         ['url' => APP_URL . '/public/almacen', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
         ['url' => APP_URL . '/public/almacen/inventario', 'icon' => '📦', 'label' => 'Inventario', 'key' => 'inventario'],
-        ['url' => APP_URL . '/public/almacen/pedidos', 'icon' => '📝', 'label' => 'Pedidos', 'key' => 'pedidos'],
+        ['url' => APP_URL . '/public/pedidos/almacen', 'icon' => '📝', 'label' => 'Pedidos', 'key' => 'pedidos'],
         ['url' => APP_URL . '/public/almacen/historial', 'icon' => '📋', 'label' => 'Historial', 'key' => 'historial'],
     ],
     'gerente' => [
@@ -42,6 +50,8 @@ $menus = [
         ['url' => APP_URL . '/public/gerente/tecnicos', 'icon' => '🔧', 'label' => 'Trabajo Técnicos', 'key' => 'tecnicos'],
         ['url' => APP_URL . '/public/gerente/almacen', 'icon' => '📦', 'label' => 'Estado Almacén', 'key' => 'almacen'],
         ['url' => APP_URL . '/public/gerente/administradores', 'icon' => '👔', 'label' => 'Admin. Sucursales', 'key' => 'administradores'],
+        ['url' => APP_URL . '/public/pedidos', 'icon' => '🛒', 'label' => 'Pedidos Almacen', 'key' => 'pedidos'],
+        ['url' => APP_URL . '/public/pedidos/historial', 'icon' => '📜', 'label' => 'Historial Pedidos', 'key' => 'historial_pedidos'],
     ],
     'rrhh' => [
         ['url' => APP_URL . '/public/rrhh', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],

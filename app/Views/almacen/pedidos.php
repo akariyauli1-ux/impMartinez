@@ -1,9 +1,47 @@
 <?php $titulo = 'Pedidos de Repuestos'; ob_start(); ?>
 
+<style>
+.solicitudes-tecnicos {
+    background: #FFF3E0;
+    border: 2px solid #FF9800;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.solicitudes-tecnicos h2 {
+    color: #E65100;
+    margin-bottom: 15px;
+}
+.badge-solicitado {
+    background: #FF9800;
+    color: white;
+}
+.badge-entregado {
+    background: #4CAF50;
+    color: white;
+}
+.btn-entregar {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+}
+.btn-entregar:hover {
+    background: #45a049;
+}
+</style>
+
 <div class="stats-grid">
     <div class="stat-card">
+        <div class="stat-value"><?= count($solicitudes ?? []) ?></div>
+        <div class="stat-label">Solicitudes Técnicos</div>
+    </div>
+    <div class="stat-card">
         <div class="stat-value"><?= count($pedidos ?? []) ?></div>
-        <div class="stat-label">Total Pedidos</div>
+        <div class="stat-label">Pedidos Almacén</div>
     </div>
     <div class="stat-card">
         <div class="stat-value"><?= count($repuestos ?? []) ?></div>
@@ -15,9 +53,81 @@
     </div>
 </div>
 
+<?php if (!empty($solicitudes)): ?>
+<div class="solicitudes-tecnicos">
+    <h2>🔧 Solicitudes de Componentes de Técnicos</h2>
+    <p style="margin-bottom: 15px; color: #666;">Los técnicos han solicitado estos componentes para reparaciones en curso</p>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Técnico</th>
+                    <th>Cliente</th>
+                    <th>Equipo</th>
+                    <th>Repuesto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unit.</th>
+                    <th>Total</th>
+                    <th>Motivo</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($solicitudes as $sol): ?>
+                <tr>
+                    <td><?= date('d/m/Y H:i', strtotime($sol['fecha_solicitud'])) ?></td>
+                    <td><strong><?= htmlspecialchars($sol['tecnico_nombre'] . ' ' . $sol['tecnico_ap']) ?></strong></td>
+                    <td><?= htmlspecialchars($sol['cliente_nombre'] . ' ' . $sol['cliente_ap']) ?></td>
+                    <td>
+                        <strong><?= htmlspecialchars($sol['tipo_equipo']) ?></strong><br>
+                        <small><?= htmlspecialchars($sol['equipo_marca'] . ' ' . $sol['equipo_modelo']) ?></small>
+                    </td>
+                    <td>
+                        <strong><?= htmlspecialchars($sol['repuesto_nombre']) ?></strong><br>
+                        <small><?= htmlspecialchars($sol['repuesto_codigo']) ?></small>
+                    </td>
+                    <td><?= $sol['cantidad'] ?></td>
+                    <td>S/ <?= number_format($sol['precio_unitario'], 2) ?></td>
+                    <td><strong>S/ <?= number_format($sol['total'], 2) ?></strong></td>
+                    <td><small><?= htmlspecialchars($sol['motivo'] ?? 'Sin observaciones') ?></small></td>
+                    <td>
+                        <?php 
+                        $estado_class = 'badge-gris';
+                        $estado_texto = $sol['estado'];
+                        if ($sol['estado'] === 'solicitado') {
+                            $estado_class = 'badge-solicitado';
+                            $estado_texto = 'Solicitado';
+                        } elseif ($sol['estado'] === 'entregado') {
+                            $estado_class = 'badge-entregado';
+                            $estado_texto = 'Entregado';
+                        }
+                        ?>
+                        <span class="badge <?= $estado_class ?>"><?= $estado_texto ?></span>
+                    </td>
+                    <td>
+                        <?php if ($sol['estado'] === 'solicitado'): ?>
+                            <form method="POST" action="<?= APP_URL ?>/public/almacen/entregar-solicitud" style="display: inline;" onsubmit="return confirm('¿Confirmas la entrega de este componente?');">
+                                <input type="hidden" name="solicitud_id" value="<?= $sol['id'] ?>">
+                                <button type="submit" class="btn-entregar">✓ Entregar</button>
+                            </form>
+                        <?php else: ?>
+                            <span style="color: #999;">Completado</span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>
+
 <div class="card">
     <div class="card-header">
-        <h2>Registrar Pedido</h2>
+        <h2>Pedidos de Almacén</h2>
         <button class="btn btn-primary btn-sm" onclick="document.getElementById('modalNuevo').classList.add('active')">+ Nuevo Pedido</button>
     </div>
     

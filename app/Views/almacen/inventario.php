@@ -78,6 +78,7 @@
                     <th>Clave</th>
                     <th>Categoria</th>
                     <th>Stock</th>
+                    <th>Reservado</th>
                     <th>Disp.</th>
                     <th>Precio</th>
                     <th>Solic.</th>
@@ -90,7 +91,7 @@
             <tbody>
                 <?php if (empty($repuestos)): ?>
                 <tr>
-                    <td colspan="13" style="text-align: center; padding: 20px;">No hay repuestos registrados</td>
+                    <td colspan="14" style="text-align: center; padding: 20px;">No hay repuestos registrados</td>
                 </tr>
                 <?php else: ?>
                     <?php foreach ($repuestos as $r): ?>
@@ -101,7 +102,19 @@
                         <td><?= htmlspecialchars($r['clave_producto'] ?? '-') ?></td>
                         <td><?= htmlspecialchars($r['categoria'] ?? '-') ?></td>
                         <td><?= $r['stock'] ?? 0 ?></td>
-                        <td><?= $r['unidades_disponibles'] ?? 0 ?></td>
+                        <td>
+                            <?php $reservado = $r['stock_reservado'] ?? 0; ?>
+                            <span style="<?= $reservado > 0 ? 'color: #E65100; font-weight: 600;' : '' ?>">
+                                <?= $reservado ?>
+                            </span>
+                        </td>
+                        <td>
+                            <?php 
+                            $disponibles = $r['unidades_disponibles'] ?? 0;
+                            $color = $disponibles > 0 ? '#2E7D32' : '#C62828';
+                            ?>
+                            <span style="color: <?= $color ?>; font-weight: 600;"><?= $disponibles ?></span>
+                        </td>
                         <td>S/ <?= number_format($r['precio_unitario'] ?? 0, 2) ?></td>
                         <td><?= $r['solicitudes'] ?? 0 ?></td>
                         <td><?= $r['ventas'] ?? 0 ?></td>
@@ -109,7 +122,7 @@
                         <td>
                             <?php if ($r['descontinuado'] ?? 0): ?>
                                 <span class="badge badge-descontinuado">Descontinuado</span>
-                            <?php elseif (($r['stock'] ?? 0) <= ($r['stock_minimo'] ?? 0)): ?>
+                            <?php elseif (($r['unidades_disponibles'] ?? 0) <= ($r['stock_minimo'] ?? 0)): ?>
                                 <span class="badge badge-rojo">Stock Bajo</span>
                             <?php else: ?>
                                 <span class="badge badge-activo">Activo</span>

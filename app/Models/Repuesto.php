@@ -110,4 +110,45 @@ class Repuesto extends Model {
             return $this->update(['categoria' => ''], "categoria = ?", [$categoria]);
         }
     }
+    
+    public function descontarStockReservado($id, $cantidad) {
+        $repuesto = $this->obtenerPorId($id);
+        if (!$repuesto) return false;
+        
+        $nuevo_stock_reservado = ($repuesto['stock_reservado'] ?? 0) + $cantidad;
+        $unidades_reales = max(0, ($repuesto['unidades_disponibles'] ?? 0) - $cantidad);
+        
+        return $this->update([
+            'stock_reservado' => $nuevo_stock_reservado,
+            'unidades_disponibles' => $unidades_reales
+        ], "id = ?", [$id]);
+    }
+    
+    public function confirmarSalidaInventario($repuesto_id, $cantidad, $usuario_id) {
+        $repuesto = $this->obtenerPorId($repuesto_id);
+        if (!$repuesto) return false;
+        
+        $nuevo_stock = max(0, ($repuesto['stock'] ?? 0) - $cantidad);
+        $nuevo_stock_reservado = max(0, ($repuesto['stock_reservado'] ?? 0) - $cantidad);
+        
+        return $this->update([
+            'stock' => $nuevo_stock,
+            'stock_reservado' => $nuevo_stock_reservado,
+            'movimiento_salida' => ($repuesto['movimiento_salida'] ?? 0) + $cantidad,
+            'solicitudes' => ($repuesto['solicitudes'] ?? 0) + $cantidad
+        ], "id = ?", [$repuesto_id]);
+    }
+    
+    public function devolverStockReservado($id, $cantidad) {
+        $repuesto = $this->obtenerPorId($id);
+        if (!$repuesto) return false;
+        
+        $nuevo_stock_reservado = max(0, ($repuesto['stock_reservado'] ?? 0) - $cantidad);
+        $unidades_reales = ($repuesto['unidades_disponibles'] ?? 0) + $cantidad;
+        
+        return $this->update([
+            'stock_reservado' => $nuevo_stock_reservado,
+            'unidades_disponibles' => $unidades_reales
+        ], "id = ?", [$id]);
+    }
 }

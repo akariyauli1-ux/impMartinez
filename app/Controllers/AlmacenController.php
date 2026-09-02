@@ -6,6 +6,7 @@ require_once __DIR__ . '/../Models/PedidoRepuesto.php';
 require_once __DIR__ . '/../Models/Usuario.php';
 require_once __DIR__ . '/../Models/Sucursal.php';
 require_once __DIR__ . '/../Models/AlmacenAuditoria.php';
+require_once __DIR__ . '/../Models/SolicitudComponente.php';
 
 class AlmacenController extends Controller {
     private $repuestoModel;
@@ -14,6 +15,7 @@ class AlmacenController extends Controller {
     private $usuarioModel;
     private $sucursalModel;
     private $auditoriaModel;
+    private $solicitudModel;
     
     public function __construct() {
         $this->repuestoModel = new Repuesto();
@@ -22,6 +24,7 @@ class AlmacenController extends Controller {
         $this->usuarioModel = new Usuario();
         $this->sucursalModel = new Sucursal();
         $this->auditoriaModel = new AlmacenAuditoria();
+        $this->solicitudModel = new SolicitudComponente();
         $this->verificarSesion();
         $this->verificarRol(['almacenista']);
     }
@@ -151,13 +154,15 @@ class AlmacenController extends Controller {
         $pedidos = $this->pedidoModel->obtenerPorSucursal($sucursal_id);
         $tecnicos = $this->usuarioModel->obtenerTecnicosPorSucursal($sucursal_id);
         $sucursales = $this->sucursalModel->obtenerTodas();
+        $solicitudes = $this->solicitudModel->obtenerTodas();
         
         $this->view('almacen/pedidos', [
             'usuario' => $this->obtenerUsuarioActual(),
             'repuestos' => $repuestos,
             'pedidos' => $pedidos,
             'tecnicos' => $tecnicos,
-            'sucursales' => $sucursales
+            'sucursales' => $sucursales,
+            'solicitudes' => $solicitudes
         ]);
     }
     
@@ -265,6 +270,40 @@ class AlmacenController extends Controller {
             'usuario' => $this->obtenerUsuarioActual(),
             'historial' => $historial
         ]);
+    }
+    
+    public function entregarSolicitud() {
+        $solicitud_id = $_POST['solicitud_id'] ?? null;
+        
+        if (!$solicitud_id) {
+            $this->redirect('almacen/pedidos');
+            return;
+        }
+        
+        $sql = "SELECT sc.*, r.nombre as repuesto_nombre FROM solicitudes_componentes sc JOIN repuestos r ON sc.repuesto_id = r.id WHERE sc.id = ?";
+        $solicitud = $this->solicitudModel->fetchOne($sql, [$solicitud_id]);
+        
+        if (!$solicitud) {
+            $this->redirect('almacen/pedidos');
+            return;
+        }
+        
+        $this->solicitudModel->actualizarEstado($solicitud_id, 'entregado');
+        
+        $this->repuestoModel->actualizarStock($solicitud['repuesto_id'], $solicitud['cantidad'], 'resta');
+        $this->repuestoModel->incrementarSolicitudes($solicitud['repuesto_id'], $solicitud['cantidad']);
+        
+        $this->auditoriaModel->registrar(
+            $_SESSION['usuario_id'],
+            'entregar_solicitud',
+            'solicitudes_componentes',
+            $solicitud_id,
+            'Entregó solicitud de ' . $solicitud['cantidad'] . ' unidad(es) de ' . $solicitud['repuesto_nombre'] . ' al técnico ID: ' . $solicitud['tecnico_id'],
+            null,
+            ['solicitud_id' => $solicitud_id, 'repuesto_id' => $solicitud['repuesto_id'], 'cantidad' => $solicitud['cantidad']]
+        );
+        
+        $this->redirect('almacen/pedidos');
     }
     
     private function obtenerUsuarioActual() {

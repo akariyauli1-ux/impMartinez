@@ -50,6 +50,30 @@ class Equipo extends Model {
         return $this->fetchAll($sql, [$sucursal_id]);
     }
     
+    public function contarTrabajosNuevosParaTecnico($tecnico_id) {
+        $sql = "SELECT COUNT(*) as total FROM asignaciones_tecnico at JOIN equipos e ON at.equipo_id = e.id WHERE at.tecnico_id = ? AND e.estado = 'asignado_sucursal' AND NOT EXISTS (SELECT 1 FROM seguimiento_trabajos st WHERE st.equipo_id = e.id AND st.tecnico_id = ? AND st.accion = 'recibido')";
+        $result = $this->fetchOne($sql, [$tecnico_id, $tecnico_id]);
+        return $result['total'] ?? 0;
+    }
+    
+    public function contarTrabajosPendientesAsignarJefe($sucursal_id) {
+        $sql = "SELECT COUNT(*) as total FROM equipos WHERE sucursal_actual_id = ? AND estado = 'asignado_sucursal' AND id NOT IN (SELECT equipo_id FROM asignaciones_tecnico)";
+        $result = $this->fetchOne($sql, [$sucursal_id]);
+        return $result['total'] ?? 0;
+    }
+    
+    public function contarTrabajosCompletadosParaRecepcion($sucursal_id) {
+        $sql = "SELECT COUNT(*) as total FROM equipos WHERE sucursal_actual_id = ? AND estado = 'completado'";
+        $result = $this->fetchOne($sql, [$sucursal_id]);
+        return $result['total'] ?? 0;
+    }
+    
+    public function contarTrabajosNuevosParaAdmin($sucursal_id) {
+        $sql = "SELECT COUNT(*) as total FROM equipos WHERE sucursal_origen_id = ? AND estado = 'pendiente_asignacion'";
+        $result = $this->fetchOne($sql, [$sucursal_id]);
+        return $result['total'] ?? 0;
+    }
+    
     public function obtenerRegistradosPor($recepcionista_id) {
         $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, s.nombre as sucursal_nombre FROM equipos e JOIN clientes c ON e.cliente_id = c.id LEFT JOIN sucursales s ON e.sucursal_actual_id = s.id WHERE e.recepcionista_id = ? ORDER BY e.fecha_registro DESC";
         return $this->fetchAll($sql, [$recepcionista_id]);
