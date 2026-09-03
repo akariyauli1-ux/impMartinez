@@ -66,6 +66,7 @@ class TecnicoController extends Controller {
         
         $solicitudes_enviadas = $this->solicitudModel->obtenerEnviadasTecnico($tecnico_id);
         $solicitudes_agotadas = $this->solicitudModel->obtenerAgotadasTecnico($tecnico_id);
+        $componentes_pendientes = $this->solicitudModel->contarPendientesTecnico($tecnico_id);
         
         $this->solicitudModel->marcarNotificacionesLeidas($tecnico_id);
         
@@ -74,6 +75,7 @@ class TecnicoController extends Controller {
             'trabajos' => $trabajos,
             'solicitudes_enviadas' => $solicitudes_enviadas,
             'solicitudes_agotadas' => $solicitudes_agotadas,
+            'componentes_pendientes' => $componentes_pendientes,
             'filtros' => $filtros
         ]);
     }

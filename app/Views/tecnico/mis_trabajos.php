@@ -7,6 +7,18 @@
 </div>
 <?php endif; ?>
 
+<?php if ($componentes_pendientes > 0): ?>
+<div style="background: #FFF3E0; border: 2px solid #FF9800; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+    <div style="background: #FF9800; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; font-weight: bold;">
+        <?= $componentes_pendientes ?>
+    </div>
+    <div>
+        <strong style="color: #E65100; font-size: 1.1em;">📦 Esperando <?= $componentes_pendientes ?> componente(s) de Almacén</strong>
+        <p style="color: #BF360C; margin: 5px 0 0 0; font-size: 0.9em;">Tienes solicitudes pendientes de componentes para tus trabajos</p>
+    </div>
+</div>
+<?php endif; ?>
+
 <style>
 .costo-badge {
     background: #2196F3;
