@@ -54,20 +54,11 @@ class AdminSucursalController extends Controller {
     
     public function pendientes() {
         $sucursal_id = $_SESSION['sucursal_id'];
-        $pendientes = $this->equipoModel->obtenerAsignadosSinTecnico($sucursal_id);
-        
-        $this->view('admin_sucursal/pendientes', [
-            'usuario' => $this->obtenerUsuarioActual(),
-            'pendientes' => $pendientes
-        ]);
-    }
-    
-    public function asignar() {
-        $sucursal_id = $_SESSION['sucursal_id'];
+        // Mostrar equipos que están en la sucursal y pueden ser enviados a otras
         $equipos = $this->equipoModel->obtenerPendientesPorSucursal($sucursal_id);
         $sucursales = $this->sucursalModel->obtenerTodas();
         
-        $this->view('admin_sucursal/asignar', [
+        $this->view('admin_sucursal/pendientes', [
             'usuario' => $this->obtenerUsuarioActual(),
             'equipos' => $equipos,
             'sucursales' => $sucursales

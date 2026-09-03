@@ -2,40 +2,69 @@
 
 <div class="card">
     <div class="card-header">
-        <h2>Equipos Pendientes de Asignación a Técnico</h2>
+        <h2>Equipos Pendientes - Asignar a Sucursal</h2>
+        <span class="badge badge-amarillo"><?= count($equipos) ?> equipo(s)</span>
     </div>
     
-    <?php if (empty($pendientes)): ?>
-        <p style="text-align: center; padding: 20px; color: #666;">No hay equipos pendientes de asignación.</p>
+    <?php if (empty($equipos)): ?>
+        <p style="text-align: center; padding: 40px; color: #666;">
+            <span style="font-size: 3em;">📦</span><br><br>
+            No hay equipos pendientes de asignación a sucursal.<br>
+            <small>Todos los equipos han sido asignados correctamente.</small>
+        </p>
     <?php else: ?>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Tipo</th>
-                    <th>Marca/Modelo</th>
-                    <th>Falla</th>
-                    <th>Fecha Registro</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($pendientes as $equipo): ?>
+        <div class="table-container">
+            <table>
+                <thead>
                     <tr>
-                        <td><?= $equipo['id'] ?></td>
-                        <td><?= htmlspecialchars($equipo['cliente_nombre'] . ' ' . $equipo['cliente_ap']) ?></td>
-                        <td><?= ucfirst($equipo['tipo_equipo']) ?></td>
-                        <td><?= htmlspecialchars($equipo['marca'] . ' ' . $equipo['modelo']) ?></td>
-                        <td><?= htmlspecialchars(substr($equipo['descripcion_falla'], 0, 50)) ?>...</td>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Teléfono</th>
+                        <th>Equipo</th>
+                        <th>Falla</th>
+                        <th>Fecha</th>
+                        <th>Asignar a Sucursal</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($equipos as $equipo): ?>
+                    <tr>
+                        <td><strong>ORD-<?= str_pad($equipo['id'], 6, '0', STR_PAD_LEFT) ?></strong></td>
+                        <td>
+                            <strong><?= htmlspecialchars($equipo['cliente_nombre'] . ' ' . $equipo['cliente_ap']) ?></strong>
+                        </td>
+                        <td><?= htmlspecialchars($equipo['cliente_tel'] ?? '-') ?></td>
+                        <td>
+                            <strong><?= ucfirst($equipo['tipo_equipo']) ?></strong><br>
+                            <small><?= htmlspecialchars($equipo['marca'] . ' ' . $equipo['modelo']) ?></small>
+                        </td>
+                        <td>
+                            <small><?= htmlspecialchars(substr($equipo['descripcion_falla'] ?? '', 0, 60)) ?>...</small>
+                        </td>
                         <td><?= date('d/m/Y H:i', strtotime($equipo['fecha_registro'])) ?></td>
                         <td>
-                            <a href="<?= APP_URL ?>/public/admin-sucursal/asignar" class="btn btn-primary btn-sm">Asignar Técnico</a>
+                            <form method="POST" action="<?= APP_URL ?>/public/admin-sucursal/guardar-asignacion" style="display:flex; gap:8px; align-items:center;">
+                                <input type="hidden" name="equipo_id" value="<?= $equipo['id'] ?>">
+                                <select name="sucursal_destino" required style="padding:6px; border:1px solid #ccc; border-radius:4px; min-width:150px;">
+                                    <option value="">-- Seleccionar --</option>
+                                    <?php foreach ($sucursales as $sucursal): ?>
+                                        <option value="<?= $sucursal['id'] ?>" <?= ($sucursal['id'] == $_SESSION['sucursal_id']) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($sucursal['nombre']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                        </td>
+                        <td>
+                                <input type="text" name="motivo" placeholder="Motivo (opcional)" style="padding:6px; border:1px solid #ccc; border-radius:4px; width:120px;">
+                                <button type="submit" class="btn btn-primary btn-sm">Asignar</button>
+                            </form>
                         </td>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     <?php endif; ?>
 </div>
 

@@ -18,7 +18,6 @@ $menus = [
     'admin_sucursal' => [
         ['url' => APP_URL . '/public/admin-sucursal', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
         ['url' => APP_URL . '/public/admin-sucursal/pendientes', 'icon' => '📥', 'label' => 'Equipos Pendientes', 'key' => 'pendientes'],
-        ['url' => APP_URL . '/public/admin-sucursal/asignar', 'icon' => '🔀', 'label' => 'Asignar a Sucursal', 'key' => 'asignar'],
         ['url' => APP_URL . '/public/admin-sucursal/asistencia', 'icon' => '📅', 'label' => 'Asistencia', 'key' => 'asistencia'],
         ['url' => APP_URL . '/public/admin-sucursal/inspecciones', 'icon' => '👔', 'label' => 'Limpieza/Uniforme', 'key' => 'inspecciones'],
         ['url' => APP_URL . '/public/admin-sucursal/limpieza-local', 'icon' => '🧹', 'label' => 'Limpieza del Local', 'key' => 'limpieza_local'],
