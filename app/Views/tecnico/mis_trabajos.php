@@ -476,13 +476,15 @@ foreach ($trabajos as $t) {
                                 <button onclick="confirmarRecibido(<?= $trabajo['id'] ?>)" class="btn btn-success btn-sm">✓ Recibido</button>
                                 <button onclick="abrirModalRechazo(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>')" class="btn btn-danger btn-sm">✗ Rechazar</button>
                             <?php elseif ($trabajo['estado'] === 'recibido'): ?>
-                                <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>')" class="btn btn-primary btn-sm">Iniciar Reparación</button>
+                                <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>', 'recibido')" class="btn btn-primary btn-sm">▶ Iniciar Reparación</button>
+                            <?php elseif ($trabajo['estado'] === 'en_reparacion'): ?>
+                                <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>', 'en_reparacion')" class="btn btn-primary btn-sm">⚙ Actualizar</button>
                             <?php elseif ($trabajo['estado'] === 'pausado'): ?>
-                                <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>')" class="btn btn-warning btn-sm" style="background: #9C27B0;">▶ Reanudar</button>
-                            <?php elseif ($trabajo['estado'] !== 'completado'): ?>
-                                <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>')" class="btn btn-primary btn-sm">Actualizar</button>
+                                <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>', 'pausado')" class="btn btn-warning btn-sm" style="background: #9C27B0;">▶ Reanudar</button>
+                            <?php elseif ($trabajo['estado'] === 'completado'): ?>
+                                <span style="color: #999; font-weight: bold;">✓ Finalizado</span>
                             <?php else: ?>
-                                <span style="color: #999;">Finalizado</span>
+                                <span style="color: #999;">-</span>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -499,26 +501,22 @@ foreach ($trabajos as $t) {
             <h2>Actualizar Trabajo</h2>
             <button class="modal-close" onclick="cerrarModal()">×</button>
         </div>
-        <form method="POST" action="<?= APP_URL ?>/public/tecnico/actualizar-trabajo">
+        <form method="POST" action="<?= APP_URL ?>/public/tecnico/actualizar-trabajo" id="formActualizar">
             <input type="hidden" name="equipo_id" id="equipo_id">
+            <input type="hidden" name="estado_actual" id="estado_actual">
             <div class="form-group">
                 <label>Equipo</label>
                 <input type="text" id="equipo_nombre" readonly>
             </div>
             <div class="form-group">
                 <label>Acción *</label>
-                <select name="accion" required>
+                <select name="accion" id="select_accion" required onchange="validarAccion()">
                     <option value="">Seleccionar...</option>
-                    <option value="inicio_reparacion">Iniciar Reparación</option>
-                    <option value="nota_tecnica">Agregar Nota Técnica</option>
-                    <option value="completado">Marcar como Completado</option>
-                    <option value="pausado">Pausar Trabajo</option>
-                    <option value="reanudar">Reanudar Trabajo (desde pausa)</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>Descripción / Observaciones</label>
-                <textarea name="descripcion" rows="4" placeholder="Describe el trabajo realizado, repuestos utilizados, etc."></textarea>
+            <div class="form-group" id="grupo_descripcion">
+                <label id="label_descripcion">Descripción / Observaciones</label>
+                <textarea name="descripcion" id="textarea_descripcion" rows="4" placeholder="Describe el trabajo realizado, repuestos utilizados, etc."></textarea>
             </div>
             <div style="display: flex; gap: 10px;">
                 <button type="submit" class="btn btn-primary">Actualizar</button>
@@ -616,10 +614,53 @@ foreach ($trabajos as $t) {
 </div>
 
 <script>
-function abrirModalActualizar(equipoId, equipoNombre) {
+function abrirModalActualizar(equipoId, equipoNombre, estadoActual) {
     document.getElementById('equipo_id').value = equipoId;
     document.getElementById('equipo_nombre').value = equipoNombre;
+    document.getElementById('estado_actual').value = estadoActual;
+    
+    // Limpiar selección anterior
+    document.getElementById('select_accion').value = '';
+    document.getElementById('textarea_descripcion').value = '';
+    
+    // Configurar opciones según el estado actual
+    const selectAccion = document.getElementById('select_accion');
+    selectAccion.innerHTML = '<option value="">Seleccionar...</option>';
+    
+    if (estadoActual === 'recibido') {
+        // Solo puede iniciar reparación
+        selectAccion.innerHTML += '<option value="inicio_reparacion">▶ Iniciar Reparación</option>';
+        document.getElementById('label_descripcion').textContent = 'Observaciones (opcional)';
+    } else if (estadoActual === 'en_reparacion') {
+        // Puede agregar nota técnica, pausar o completar
+        selectAccion.innerHTML += '<option value="nota_tecnica">📝 Agregar Nota Técnica</option>';
+        selectAccion.innerHTML += '<option value="pausado">⏸️ Pausar Trabajo</option>';
+        selectAccion.innerHTML += '<option value="completado">✓ Marcar como Completado</option>';
+        document.getElementById('label_descripcion').textContent = 'Descripción / Observaciones';
+    } else if (estadoActual === 'pausado') {
+        // Solo puede reanudar
+        selectAccion.innerHTML += '<option value="reanudar">▶ Reanudar Trabajo</option>';
+        document.getElementById('label_descripcion').textContent = 'Motivo de reanudación (opcional)';
+    }
+    
     document.getElementById('modalActualizar').classList.add('active');
+}
+
+function validarAccion() {
+    const accion = document.getElementById('select_accion').value;
+    const textarea = document.getElementById('textarea_descripcion');
+    const label = document.getElementById('label_descripcion');
+    
+    // Si se selecciona pausar, hacer obligatorio el motivo
+    if (accion === 'pausado') {
+        textarea.setAttribute('required', 'required');
+        textarea.placeholder = 'Indica la razón por la que se pausa el trabajo *';
+        label.innerHTML = 'Motivo de Pausa <span style="color: red;">*</span>';
+    } else {
+        textarea.removeAttribute('required');
+        textarea.placeholder = 'Describe el trabajo realizado, repuestos utilizados, etc.';
+        label.textContent = 'Descripción / Observaciones';
+    }
 }
 
 function cerrarModal() {
