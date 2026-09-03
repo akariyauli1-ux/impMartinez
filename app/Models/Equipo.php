@@ -102,6 +102,29 @@ class Equipo extends Model {
         return $this->fetchAll($sql, [$sucursal_id]);
     }
     
+    public function obtenerEstadosPorSucursalConFiltros($sucursal_id, $filtros = []) {
+        $sql = "SELECT estado, COUNT(*) as cantidad FROM equipos WHERE sucursal_actual_id = ?";
+        $params = [$sucursal_id];
+        
+        if (!empty($filtros['dia'])) {
+            $sql .= " AND DAY(fecha_registro) = ?";
+            $params[] = $filtros['dia'];
+        }
+        
+        if (!empty($filtros['mes'])) {
+            $sql .= " AND MONTH(fecha_registro) = ?";
+            $params[] = $filtros['mes'];
+        }
+        
+        if (!empty($filtros['anio'])) {
+            $sql .= " AND YEAR(fecha_registro) = ?";
+            $params[] = $filtros['anio'];
+        }
+        
+        $sql .= " GROUP BY estado";
+        return $this->fetchAll($sql, $params);
+    }
+    
     public function contarTrabajosNuevosParaTecnico($tecnico_id) {
         $sql = "SELECT COUNT(*) as total FROM asignaciones_tecnico at JOIN equipos e ON at.equipo_id = e.id WHERE at.tecnico_id = ? AND e.estado = 'asignado_sucursal' AND NOT EXISTS (SELECT 1 FROM seguimiento_trabajos st WHERE st.equipo_id = e.id AND st.tecnico_id = ? AND st.accion = 'recibido')";
         $result = $this->fetchOne($sql, [$tecnico_id, $tecnico_id]);

@@ -162,11 +162,25 @@ class AdminSucursalController extends Controller {
     
     public function reportes() {
         $sucursal_id = $_SESSION['sucursal_id'];
-        $reportes = $this->equipoModel->obtenerEstadosPorSucursal($sucursal_id);
+        
+        $filtros = [
+            'dia' => $_GET['dia'] ?? '',
+            'mes' => $_GET['mes'] ?? '',
+            'anio' => $_GET['anio'] ?? ''
+        ];
+        
+        $hay_filtros = !empty($filtros['dia']) || !empty($filtros['mes']) || !empty($filtros['anio']);
+        
+        if ($hay_filtros) {
+            $reportes = $this->equipoModel->obtenerEstadosPorSucursalConFiltros($sucursal_id, $filtros);
+        } else {
+            $reportes = $this->equipoModel->obtenerEstadosPorSucursal($sucursal_id);
+        }
         
         $this->view('admin_sucursal/reportes', [
             'usuario' => $this->obtenerUsuarioActual(),
-            'reportes' => $reportes
+            'reportes' => $reportes,
+            'filtros' => $filtros
         ]);
     }
     
