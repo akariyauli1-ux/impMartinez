@@ -29,7 +29,7 @@ class Equipo extends Model {
                 FROM equipos e 
                 JOIN clientes c ON e.cliente_id = c.id 
                 WHERE e.sucursal_actual_id = ? 
-                AND e.estado IN ('pendiente_asignacion', 'asignado_sucursal') 
+                AND e.estado = 'asignado_sucursal' 
                 AND e.id NOT IN (SELECT equipo_id FROM asignaciones_tecnico) 
                 ORDER BY e.fecha_registro ASC";
         return $this->fetchAll($sql, [$sucursal_id]);
