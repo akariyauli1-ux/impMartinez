@@ -65,6 +65,10 @@ class AdminSucursalController extends Controller {
         ]);
     }
     
+    public function redirigirAsignar() {
+        $this->redirect('admin-sucursal/pendientes');
+    }
+    
     public function guardarAsignacion() {
         $equipo_id = $_POST['equipo_id'];
         $sucursal_destino = $_POST['sucursal_destino'];

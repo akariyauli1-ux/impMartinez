@@ -46,6 +46,7 @@ $router->add('GET', '/consulta-almacen/obtener-repuestos', 'ConsultaAlmacenContr
 
 $router->add('GET', '/admin-sucursal', 'AdminSucursalController', 'dashboard');
 $router->add('GET', '/admin-sucursal/pendientes', 'AdminSucursalController', 'pendientes');
+$router->add('GET', '/admin-sucursal/asignar', 'AdminSucursalController', 'redirigirAsignar');
 $router->add('POST', '/admin-sucursal/guardar-asignacion', 'AdminSucursalController', 'guardarAsignacion');
 $router->add('GET', '/admin-sucursal/asistencia', 'AdminSucursalController', 'asistencia');
 $router->add('POST', '/admin-sucursal/guardar-asistencia', 'AdminSucursalController', 'guardarAsistencia');
