@@ -14,7 +14,13 @@ class Equipo extends Model {
     }
     
     public function obtenerPendientesPorSucursal($sucursal_id) {
-        $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap FROM equipos e JOIN clientes c ON e.cliente_id = c.id WHERE e.sucursal_actual_id = ? AND e.estado IN ('pendiente_asignacion', 'recibido') ORDER BY e.fecha_registro ASC";
+        $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel 
+                FROM equipos e 
+                JOIN clientes c ON e.cliente_id = c.id 
+                WHERE e.sucursal_actual_id = ? 
+                AND e.estado IN ('pendiente_asignacion', 'asignado_sucursal') 
+                AND e.id NOT IN (SELECT equipo_id FROM asignaciones_tecnico WHERE equipo_id IS NOT NULL)
+                ORDER BY e.fecha_registro ASC";
         return $this->fetchAll($sql, [$sucursal_id]);
     }
     
