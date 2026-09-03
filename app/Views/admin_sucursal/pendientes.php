@@ -44,21 +44,29 @@
                         </td>
                         <td><?= date('d/m/Y H:i', strtotime($equipo['fecha_registro'])) ?></td>
                         <td>
-                            <form method="POST" action="<?= APP_URL ?>/public/admin-sucursal/guardar-asignacion" style="display:flex; gap:8px; align-items:center;">
-                                <input type="hidden" name="equipo_id" value="<?= $equipo['id'] ?>">
-                                <select name="sucursal_destino" required style="padding:6px; border:1px solid #ccc; border-radius:4px; min-width:150px;">
-                                    <option value="">-- Seleccionar --</option>
-                                    <?php foreach ($sucursales as $sucursal): ?>
-                                        <option value="<?= $sucursal['id'] ?>" <?= ($sucursal['id'] == $_SESSION['sucursal_id']) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($sucursal['nombre']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                            <?php if ($equipo['estado'] === 'pendiente_asignacion'): ?>
+                                <form method="POST" action="<?= APP_URL ?>/public/admin-sucursal/guardar-asignacion" style="display:flex; gap:8px; align-items:center;">
+                                    <input type="hidden" name="equipo_id" value="<?= $equipo['id'] ?>">
+                                    <select name="sucursal_destino" required style="padding:6px; border:1px solid #ccc; border-radius:4px; min-width:150px;">
+                                        <option value="">-- Seleccionar --</option>
+                                        <?php foreach ($sucursales as $sucursal): ?>
+                                            <option value="<?= $sucursal['id'] ?>" <?= ($sucursal['id'] == $_SESSION['sucursal_id']) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($sucursal['nombre']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                            <?php elseif ($equipo['estado'] === 'asignado_sucursal'): ?>
+                                <span style="color: #2196F3; font-weight: bold;">✓ Ya asignado a sucursal</span>
+                            <?php endif; ?>
                         </td>
                         <td>
+                            <?php if ($equipo['estado'] === 'pendiente_asignacion'): ?>
                                 <input type="text" name="motivo" placeholder="Motivo (opcional)" style="padding:6px; border:1px solid #ccc; border-radius:4px; width:120px;">
                                 <button type="submit" class="btn btn-primary btn-sm">Asignar</button>
-                            </form>
+                                </form>
+                            <?php elseif ($equipo['estado'] === 'asignado_sucursal'): ?>
+                                <span style="color: #666; font-size: 0.9em;">Esperando asignación a técnico</span>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
