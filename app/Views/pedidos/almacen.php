@@ -199,6 +199,86 @@
 </div>
 <?php endif; ?>
 
+<!-- Filtros de Solicitudes -->
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-header" style="background: #E3F2FD;">
+        <h2>&#128269; Filtrar Solicitudes</h2>
+    </div>
+    <div style="padding: 20px;">
+        <form method="GET" action="<?= APP_URL ?>/public/pedidos/almacen">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: end;">
+                <div style="flex: 1; min-width: 120px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Día</label>
+                    <select name="dia" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Todos</option>
+                        <?php for ($i = 1; $i <= 31; $i++): ?>
+                            <option value="<?= $i ?>" <?= ($filtros['dia'] ?? '') == $i ? 'selected' : '' ?>><?= $i ?></option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 120px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Mes</label>
+                    <select name="mes" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Todos</option>
+                        <?php 
+                        $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                        for ($i = 1; $i <= 12; $i++): 
+                        ?>
+                            <option value="<?= $i ?>" <?= ($filtros['mes'] ?? '') == $i ? 'selected' : '' ?>><?= $meses[$i-1] ?></option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 120px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Año</label>
+                    <select name="anio" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Todos</option>
+                        <?php 
+                        $anio_actual = date('Y');
+                        for ($i = $anio_actual; $i >= $anio_actual - 5; $i--): 
+                        ?>
+                            <option value="<?= $i ?>" <?= ($filtros['anio'] ?? '') == $i ? 'selected' : '' ?>><?= $i ?></option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Estado</label>
+                    <select name="estado" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Todos</option>
+                        <option value="solicitado" <?= ($filtros['estado'] ?? '') === 'solicitado' ? 'selected' : '' ?>>Solicitado</option>
+                        <option value="enviado" <?= ($filtros['estado'] ?? '') === 'enviado' ? 'selected' : '' ?>>Enviado</option>
+                        <option value="recibido" <?= ($filtros['estado'] ?? '') === 'recibido' ? 'selected' : '' ?>>Recibido</option>
+                        <option value="agotado" <?= ($filtros['estado'] ?? '') === 'agotado' ? 'selected' : '' ?>>Agotado</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" style="padding: 8px 20px;">Filtrar</button>
+                    <a href="<?= APP_URL ?>/public/pedidos/almacen" class="btn btn-outline" style="padding: 8px 20px;">Limpiar</a>
+                </div>
+            </div>
+        </form>
+        <?php
+        $hay_filtros = !empty($filtros['dia']) || !empty($filtros['mes']) || !empty($filtros['anio']) || !empty($filtros['estado']);
+        if ($hay_filtros):
+        ?>
+        <div style="margin-top: 15px; padding: 10px; background: #FFF3E0; border-left: 4px solid #FF9800; border-radius: 4px;">
+            <strong>&#128269; Filtros activos:</strong>
+            <?php if (!empty($filtros['dia'])): ?>
+                <span style="background: #FF9800; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.85em; margin-left: 5px;">Día: <?= $filtros['dia'] ?></span>
+            <?php endif; ?>
+            <?php if (!empty($filtros['mes'])): ?>
+                <span style="background: #FF9800; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.85em; margin-left: 5px;">Mes: <?= $meses[$filtros['mes']-1] ?></span>
+            <?php endif; ?>
+            <?php if (!empty($filtros['anio'])): ?>
+                <span style="background: #FF9800; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.85em; margin-left: 5px;">Año: <?= $filtros['anio'] ?></span>
+            <?php endif; ?>
+            <?php if (!empty($filtros['estado'])): ?>
+                <span style="background: #FF9800; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.85em; margin-left: 5px;">Estado: <?= ucfirst($filtros['estado']) ?></span>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+    </div>
+</div>
+
 <?php if (!empty($solicitudes)): ?>
 <div class="card" style="border-left: 4px solid #FF9800; margin-bottom: 20px;">
     <div class="card-header" style="background: #FFF3E0;">

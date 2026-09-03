@@ -114,7 +114,22 @@ class PedidoController extends Controller {
         
         require_once __DIR__ . '/../Models/SolicitudComponente.php';
         $solicitudModel = new \SolicitudComponente();
-        $solicitudes = $solicitudModel->obtenerTodas();
+        
+        $filtros = [
+            'dia' => $_GET['dia'] ?? '',
+            'mes' => $_GET['mes'] ?? '',
+            'anio' => $_GET['anio'] ?? '',
+            'estado' => $_GET['estado'] ?? ''
+        ];
+        
+        $hay_filtros = !empty($filtros['dia']) || !empty($filtros['mes']) || !empty($filtros['anio']) || !empty($filtros['estado']);
+        
+        if ($hay_filtros) {
+            $solicitudes = $solicitudModel->obtenerConFiltros($filtros);
+        } else {
+            $solicitudes = $solicitudModel->obtenerConFiltros([], 10);
+        }
+        
         $compras_externas = $solicitudModel->obtenerComprasExternas();
         
         $this->view('pedidos/almacen', [
@@ -123,7 +138,8 @@ class PedidoController extends Controller {
             'todos_pedidos' => $todos,
             'total_pendientes' => $total_pendientes,
             'solicitudes' => $solicitudes,
-            'compras_externas' => $compras_externas
+            'compras_externas' => $compras_externas,
+            'filtros' => $filtros
         ]);
     }
     

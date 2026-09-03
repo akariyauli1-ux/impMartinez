@@ -43,6 +43,51 @@ class SolicitudComponente extends Model {
         return $this->fetchAll($sql);
     }
     
+    public function obtenerConFiltros($filtros = [], $limite = null) {
+        $sql = "SELECT sc.*, 
+                       e.tipo_equipo, e.marca as equipo_marca, e.modelo as equipo_modelo,
+                       r.nombre as repuesto_nombre, r.codigo as repuesto_codigo, r.marca as repuesto_marca, r.unidades_disponibles,
+                       c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap,
+                       t.nombre as tecnico_nombre, t.apellido_paterno as tecnico_ap
+                FROM solicitudes_componentes sc
+                JOIN equipos e ON sc.equipo_id = e.id
+                JOIN repuestos r ON sc.repuesto_id = r.id
+                JOIN clientes c ON e.cliente_id = c.id
+                JOIN usuarios t ON sc.tecnico_id = t.id
+                WHERE 1=1";
+        
+        $params = [];
+        
+        if (!empty($filtros['dia'])) {
+            $sql .= " AND DAY(sc.fecha_solicitud) = ?";
+            $params[] = $filtros['dia'];
+        }
+        
+        if (!empty($filtros['mes'])) {
+            $sql .= " AND MONTH(sc.fecha_solicitud) = ?";
+            $params[] = $filtros['mes'];
+        }
+        
+        if (!empty($filtros['anio'])) {
+            $sql .= " AND YEAR(sc.fecha_solicitud) = ?";
+            $params[] = $filtros['anio'];
+        }
+        
+        if (!empty($filtros['estado'])) {
+            $sql .= " AND sc.estado = ?";
+            $params[] = $filtros['estado'];
+        }
+        
+        $sql .= " ORDER BY sc.fecha_solicitud DESC";
+        
+        if ($limite) {
+            $sql .= " LIMIT ?";
+            $params[] = $limite;
+        }
+        
+        return $this->fetchAll($sql, $params);
+    }
+    
     public function obtenerPendientes() {
         $sql = "SELECT sc.*, 
                        e.tipo_equipo, e.marca as equipo_marca, e.modelo as equipo_modelo,
