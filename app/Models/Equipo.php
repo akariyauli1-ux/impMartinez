@@ -126,6 +126,19 @@ class Equipo extends Model {
         return $result['total'] ?? 0;
     }
     
+    public function obtenerEstadisticasPorTecnico($tecnico_id) {
+        $sql = "SELECT 
+                    COUNT(*) as total,
+                    SUM(CASE WHEN e.estado IN ('recibido', 'en_reparacion') THEN 1 ELSE 0 END) as pendientes,
+                    SUM(CASE WHEN e.estado = 'pausado' THEN 1 ELSE 0 END) as en_pausa,
+                    SUM(CASE WHEN e.estado = 'completado' THEN 1 ELSE 0 END) as completados,
+                    SUM(CASE WHEN e.estado = 'entregado' THEN 1 ELSE 0 END) as entregados
+                FROM asignaciones_tecnico at
+                JOIN equipos e ON at.equipo_id = e.id
+                WHERE at.tecnico_id = ?";
+        return $this->fetchOne($sql, [$tecnico_id]);
+    }
+    
     public function obtenerRegistradosPor($recepcionista_id) {
         $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, s.nombre as sucursal_nombre FROM equipos e JOIN clientes c ON e.cliente_id = c.id LEFT JOIN sucursales s ON e.sucursal_actual_id = s.id WHERE e.recepcionista_id = ? ORDER BY e.fecha_registro DESC";
         return $this->fetchAll($sql, [$recepcionista_id]);

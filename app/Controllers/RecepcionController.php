@@ -149,14 +149,14 @@ class RecepcionController extends Controller {
         
         // Guardar foto del anverso
         if (isset($_FILES['foto_anverso']) && $_FILES['foto_anverso']['error'] === UPLOAD_ERR_OK) {
-            $foto_data = file_get_contents($_FILES['foto_anverso']['tmp_name']);
+            $foto_data = $this->comprimirImagen($_FILES['foto_anverso']['tmp_name']);
             $foto_tipo = $_FILES['foto_anverso']['type'];
             $this->equipoFotoModel->guardar($equipo_id, $foto_data, $foto_tipo, 0, 'anverso');
         }
         
         // Guardar foto del reverso
         if (isset($_FILES['foto_reverso']) && $_FILES['foto_reverso']['error'] === UPLOAD_ERR_OK) {
-            $foto_data = file_get_contents($_FILES['foto_reverso']['tmp_name']);
+            $foto_data = $this->comprimirImagen($_FILES['foto_reverso']['tmp_name']);
             $foto_tipo = $_FILES['foto_reverso']['type'];
             $this->equipoFotoModel->guardar($equipo_id, $foto_data, $foto_tipo, 1, 'reverso');
         }
@@ -405,6 +405,66 @@ class RecepcionController extends Controller {
             'resultado' => $resultado,
             'hash' => $hash
         ]);
+    }
+    
+    private function comprimirImagen($ruta_temporal, $ancho_max = 800, $calidad = 70) {
+        $info = getimagesize($ruta_temporal);
+        if (!$info) {
+            return file_get_contents($ruta_temporal);
+        }
+        
+        $mime = $info['mime'];
+        $ancho_original = $info[0];
+        $alto_original = $info[1];
+        
+        // Calcular nuevas dimensiones
+        if ($ancho_original > $ancho_max) {
+            $ratio = $ancho_max / $ancho_original;
+            $nuevo_ancho = $ancho_max;
+            $nuevo_alto = (int)($alto_original * $ratio);
+        } else {
+            $nuevo_ancho = $ancho_original;
+            $nuevo_alto = $alto_original;
+        }
+        
+        // Crear imagen de destino
+        $imagen_destino = imagecreatetruecolor($nuevo_ancho, $nuevo_alto);
+        
+        // Cargar imagen original según el formato
+        switch ($mime) {
+            case 'image/jpeg':
+            case 'image/jpg':
+                $imagen_origen = imagecreatefromjpeg($ruta_temporal);
+                imagecopyresampled($imagen_destino, $imagen_origen, 0, 0, 0, 0, $nuevo_ancho, $nuevo_alto, $ancho_original, $alto_original);
+                ob_start();
+                imagejpeg($imagen_destino, null, $calidad);
+                $data = ob_get_clean();
+                break;
+            case 'image/png':
+                $imagen_origen = imagecreatefrompng($ruta_temporal);
+                imagealphablending($imagen_destino, false);
+                imagesavealpha($imagen_destino, true);
+                imagecopyresampled($imagen_destino, $imagen_origen, 0, 0, 0, 0, $nuevo_ancho, $nuevo_alto, $ancho_original, $alto_original);
+                ob_start();
+                imagepng($imagen_destino, null, (int)(9 - ($calidad / 100 * 9)));
+                $data = ob_get_clean();
+                break;
+            case 'image/gif':
+                $imagen_origen = imagecreatefromgif($ruta_temporal);
+                imagecopyresampled($imagen_destino, $imagen_origen, 0, 0, 0, 0, $nuevo_ancho, $nuevo_alto, $ancho_original, $alto_original);
+                ob_start();
+                imagegif($imagen_destino);
+                $data = ob_get_clean();
+                break;
+            default:
+                imagedestroy($imagen_destino);
+                return file_get_contents($ruta_temporal);
+        }
+        
+        imagedestroy($imagen_origen);
+        imagedestroy($imagen_destino);
+        
+        return $data;
     }
     
     private function obtenerUsuarioActual() {

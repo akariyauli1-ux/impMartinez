@@ -102,6 +102,9 @@ class GerenteController extends Controller {
             $tecnicos = $this->usuarioModel->obtenerTecnicosPorSucursal($sucursal['id']);
             foreach ($tecnicos as $tecnico) {
                 $tecnico['sucursal_nombre'] = $sucursal['nombre'];
+                // Obtener estadísticas de trabajos del técnico
+                $estadisticas = $this->equipoModel->obtenerEstadisticasPorTecnico($tecnico['id']);
+                $tecnico['estadisticas'] = $estadisticas;
                 $tecnicos_data[] = $tecnico;
             }
         }
