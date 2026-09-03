@@ -172,6 +172,14 @@ class AlmacenController extends Controller {
         $tecnico_id = $_POST['tecnico_id'];
         
         $repuesto = $this->repuestoModel->obtenerPorId($repuesto_id);
+        
+        $disponibles = $repuesto['unidades_disponibles'] ?? 0;
+        if ($disponibles < $cantidad) {
+            $_SESSION['error_pedido'] = 'YA NO HAY DISPONIBLE EN ALMACEN. Stock actual: ' . $disponibles;
+            $this->redirect('almacen/pedidos');
+            return;
+        }
+        
         $precio_unitario = $repuesto['precio_unitario'];
         $total = $precio_unitario * $cantidad;
         
@@ -288,10 +296,18 @@ class AlmacenController extends Controller {
             return;
         }
         
+        $repuesto = $this->repuestoModel->obtenerPorId($solicitud['repuesto_id']);
+        $disponibles = $repuesto['unidades_disponibles'] ?? 0;
+        
+        if ($disponibles < $solicitud['cantidad']) {
+            $_SESSION['error_pedido'] = 'YA NO HAY DISPONIBLE EN ALMACEN para "' . $solicitud['repuesto_nombre'] . '". Stock actual: ' . $disponibles;
+            $this->redirect('almacen/pedidos');
+            return;
+        }
+        
         $this->solicitudModel->actualizarEstado($solicitud_id, 'entregado');
         
-        $this->repuestoModel->actualizarStock($solicitud['repuesto_id'], $solicitud['cantidad'], 'resta');
-        $this->repuestoModel->incrementarSolicitudes($solicitud['repuesto_id'], $solicitud['cantidad']);
+        $this->repuestoModel->confirmarSalidaInventario($solicitud['repuesto_id'], $solicitud['cantidad'], $_SESSION['usuario_id']);
         
         $this->auditoriaModel->registrar(
             $_SESSION['usuario_id'],

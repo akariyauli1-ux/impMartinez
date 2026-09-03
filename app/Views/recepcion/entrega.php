@@ -1,5 +1,52 @@
 <?php $titulo = 'Entrega de Equipo'; ob_start(); ?>
 
+<style>
+.componentes-entrega {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+}
+.componente-fila {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed #ddd;
+}
+.componente-fila:last-child {
+    border-bottom: none;
+}
+.resumen-costos {
+    background: #E3F2FD;
+    border: 2px solid #1565C0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+}
+.resumen-linea {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.95rem;
+}
+.resumen-total {
+    border-top: 2px solid #1565C0;
+    margin-top: 8px;
+    padding-top: 8px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #1565C0;
+}
+.diferencia-positiva {
+    color: #C62828;
+    font-weight: bold;
+}
+.diferencia-negativa {
+    color: #2E7D32;
+    font-weight: bold;
+}
+</style>
+
 <div class="card">
     <div class="card-header">
         <h2>Formulario de Entrega de Equipo</h2>
@@ -31,12 +78,75 @@
                 <div>
                     <strong>Marca/Modelo:</strong> <?= htmlspecialchars($equipo['marca'] . ' ' . $equipo['modelo']) ?>
                 </div>
+                <div>
+                    <strong>Fecha de Registro:</strong> <?= date('d/m/Y H:i', strtotime($equipo['fecha_registro'])) ?>
+                </div>
+                <div>
+                    <strong>Fecha Estimada de Entrega:</strong> 
+                    <?php if (!empty($equipo['fecha_estimada_entrega'])): ?>
+                        <span style="color: #1976d2; font-weight: bold;"><?= date('d/m/Y', strtotime($equipo['fecha_estimada_entrega'])) ?></span>
+                    <?php else: ?>
+                        <span style="color: #999;">No definida</span>
+                    <?php endif; ?>
+                </div>
                 <div style="grid-column: 1 / -1;">
                     <strong>Falla Reportada:</strong><br>
                     <?= htmlspecialchars($equipo['descripcion_falla']) ?>
                 </div>
             </div>
         </div>
+        
+        <!-- Componentes Usados y Costos -->
+        <?php if (!empty($componentes)): ?>
+        <div class="seccion" style="background: #e8f5e9; padding: 20px; margin-bottom: 20px; border-left: 4px solid #4caf50;">
+            <h3 style="margin: 0 0 15px 0; color: #4caf50;">🔧 Componentes Usados en la Reparación</h3>
+            
+            <div class="componentes-entrega">
+                <?php foreach ($componentes as $comp): ?>
+                    <div class="componente-fila">
+                        <div>
+                            <strong><?= htmlspecialchars($comp['repuesto_nombre']) ?></strong>
+                            <?php if (!empty($comp['repuesto_codigo'])): ?>
+                                <br><small style="color: #666;">Código: <?= htmlspecialchars($comp['repuesto_codigo']) ?></small>
+                            <?php endif; ?>
+                        </div>
+                        <div style="text-align: right;">
+                            <strong><?= $comp['cantidad'] ?> x S/ <?= number_format($comp['precio_unitario'], 2) ?></strong>
+                            <br><span style="color: #1565C0; font-weight: bold;">= S/ <?= number_format($comp['total'], 2) ?></span>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            
+            <div class="resumen-costos">
+                <div class="resumen-linea">
+                    <span>Costo Estimado Original:</span>
+                    <span>S/ <?= number_format($equipo['costo_estimado'] ?? 0, 2) ?></span>
+                </div>
+                <div class="resumen-linea">
+                    <span>Costo de Componentes:</span>
+                    <span>S/ <?= number_format($equipo['costo_reparacion'] ?? 0, 2) ?></span>
+                </div>
+                <?php 
+                $costo_estimado = $equipo['costo_estimado'] ?? 0;
+                $costo_reparacion = $equipo['costo_reparacion'] ?? 0;
+                $diferencia = $costo_reparacion - $costo_estimado;
+                if ($diferencia != 0): 
+                ?>
+                <div class="resumen-linea">
+                    <span>Diferencia:</span>
+                    <span class="<?= $diferencia > 0 ? 'diferencia-positiva' : 'diferencia-negativa' ?>">
+                        <?= $diferencia > 0 ? '+' : '' ?>S/ <?= number_format($diferencia, 2) ?>
+                    </span>
+                </div>
+                <?php endif; ?>
+                <div class="resumen-linea resumen-total">
+                    <span>Total Componentes:</span>
+                    <span>S/ <?= number_format($costo_reparacion, 2) ?></span>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
         
         <!-- Ajuste de Precio -->
         <div class="seccion" style="background: #fff3e0; padding: 20px; margin-bottom: 20px; border-left: 4px solid #ff9800;">
@@ -47,10 +157,19 @@
                 <input type="text" id="costo_estimado" value="S/ <?= number_format($equipo['costo_estimado'] ?? 0, 2) ?>" readonly style="background: #f5f5f5;">
             </div>
             
+            <?php if (!empty($componentes)): ?>
+            <div class="form-group">
+                <label for="costo_componentes">Costo de Componentes (calculado):</label>
+                <input type="text" id="costo_componentes" value="S/ <?= number_format($equipo['costo_reparacion'] ?? 0, 2) ?>" readonly style="background: #E8F5E9; color: #2E7D32; font-weight: bold;">
+            </div>
+            <?php endif; ?>
+            
             <div class="form-group">
                 <label for="costo_final">Costo Final de Reparación: *</label>
-                <input type="number" id="costo_final" name="costo_final" step="0.01" min="0" required placeholder="Ingrese el costo final">
-                <small style="color: #666;">Puede ajustar el precio según el trabajo realizado</small>
+                <input type="number" id="costo_final" name="costo_final" step="0.01" min="0" required 
+                       value="<?= number_format($equipo['costo_reparacion'] ?? 0, 2, '.', '') ?>" 
+                       placeholder="Ingrese el costo final">
+                <small style="color: #666;">Puede ajustar el precio según el trabajo realizado. Se sugiere el costo de componentes como base.</small>
             </div>
         </div>
         

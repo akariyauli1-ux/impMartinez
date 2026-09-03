@@ -87,7 +87,10 @@
             
             <div class="form-group">
                 <label for="password">Contraseña</label>
-                <input type="password" id="password" name="password" placeholder="Ingrese su contraseña" required>
+                <div style="position: relative;">
+                    <input type="password" id="password" name="password" placeholder="Ingrese su contraseña" required style="padding-right: 45px;">
+                    <button type="button" id="toggle-password" onclick="togglePassword()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #666; padding: 5px;" title="Mostrar/Ocultar contraseña">👁</button>
+                </div>
             </div>
             
             <div class="form-group">
@@ -102,5 +105,18 @@
             <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
         </form>
     </div>
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const btn = document.getElementById('toggle-password');
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁';
+            }
+        }
+    </script>
 </body>
 </html>

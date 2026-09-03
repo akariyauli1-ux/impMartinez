@@ -19,13 +19,65 @@ class Equipo extends Model {
     }
     
     public function obtenerAsignadosSinTecnico($sucursal_id) {
-        $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap FROM equipos e JOIN clientes c ON e.cliente_id = c.id WHERE e.sucursal_actual_id = ? AND e.estado = 'asignado_sucursal' AND e.id NOT IN (SELECT equipo_id FROM asignaciones_tecnico) ORDER BY e.fecha_registro ASC";
+        $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel 
+                FROM equipos e 
+                JOIN clientes c ON e.cliente_id = c.id 
+                WHERE e.sucursal_actual_id = ? 
+                AND e.estado IN ('pendiente_asignacion', 'asignado_sucursal') 
+                AND e.id NOT IN (SELECT equipo_id FROM asignaciones_tecnico) 
+                ORDER BY e.fecha_registro ASC";
         return $this->fetchAll($sql, [$sucursal_id]);
     }
     
     public function obtenerTrabajosTecnico($tecnico_id) {
         $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, at.fecha_asignacion FROM equipos e JOIN clientes c ON e.cliente_id = c.id JOIN asignaciones_tecnico at ON e.id = at.equipo_id WHERE at.tecnico_id = ? AND e.estado NOT IN ('entregado') ORDER BY e.fecha_registro DESC";
         return $this->fetchAll($sql, [$tecnico_id]);
+    }
+    
+    public function obtenerTrabajosTecnicoConFiltros($tecnico_id, $filtros = []) {
+        $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, at.fecha_asignacion 
+                FROM equipos e 
+                JOIN clientes c ON e.cliente_id = c.id 
+                JOIN asignaciones_tecnico at ON e.id = at.equipo_id 
+                WHERE at.tecnico_id = ?";
+        
+        $params = [$tecnico_id];
+        
+        // Filtro por estado
+        if (!empty($filtros['estado'])) {
+            if ($filtros['estado'] === 'todos') {
+                // Mostrar todos incluyendo entregados
+            } elseif ($filtros['estado'] === 'activos') {
+                $sql .= " AND e.estado NOT IN ('entregado')";
+            } else {
+                $sql .= " AND e.estado = ?";
+                $params[] = $filtros['estado'];
+            }
+        } else {
+            $sql .= " AND e.estado NOT IN ('entregado')";
+        }
+        
+        // Filtro por día
+        if (!empty($filtros['dia'])) {
+            $sql .= " AND DAY(at.fecha_asignacion) = ?";
+            $params[] = $filtros['dia'];
+        }
+        
+        // Filtro por mes
+        if (!empty($filtros['mes'])) {
+            $sql .= " AND MONTH(at.fecha_asignacion) = ?";
+            $params[] = $filtros['mes'];
+        }
+        
+        // Filtro por año
+        if (!empty($filtros['anio'])) {
+            $sql .= " AND YEAR(at.fecha_asignacion) = ?";
+            $params[] = $filtros['anio'];
+        }
+        
+        $sql .= " ORDER BY at.fecha_asignacion DESC";
+        
+        return $this->fetchAll($sql, $params);
     }
     
     public function obtenerHistorial($equipo_id, $tecnico_id = null) {
@@ -102,8 +154,21 @@ class Equipo extends Model {
     }
     
     public function obtenerCompletadosPorSucursal($sucursal_id) {
-        $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, c.dni as cliente_dni FROM equipos e JOIN clientes c ON e.cliente_id = c.id WHERE e.sucursal_actual_id = ? AND e.estado = 'completado' ORDER BY e.fecha_registro DESC";
+        $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, c.dni as cliente_dni 
+                FROM equipos e 
+                JOIN clientes c ON e.cliente_id = c.id 
+                WHERE e.sucursal_actual_id = ? AND e.estado = 'completado' 
+                ORDER BY COALESCE(e.fecha_estimada_entrega, e.fecha_registro) ASC";
         return $this->fetchAll($sql, [$sucursal_id]);
+    }
+    
+    public function obtenerComponentesPorEquipo($equipo_id) {
+        $sql = "SELECT sc.*, r.nombre as repuesto_nombre, r.codigo as repuesto_codigo
+                FROM solicitudes_componentes sc
+                JOIN repuestos r ON sc.repuesto_id = r.id
+                WHERE sc.equipo_id = ? AND sc.estado = 'recibido'
+                ORDER BY sc.fecha_solicitud ASC";
+        return $this->fetchAll($sql, [$equipo_id]);
     }
     
     public function obtenerEntregadosPorSucursal($sucursal_id) {

@@ -97,25 +97,25 @@
 }
 
 .firma-container {
-    margin: 30px 0;
+    margin: 15px 0;
     text-align: center;
 }
 
 .firma-container img {
-    max-width: 400px;
+    max-width: 200px;
     border: 1px solid #ddd;
-    padding: 10px;
+    padding: 5px;
     background: white;
 }
 
 .firma-linea {
-    margin-top: 10px;
+    margin-top: 5px;
     border-top: 1px solid #333;
-    width: 300px;
+    width: 200px;
     margin-left: auto;
     margin-right: auto;
-    padding-top: 5px;
-    font-size: 12px;
+    padding-top: 3px;
+    font-size: 10px;
 }
 
 .costo-total {
@@ -184,19 +184,20 @@
 
 <div id="recibo">
     <!-- Cabecera del Recibo -->
-    <div class="recibo-header">
+    <div class="recibo-header" style="display: flex; justify-content: space-between; align-items: center; text-align: left;">
+        <div style="text-align: left;">
+            <h1><?= htmlspecialchars(APP_NAME) ?></h1>
+            <p><strong><?= htmlspecialchars($sucursal['nombre']) ?></strong></p>
+            <p><?= htmlspecialchars($sucursal['direccion']) ?></p>
+            <p>Tel: <?= htmlspecialchars($sucursal['telefono']) ?></p>
+        </div>
         <?php 
         $sucursalModel = new \Sucursal();
         $logo_data = $sucursalModel->obtenerLogoEmpresa();
         if ($logo_data && file_exists(__DIR__ . '/../../../uploads/logos/' . $logo_data)): 
         ?>
-            <img src="<?= APP_URL ?>/uploads/logos/<?= $logo_data ?>" alt="Logo Empresa">
+            <img src="<?= APP_URL ?>/uploads/logos/<?= $logo_data ?>" alt="Logo Empresa" style="max-width: 100px; max-height: 80px;">
         <?php endif; ?>
-        
-        <h1><?= htmlspecialchars(APP_NAME) ?></h1>
-        <p><strong><?= htmlspecialchars($sucursal['nombre']) ?></strong></p>
-        <p><?= htmlspecialchars($sucursal['direccion']) ?></p>
-        <p>Tel: <?= htmlspecialchars($sucursal['telefono']) ?></p>
     </div>
     
     <!-- Número de Orden -->
@@ -207,59 +208,67 @@
         </span>
     </div>
     
-    <!-- Datos del Cliente -->
-    <div class="seccion">
-        <h3>👤 Datos del Cliente</h3>
-        <div class="datos-grid">
-            <div class="dato-item">
-                <strong>Nombre:</strong> <?= htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido_paterno'] . ' ' . $cliente['apellido_materno']) ?>
-            </div>
-            <div class="dato-item">
-                <strong>DNI:</strong> <?= htmlspecialchars($cliente['dni'] ?? 'No especificado') ?>
-            </div>
-            <div class="dato-item">
-                <strong>Teléfono:</strong> <?= htmlspecialchars($cliente['telefono']) ?>
-            </div>
-            <div class="dato-item">
-                <strong>Email:</strong> <?= htmlspecialchars($cliente['email'] ?? 'No especificado') ?>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Datos del Equipo -->
-    <div class="seccion">
-        <h3>📱 Datos del Equipo</h3>
-        <div class="datos-grid">
-            <div class="dato-item">
-                <strong>Tipo:</strong> <?= htmlspecialchars(ucfirst($equipo['tipo_equipo'])) ?>
-            </div>
-            <div class="dato-item">
-                <strong>Marca:</strong> <?= htmlspecialchars($equipo['marca']) ?>
-            </div>
-            <div class="dato-item">
-                <strong>Modelo:</strong> <?= htmlspecialchars($equipo['modelo'] ?? 'No especificado') ?>
-            </div>
-            <div class="dato-item">
-                <strong>N° Serie:</strong> <?= htmlspecialchars($equipo['numero_serie'] ?? 'No especificado') ?>
-            </div>
-            <div class="dato-item" style="grid-column: 1 / -1;">
-                <strong>Falla Reportada:</strong><br>
-                <?= htmlspecialchars($equipo['descripcion_falla']) ?>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Costo de Reparación -->
-    <div class="costo-total">
-        💰 COSTO FINAL DE REPARACIÓN: S/ <?= number_format($equipo['costo_final'], 2) ?>
-    </div>
-    
-    <?php if ($equipo['costo_estimado'] && $equipo['costo_estimado'] != $equipo['costo_final']): ?>
-    <div class="seccion" style="background: #fff3e0; border-left-color: #ff9800;">
-        <p><strong>Costo Estimado Original:</strong> S/ <?= number_format($equipo['costo_estimado'], 2) ?></p>
-        <p><strong>Diferencia:</strong> S/ <?= number_format($equipo['costo_final'] - $equipo['costo_estimado'], 2) ?></p>
+    <?php if (!empty($equipo['fecha_estimada_entrega'])): ?>
+    <div style="background: #e3f2fd; padding: 10px; margin: 10px 0; border-left: 4px solid #2196f3; border-radius: 4px;">
+        <strong>📅 Fecha Estimada de Entrega:</strong> <?= date('d/m/Y', strtotime($equipo['fecha_estimada_entrega'])) ?>
+        <?php 
+        $fecha_estimada = strtotime($equipo['fecha_estimada_entrega']);
+        $fecha_entrega = strtotime($equipo['fecha_entrega']);
+        $diferencia = floor(($fecha_entrega - $fecha_estimada) / (60 * 60 * 24));
+        if ($diferencia > 0): ?>
+            <span style="color: #d32f2f; margin-left: 10px;">(Entregado <?= $diferencia ?> día(s) después de la fecha estimada)</span>
+        <?php elseif ($diferencia < 0): ?>
+            <span style="color: #388e3c; margin-left: 10px;">(Entregado <?= abs($diferencia) ?> día(s) antes de la fecha estimada)</span>
+        <?php else: ?>
+            <span style="color: #388e3c; margin-left: 10px;">(Entregado en la fecha estimada)</span>
+        <?php endif; ?>
     </div>
     <?php endif; ?>
+    
+    <!-- Datos del Cliente y Equipo en columnas -->
+    <div style="display: flex; gap: 15px; margin: 15px 0;">
+        <!-- Datos del Cliente (Izquierda) -->
+        <div class="seccion" style="flex: 1; margin: 0;">
+            <h3>👤 Datos del Cliente</h3>
+            <div class="datos-grid">
+                <div class="dato-item">
+                    <strong>Nombre:</strong> <?= htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido_paterno'] . ' ' . $cliente['apellido_materno']) ?>
+                </div>
+                <div class="dato-item">
+                    <strong>DNI:</strong> <?= htmlspecialchars($cliente['dni'] ?? 'No especificado') ?>
+                </div>
+                <div class="dato-item">
+                    <strong>Teléfono:</strong> <?= htmlspecialchars($cliente['telefono']) ?>
+                </div>
+                <div class="dato-item">
+                    <strong>Email:</strong> <?= htmlspecialchars($cliente['email'] ?? 'No especificado') ?>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Datos del Equipo (Derecha) -->
+        <div class="seccion" style="flex: 1; margin: 0;">
+            <h3>📱 Datos del Equipo</h3>
+            <div class="datos-grid">
+                <div class="dato-item">
+                    <strong>Tipo:</strong> <?= htmlspecialchars(ucfirst($equipo['tipo_equipo'])) ?>
+                </div>
+                <div class="dato-item">
+                    <strong>Marca:</strong> <?= htmlspecialchars($equipo['marca']) ?>
+                </div>
+                <div class="dato-item">
+                    <strong>Modelo:</strong> <?= htmlspecialchars($equipo['modelo'] ?? 'No especificado') ?>
+                </div>
+                <div class="dato-item">
+                    <strong>N° Serie:</strong> <?= htmlspecialchars($equipo['numero_serie'] ?? 'No especificado') ?>
+                </div>
+                <div class="dato-item" style="grid-column: 1 / -1;">
+                    <strong>Falla Reportada:</strong><br>
+                    <?= htmlspecialchars($equipo['descripcion_falla']) ?>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- Fotos del Equipo -->
     <?php if (!empty($fotos)): ?>
@@ -276,32 +285,85 @@
     </div>
     <?php endif; ?>
     
-    <!-- Firma de Recepción -->
-    <?php if ($equipo['firma_digital']): ?>
-    <div class="firma-container">
-        <h3 style="text-align: center; margin-bottom: 20px; color: #2196f3;">✍️ Firma de Recepción del Equipo</h3>
-        <img src="<?= $equipo['firma_digital'] ?>" alt="Firma de Recepción">
-        <div class="firma-linea">
-            <?= htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido_paterno']) ?><br>
-            <small>Firma al momento de recepción</small><br>
-            <small>Fecha: <?= date('d/m/Y H:i', strtotime($equipo['fecha_registro'])) ?></small>
-        </div>
+    <!-- Componentes Usados -->
+    <?php if (!empty($componentes)): ?>
+    <div class="seccion" style="background: #e8f5e9; border-left-color: #4caf50;">
+        <h3>🔧 Componentes Usados en la Reparación</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
+            <thead>
+                <tr style="background: #c8e6c9;">
+                    <th style="padding: 8px; text-align: left; border: 1px solid #a5d6a7;">Componente</th>
+                    <th style="padding: 8px; text-align: center; border: 1px solid #a5d6a7;">Cant.</th>
+                    <th style="padding: 8px; text-align: right; border: 1px solid #a5d6a7;">P. Unit.</th>
+                    <th style="padding: 8px; text-align: right; border: 1px solid #a5d6a7;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($componentes as $comp): ?>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">
+                        <strong><?= htmlspecialchars($comp['repuesto_nombre']) ?></strong>
+                        <?php if (!empty($comp['repuesto_codigo'])): ?>
+                            <br><small style="color: #666;">Cod: <?= htmlspecialchars($comp['repuesto_codigo']) ?></small>
+                        <?php endif; ?>
+                    </td>
+                    <td style="padding: 8px; text-align: center; border: 1px solid #ddd;"><?= $comp['cantidad'] ?></td>
+                    <td style="padding: 8px; text-align: right; border: 1px solid #ddd;">S/ <?= number_format($comp['precio_unitario'], 2) ?></td>
+                    <td style="padding: 8px; text-align: right; border: 1px solid #ddd; font-weight: bold;">S/ <?= number_format($comp['total'], 2) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+            <tfoot>
+                <tr style="background: #c8e6c9; font-weight: bold;">
+                    <td colspan="3" style="padding: 8px; text-align: right; border: 1px solid #a5d6a7;">Total Componentes:</td>
+                    <td style="padding: 8px; text-align: right; border: 1px solid #a5d6a7;">S/ <?= number_format($equipo['costo_reparacion'] ?? 0, 2) ?></td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
     <?php endif; ?>
     
-    <!-- Firma de Entrega -->
-    <?php if ($equipo['firma_entrega']): ?>
-    <div class="firma-container">
-        <h3 style="text-align: center; margin-bottom: 20px; color: #4caf50;">✍️ Firma de Conformidad de Entrega</h3>
-        <img src="<?= $equipo['firma_entrega'] ?>" alt="Firma de Entrega">
-        <div class="firma-linea">
-            <?= htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido_paterno']) ?><br>
-            <small>Cliente - DNI: <?= htmlspecialchars($cliente['dni'] ?? 'No especificado') ?></small><br>
-            <small>Firma al momento de entrega</small><br>
-            <small>Fecha: <?= date('d/m/Y H:i', strtotime($equipo['fecha_entrega'])) ?></small>
-        </div>
+    <!-- Costo de Reparación -->
+    <div class="costo-total">
+        💰 COSTO FINAL DE REPARACIÓN: S/ <?= number_format($equipo['costo_final'], 2) ?>
+    </div>
+    
+    <?php if ($equipo['costo_estimado'] && $equipo['costo_estimado'] != $equipo['costo_final']): ?>
+    <div class="seccion" style="background: #fff3e0; border-left-color: #ff9800;">
+        <p><strong>Costo Estimado Original:</strong> S/ <?= number_format($equipo['costo_estimado'], 2) ?></p>
+        <?php if (!empty($componentes)): ?>
+        <p><strong>Costo de Componentes:</strong> S/ <?= number_format($equipo['costo_reparacion'] ?? 0, 2) ?></p>
+        <?php endif; ?>
+        <p><strong>Diferencia:</strong> S/ <?= number_format($equipo['costo_final'] - $equipo['costo_estimado'], 2) ?></p>
     </div>
     <?php endif; ?>
+    
+    <!-- Firmas lado a lado -->
+    <div style="display: flex; gap: 20px; margin: 15px 0;">
+        <!-- Firma de Recepción (Izquierda) -->
+        <?php if ($equipo['firma_digital']): ?>
+        <div class="firma-container" style="flex: 1;">
+            <h3 style="text-align: center; margin-bottom: 10px; color: #2196f3; font-size: 14px;">✍️ Firma de Recepción</h3>
+            <img src="<?= $equipo['firma_digital'] ?>" alt="Firma de Recepción">
+            <div class="firma-linea">
+                <?= htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido_paterno']) ?><br>
+                <small><?= date('d/m/Y H:i', strtotime($equipo['fecha_registro'])) ?></small>
+            </div>
+        </div>
+        <?php endif; ?>
+        
+        <!-- Firma de Conformidad (Derecha) -->
+        <?php if ($equipo['firma_entrega']): ?>
+        <div class="firma-container" style="flex: 1;">
+            <h3 style="text-align: center; margin-bottom: 10px; color: #4caf50; font-size: 14px;">✍️ Firma de Conformidad</h3>
+            <img src="<?= $equipo['firma_entrega'] ?>" alt="Firma de Entrega">
+            <div class="firma-linea">
+                <?= htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido_paterno']) ?><br>
+                <small>DNI: <?= htmlspecialchars($cliente['dni'] ?? 'N/A') ?> | <?= date('d/m/Y H:i', strtotime($equipo['fecha_entrega'])) ?></small>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
     
     <!-- Datos del Personal -->
     <div class="seccion">
@@ -319,11 +381,22 @@
     </div>
     
     <!-- Footer -->
-    <div class="footer-recibo">
+    <div class="footer-recibo" style="position: relative; min-height: 100px;">
         <p>Este documento es un comprobante de entrega del equipo reparado.</p>
         <p>El cliente firma conforme con la reparación realizada y el costo final indicado.</p>
         <p><strong><?= htmlspecialchars(APP_NAME) ?></strong> - <?= htmlspecialchars($sucursal['nombre']) ?></p>
         <p>Generado el <?= date('d/m/Y H:i:s') ?></p>
+        
+        <?php if (!empty($equipo['hash_seguridad'])): ?>
+        <?php 
+        $url_verificacion = APP_URL . '/public/recepcion/verificar-entrega?hash=' . urlencode($equipo['hash_seguridad']);
+        $qr_url = 'https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' . urlencode($url_verificacion) . '&color=9c27b0&bgcolor=ffffff&margin=4';
+        ?>
+        <div style="position: absolute; right: 20px; bottom: 15px; text-align: center;">
+            <img src="<?= $qr_url ?>" alt="QR Seguridad" style="border: 2px solid #9c27b0; border-radius: 4px; width: 70px; height: 70px;">
+            <p style="font-size: 8px; color: #9c27b0; margin-top: 3px; font-weight: bold;">🔒 Verificar autenticidad</p>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

@@ -1,4 +1,4 @@
-<?php $titulo = 'Mis Pedidos de Almacen'; ob_start(); ?>
+<?php $titulo = 'Ventas'; ob_start(); ?>
 
 <style>
 .alerta-pendiente {
@@ -174,6 +174,9 @@
                     <strong>Cantidad solicitada:</strong> <?= $pc['cantidad'] ?><br>
                     <strong>Respondido por:</strong> <?= htmlspecialchars(($pc['respondido_nombre'] ?? '') . ' ' . ($pc['respondido_ap'] ?? '')) ?><br>
                     <strong>Fecha respuesta:</strong> <?= date('d/m/Y H:i', strtotime($pc['fecha_respuesta'])) ?>
+                    <?php if ($pc['estado'] === 'stock_agotado'): ?>
+                        <br><strong style="color: #C62828;">YA NO HAY DISPONIBLE EN ALMACEN</strong>
+                    <?php endif; ?>
                     <?php if (!empty($pc['respuesta_texto'])): ?>
                         <br><strong>Nota:</strong> <?= htmlspecialchars($pc['respuesta_texto']) ?>
                     <?php endif; ?>
@@ -203,8 +206,8 @@
 
 <div class="card">
     <div class="card-header">
-        <h2>Mis Pedidos</h2>
-        <a href="<?= APP_URL ?>/public/pedidos/nuevo" class="btn btn-primary btn-sm">+ Nuevo Pedido</a>
+        <h2>Mis Ventas</h2>
+        <a href="<?= APP_URL ?>/public/pedidos/nuevo" class="btn btn-primary btn-sm">+ Nueva Venta</a>
     </div>
     <div class="table-container">
         <table>
@@ -222,7 +225,7 @@
                 <?php if (empty($mis_pedidos)): ?>
                 <tr>
                     <td colspan="6" style="text-align: center; padding: 30px; color: var(--gris);">
-                        No tienes pedidos registrados
+                        No tienes ventas registradas
                     </td>
                 </tr>
                 <?php else: ?>
@@ -258,13 +261,15 @@
                                 <?= $estado_labels[$mp['estado']] ?? $mp['estado'] ?>
                             </span>
                             <?php if ($mp['estado'] === 'solicitado'): ?>
-                                <div style="font-size: 0.7rem; color: var(--gris); margin-top: 2px;">Esperando respuesta</div>
+                                <div style="font-size: 0.7rem; color: var(--gris); margin-top: 2px;">Pendiente de procesar</div>
+                            <?php elseif ($mp['estado'] === 'stock_agotado'): ?>
+                                <div style="font-size: 0.7rem; color: #C62828; margin-top: 2px; font-weight: 600;">YA NO HAY DISPONIBLE EN ALMACEN</div>
                             <?php elseif ($mp['estado'] === 'confirmado'): ?>
                                 <div style="font-size: 0.7rem; color: #1B5E20; margin-top: 2px;">
                                     <?= !empty($mp['fecha_confirmacion']) ? date('d/m/Y H:i', strtotime($mp['fecha_confirmacion'])) : '' ?>
                                 </div>
                             <?php elseif (in_array($mp['estado'], ['enviando', 'no_existe', 'stock_agotado']) && !$mp['confirmado']): ?>
-                                <div style="font-size: 0.7rem; color: #E65100; margin-top: 2px;">Pendiente confirmar</div>
+                                <div style="font-size: 0.7rem; color: #E65100; margin-top: 2px;">Pendiente confirmar recepción</div>
                             <?php endif; ?>
                         </td>
                         <td>

@@ -1,4 +1,4 @@
-<?php $titulo = 'Historial de Pedidos'; ob_start(); ?>
+<?php $titulo = 'Historial de Ventas'; ob_start(); ?>
 
 <style>
 .estado-badge {
@@ -132,7 +132,7 @@
     ?>
     <div class="stat-card">
         <div class="stat-value"><?= $total ?></div>
-        <div class="stat-label">Total Pedidos</div>
+        <div class="stat-label">Total Ventas</div>
     </div>
     <div class="stat-card">
         <div class="stat-value" style="color: #E65100;"><?= $por_estado['solicitado'] ?? 0 ?></div>
@@ -187,14 +187,14 @@
 
 <div class="card">
     <div class="card-header">
-        <h2>Todos Mis Pedidos</h2>
+        <h2>Todas Mis Ventas</h2>
         <span style="color: var(--gris); font-size: 0.9rem;"><?= count($mis_pedidos) ?> registro(s)</span>
     </div>
     
     <?php if (empty($mis_pedidos)): ?>
         <div style="padding: 40px; text-align: center; color: var(--gris);">
-            <p style="font-size: 1.1rem; margin-bottom: 10px;">No tienes pedidos registrados</p>
-            <a href="<?= APP_URL ?>/public/pedidos/nuevo" class="btn btn-primary">Hacer Nuevo Pedido</a>
+            <p style="font-size: 1.1rem; margin-bottom: 10px;">No tienes ventas registradas</p>
+            <a href="<?= APP_URL ?>/public/pedidos/nuevo" class="btn btn-primary">Registrar Nueva Venta</a>
         </div>
     <?php else: ?>
         <div style="padding: 20px;">

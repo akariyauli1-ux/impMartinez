@@ -111,9 +111,18 @@
                         <td>
                             <?php 
                             $disponibles = $r['unidades_disponibles'] ?? 0;
-                            $color = $disponibles > 0 ? '#2E7D32' : '#C62828';
+                            if ($disponibles <= 0) {
+                                $color = '#C62828';
+                                $texto = 'AGOTADO';
+                            } elseif ($disponibles <= ($r['stock_minimo'] ?? 5)) {
+                                $color = '#E65100';
+                                $texto = $disponibles;
+                            } else {
+                                $color = '#2E7D32';
+                                $texto = $disponibles;
+                            }
                             ?>
-                            <span style="color: <?= $color ?>; font-weight: 600;"><?= $disponibles ?></span>
+                            <span style="color: <?= $color ?>; font-weight: 600;"><?= $texto ?></span>
                         </td>
                         <td>S/ <?= number_format($r['precio_unitario'] ?? 0, 2) ?></td>
                         <td><?= $r['solicitudes'] ?? 0 ?></td>
@@ -122,6 +131,8 @@
                         <td>
                             <?php if ($r['descontinuado'] ?? 0): ?>
                                 <span class="badge badge-descontinuado">Descontinuado</span>
+                            <?php elseif (($r['unidades_disponibles'] ?? 0) <= 0): ?>
+                                <span class="badge badge-rojo">AGOTADO</span>
                             <?php elseif (($r['unidades_disponibles'] ?? 0) <= ($r['stock_minimo'] ?? 0)): ?>
                                 <span class="badge badge-rojo">Stock Bajo</span>
                             <?php else: ?>

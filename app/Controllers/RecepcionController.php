@@ -17,8 +17,12 @@ class RecepcionController extends Controller {
         $this->clienteModel = new Cliente();
         $this->equipoFotoModel = new EquipoFoto();
         $this->usuarioModel = new Usuario();
-        $this->verificarSesion();
-        $this->verificarRol(['recepcionista']);
+        
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        if (strpos($uri, 'verificar-entrega') === false && strpos($uri, 'verificar-qr') === false) {
+            $this->verificarSesion();
+            $this->verificarRol(['recepcionista']);
+        }
     }
     
     private function verificarSesion() {
@@ -131,6 +135,7 @@ class RecepcionController extends Controller {
             'contacto_liquidos' => $_POST['contacto_liquidos'] ?? null,
             'equipo_reacondicionado' => $_POST['equipo_reacondicionado'] ?? null,
             'costo_estimado' => $_POST['costo_estimado'] ?? null,
+            'fecha_estimada_entrega' => $_POST['fecha_estimada_entrega'] ?? null,
             'observaciones' => $_POST['observaciones'] ?? null,
             'firma_digital' => $_POST['firma_digital'] ?? null,
             'fotos' => '[]',
@@ -216,9 +221,15 @@ class RecepcionController extends Controller {
         $sucursal_id = $_SESSION['sucursal_id'];
         $equipos = $this->equipoModel->obtenerCompletadosPorSucursal($sucursal_id);
         
+        $equipos_con_componentes = [];
+        foreach ($equipos as $equipo) {
+            $equipo['componentes'] = $this->equipoModel->obtenerComponentesPorEquipo($equipo['id']);
+            $equipos_con_componentes[] = $equipo;
+        }
+        
         $this->view('recepcion/equipos_listos', [
             'usuario' => $this->obtenerUsuarioActual(),
-            'equipos' => $equipos
+            'equipos' => $equipos_con_componentes
         ]);
     }
     
@@ -259,9 +270,12 @@ class RecepcionController extends Controller {
             return;
         }
         
+        $componentes = $this->equipoModel->obtenerComponentesPorEquipo($equipo_id);
+        
         $this->view('recepcion/entrega', [
             'usuario' => $this->obtenerUsuarioActual(),
-            'equipo' => $equipo
+            'equipo' => $equipo,
+            'componentes' => $componentes
         ]);
     }
     
@@ -277,13 +291,17 @@ class RecepcionController extends Controller {
             $firma_data = base64_decode($firma_entrega);
         }
         
+        // Generar hash de seguridad único
+        $hash_seguridad = hash('sha256', $equipo_id . time() . random_int(100000, 999999) . $_SESSION['usuario_id'] . 'impmartinez_salt_2024');
+        
         $this->equipoModel->actualizar($equipo_id, [
             'estado' => 'entregado',
             'costo_final' => $costo_final,
             'firma_entrega' => $firma_data,
             'fecha_entrega' => date('Y-m-d H:i:s'),
             'fecha_conformidad_entrega' => date('Y-m-d H:i:s'),
-            'entregado_por' => $_SESSION['usuario_id']
+            'entregado_por' => $_SESSION['usuario_id'],
+            'hash_seguridad' => $hash_seguridad
         ]);
         
         $this->redirect('recepcion/ver-recibo-entrega?id=' . $equipo_id);
@@ -323,13 +341,17 @@ class RecepcionController extends Controller {
         // Obtener fotos del equipo
         $fotos = $this->equipoFotoModel->obtenerPorEquipo($equipo_id);
         
+        // Obtener componentes usados
+        $componentes = $this->equipoModel->obtenerComponentesPorEquipo($equipo_id);
+        
         $this->view('recepcion/recibo_entrega', [
             'usuario' => $this->obtenerUsuarioActual(),
             'equipo' => $equipo,
             'cliente' => $cliente,
             'recepcionista' => $recepcionista,
             'sucursal' => $sucursal,
-            'fotos' => $fotos
+            'fotos' => $fotos,
+            'componentes' => $componentes
         ]);
     }
     
@@ -361,6 +383,27 @@ class RecepcionController extends Controller {
             'cliente' => $cliente,
             'sucursal' => $sucursal,
             'orden' => $orden
+        ]);
+    }
+    
+    public function verificarEntrega() {
+        $hash = $_GET['hash'] ?? null;
+        
+        $resultado = null;
+        
+        if ($hash && strlen($hash) >= 32) {
+            $sql = "SELECT e.*, c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap, c.telefono as cliente_tel, c.dni as cliente_dni,
+                    s.nombre as sucursal_nombre
+                    FROM equipos e
+                    JOIN clientes c ON e.cliente_id = c.id
+                    LEFT JOIN sucursales s ON e.sucursal_actual_id = s.id
+                    WHERE e.hash_seguridad = ?";
+            $resultado = $this->equipoModel->fetchOne($sql, [$hash]);
+        }
+        
+        $this->view('recepcion/verificar_entrega', [
+            'resultado' => $resultado,
+            'hash' => $hash
         ]);
     }
     

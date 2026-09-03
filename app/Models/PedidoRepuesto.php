@@ -76,7 +76,7 @@ class PedidoRepuesto extends Model {
     
     public function obtenerPendientesAlmacen() {
         $sql = "SELECT p.*, 
-                r.nombre as repuesto_nombre, r.codigo as repuesto_codigo, r.marca, r.categoria, r.stock,
+                r.nombre as repuesto_nombre, r.codigo as repuesto_codigo, r.marca, r.categoria, r.stock, r.unidades_disponibles,
                 u.nombre as solicitante_nombre, u.apellido_paterno as solicitante_ap,
                 s.nombre as sucursal_nombre,
                 t.nombre as tecnico_nombre, t.apellido_paterno as tecnico_apellido

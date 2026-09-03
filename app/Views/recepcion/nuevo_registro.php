@@ -370,6 +370,12 @@
             </div>
             
             <div class="form-group">
+                <label>Fecha Estimada de Entrega *</label>
+                <input type="date" id="fecha_estimada_entrega" required style="font-size: 1.1em;">
+                <small>Seleccione la fecha estimada de entrega al cliente</small>
+            </div>
+            
+            <div class="form-group">
                 <label>Observaciones Adicionales</label>
                 <textarea id="observaciones" rows="3" placeholder="Notas adicionales sobre la reparación..."></textarea>
             </div>
@@ -810,10 +816,16 @@ function cerrarModalConfirmacion() {
 
 function confirmarRegistro() {
     const costo = document.getElementById('costo_estimado').value;
+    const fechaEstimada = document.getElementById('fecha_estimada_entrega').value;
     const observaciones = document.getElementById('observaciones').value;
     
     if (!costo || costo <= 0) {
         alert('Por favor ingrese un costo estimado de reparación');
+        return;
+    }
+    
+    if (!fechaEstimada) {
+        alert('Por favor seleccione una fecha estimada de entrega');
         return;
     }
     
@@ -837,6 +849,13 @@ function confirmarRegistro() {
     inputCosto.name = 'costo_estimado';
     inputCosto.value = costo;
     form.appendChild(inputCosto);
+    
+    // Agregar fecha estimada de entrega
+    let inputFecha = document.createElement('input');
+    inputFecha.type = 'hidden';
+    inputFecha.name = 'fecha_estimada_entrega';
+    inputFecha.value = fechaEstimada;
+    form.appendChild(inputFecha);
     
     // Agregar observaciones
     let inputObs = document.createElement('input');

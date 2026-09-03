@@ -1,4 +1,4 @@
-<?php $titulo = 'Nuevo Pedido de Almacen'; ob_start(); ?>
+<?php $titulo = 'Nueva Venta'; ob_start(); ?>
 
 <style>
 .form-card {
@@ -52,11 +52,11 @@
 </style>
 
 <a href="<?= APP_URL ?>/public/pedidos" class="btn-volver">
-    <span>&#8592;</span> Volver a Mis Pedidos
+    <span>&#8592;</span> Volver a Mis Ventas
 </a>
 
 <div class="form-card">
-    <h2>Solicitar Repuesto</h2>
+    <h2>Registrar Venta</h2>
     
     <form method="POST" action="<?= APP_URL ?>/public/pedidos/guardar">
         <div class="form-group">
@@ -108,7 +108,7 @@
         </div>
         
         <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button type="submit" class="btn btn-primary">Enviar Pedido</button>
+            <button type="submit" class="btn btn-primary">Registrar Venta</button>
             <a href="<?= APP_URL ?>/public/pedidos" class="btn btn-outline">Cancelar</a>
         </div>
     </form>

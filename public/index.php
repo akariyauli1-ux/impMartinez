@@ -40,6 +40,7 @@ $router->add('GET', '/recepcion/formulario-entrega', 'RecepcionController', 'for
 $router->add('POST', '/recepcion/procesar-entrega', 'RecepcionController', 'procesarEntrega');
 $router->add('GET', '/recepcion/ver-recibo-entrega', 'RecepcionController', 'verReciboEntrega');
 $router->add('GET', '/recepcion/verificar-qr', 'RecepcionController', 'verificarQR');
+$router->add('GET', '/recepcion/verificar-entrega', 'RecepcionController', 'verificarEntrega');
 
 $router->add('GET', '/consulta-almacen/obtener-repuestos', 'ConsultaAlmacenController', 'obtenerRepuestos');
 
@@ -93,6 +94,9 @@ $router->add('POST', '/pedidos/responder', 'PedidoController', 'responder');
 $router->add('POST', '/pedidos/confirmar-recibido', 'PedidoController', 'confirmarRecibido');
 $router->add('POST', '/pedidos/confirmar-leido', 'PedidoController', 'confirmarLeido');
 $router->add('POST', '/pedidos/entregar-solicitud', 'PedidoController', 'entregarSolicitud');
+$router->add('POST', '/pedidos/marcar-agotado', 'PedidoController', 'marcarAgotado');
+$router->add('POST', '/pedidos/comprar-externo', 'PedidoController', 'comprarExterno');
+$router->add('POST', '/pedidos/recibir-compra-externa', 'PedidoController', 'recibirCompraExterna');
 $router->add('POST', '/pedidos/confirmar-recibido-solicitud', 'PedidoController', 'confirmarRecibidoSolicitud');
 $router->add('GET', '/pedidos/notificacion', 'PedidoController', 'notificacion');
 

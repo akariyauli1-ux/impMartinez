@@ -46,15 +46,35 @@ class TecnicoController extends Controller {
     
     public function misTrabajos() {
         $tecnico_id = $_SESSION['usuario_id'];
-        $trabajos = $this->equipoModel->obtenerTrabajosTecnico($tecnico_id);
+        
+        // Obtener filtros
+        $filtros = [
+            'estado' => $_GET['estado'] ?? '',
+            'dia' => $_GET['dia'] ?? '',
+            'mes' => $_GET['mes'] ?? '',
+            'anio' => $_GET['anio'] ?? ''
+        ];
+        
+        // Verificar si hay filtros activos
+        $hay_filtros = !empty($filtros['estado']) || !empty($filtros['dia']) || !empty($filtros['mes']) || !empty($filtros['anio']);
+        
+        if ($hay_filtros) {
+            $trabajos = $this->equipoModel->obtenerTrabajosTecnicoConFiltros($tecnico_id, $filtros);
+        } else {
+            $trabajos = $this->equipoModel->obtenerTrabajosTecnico($tecnico_id);
+        }
+        
         $solicitudes_enviadas = $this->solicitudModel->obtenerEnviadasTecnico($tecnico_id);
+        $solicitudes_agotadas = $this->solicitudModel->obtenerAgotadasTecnico($tecnico_id);
         
         $this->solicitudModel->marcarNotificacionesLeidas($tecnico_id);
         
         $this->view('tecnico/mis_trabajos', [
             'usuario' => $this->obtenerUsuarioActual(),
             'trabajos' => $trabajos,
-            'solicitudes_enviadas' => $solicitudes_enviadas
+            'solicitudes_enviadas' => $solicitudes_enviadas,
+            'solicitudes_agotadas' => $solicitudes_agotadas,
+            'filtros' => $filtros
         ]);
     }
     
@@ -66,6 +86,19 @@ class TecnicoController extends Controller {
         
         $repuesto = $this->repuestoModel->obtenerPorId($repuesto_id);
         if (!$repuesto) {
+            $this->redirect('tecnico/mis-trabajos');
+            return;
+        }
+        
+        $disponibles = $repuesto['unidades_disponibles'] ?? 0;
+        if ($disponibles <= 0) {
+            $_SESSION['error_solicitud'] = 'YA NO HAY DISPONIBLE EN ALMACEN para "' . $repuesto['nombre'] . '"';
+            $this->redirect('tecnico/mis-trabajos');
+            return;
+        }
+        
+        if ($cantidad > $disponibles) {
+            $_SESSION['error_solicitud'] = 'No puedes solicitar más de ' . $disponibles . ' unidades. Stock disponible: ' . $disponibles;
             $this->redirect('tecnico/mis-trabajos');
             return;
         }
@@ -84,7 +117,7 @@ class TecnicoController extends Controller {
             'estado' => 'solicitado'
         ]);
         
-        $this->solicitudModel->actualizarCostoEquipo($equipo_id);
+        $this->repuestoModel->descontarStockReservado($repuesto_id, $cantidad);
         
         $this->redirect('tecnico/mis-trabajos');
     }
@@ -127,6 +160,12 @@ class TecnicoController extends Controller {
         
         if ($accion === 'completado') {
             $this->equipoModel->actualizar($equipo_id, ['estado' => 'completado']);
+        } elseif ($accion === 'pausado') {
+            $this->equipoModel->actualizar($equipo_id, ['estado' => 'pausado']);
+        } elseif ($accion === 'inicio_reparacion') {
+            $this->equipoModel->actualizar($equipo_id, ['estado' => 'en_reparacion']);
+        } elseif ($accion === 'reanudar') {
+            $this->equipoModel->actualizar($equipo_id, ['estado' => 'en_reparacion']);
         }
         
         $this->redirect('tecnico/mis-trabajos');

@@ -1,5 +1,15 @@
 <?php $titulo = 'Gestion de Pedidos - Almacen'; ob_start(); ?>
 
+<?php if (!empty($_SESSION['error_pedido'])): ?>
+<div class="alerta-pedidos" style="background: #FFEBEE; border-color: #C62828;">
+    <div class="icono">&#9888;</div>
+    <div class="texto">
+        <strong style="color: #C62828;">ERROR: <?= htmlspecialchars($_SESSION['error_pedido']) ?></strong>
+    </div>
+</div>
+<?php unset($_SESSION['error_pedido']); ?>
+<?php endif; ?>
+
 <style>
 .alerta-pedidos {
     background: #FFEBEE;
@@ -205,6 +215,7 @@
                     <th>Equipo</th>
                     <th>Repuesto</th>
                     <th>Cant.</th>
+                    <th>Disp.</th>
                     <th>Total</th>
                     <th>Motivo</th>
                     <th>Estado</th>
@@ -229,6 +240,12 @@
                         <small><?= htmlspecialchars($sol['repuesto_codigo']) ?></small>
                     </td>
                     <td><strong><?= $sol['cantidad'] ?></strong></td>
+                    <td>
+                        <?php $disp = $sol['unidades_disponibles'] ?? 0; ?>
+                        <strong style="color: <?= $disp > 0 ? '#2E7D32' : '#C62828' ?>;">
+                            <?= $disp ?>
+                        </strong>
+                    </td>
                     <td><strong>S/ <?= number_format($sol['total'], 2) ?></strong></td>
                     <td><small><?= htmlspecialchars($sol['motivo'] ?? 'Sin observaciones') ?></small></td>
                     <td>
@@ -249,13 +266,34 @@
                         <span class="badge <?= $estado_class ?>"><?= $estado_texto ?></span>
                     </td>
                     <td>
-                        <?php if ($sol['estado'] === 'solicitado'): ?>
+                        <?php if ($sol['estado'] === 'solicitado'): 
+                            $stock_disponible = $sol['unidades_disponibles'] ?? 0;
+                            if ($stock_disponible <= 0):
+                        ?>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <form method="POST" action="<?= APP_URL ?>/public/pedidos/marcar-agotado" style="display: inline;" onsubmit="return confirm('¿Confirmas marcar este componente como AGOTADO? Se notificará al técnico.');">
+                                    <input type="hidden" name="solicitud_id" value="<?= $sol['id'] ?>">
+                                    <button type="submit" class="btn btn-danger btn-sm" style="background: #C62828;">
+                                        ⚠️ AGOTADO
+                                    </button>
+                                </form>
+                                <button type="button" class="btn btn-sm" style="background: #FF6F00; color: white;" onclick="abrirModalCompraExterna(<?= $sol['id'] ?>, '<?= htmlspecialchars($sol['repuesto_nombre']) ?>', <?= $sol['cantidad'] ?>)">
+                                    🛒 Comprar Externamente
+                                </button>
+                            </div>
+                            <div style="font-size: 0.75rem; color: #C62828; margin-top: 4px; font-weight: 600;">
+                                Sin stock disponible
+                            </div>
+                        <?php else: ?>
                             <form method="POST" action="<?= APP_URL ?>/public/pedidos/entregar-solicitud" style="display: inline;" onsubmit="return confirm('¿Confirmas el envío de este componente al técnico?');">
                                 <input type="hidden" name="solicitud_id" value="<?= $sol['id'] ?>">
                                 <button type="submit" class="btn btn-success btn-sm">📤 Enviar</button>
                             </form>
+                        <?php endif; ?>
                         <?php elseif ($sol['estado'] === 'enviado'): ?>
                             <span style="color: #1565C0; font-size: 0.85rem;">En camino</span>
+                        <?php elseif ($sol['estado'] === 'agotado'): ?>
+                            <span style="color: #C62828; font-size: 0.85rem; font-weight: 600;">⚠️ AGOTADO</span>
                         <?php else: ?>
                             <span style="color: #2E7D32; font-size: 0.85rem;">✓ Recibido</span>
                         <?php endif; ?>
@@ -302,8 +340,11 @@
                     </div>
                     <div class="pedido-info-item">
                         <span class="pedido-info-label">Stock en Almacen</span>
-                        <span class="pedido-info-value" style="color: <?= ($p['stock'] ?? 0) >= $p['cantidad'] ? '#2E7D32' : '#C62828' ?>; font-size: 1.1rem;">
-                            <?= $p['stock'] ?? 0 ?>
+                        <span class="pedido-info-value" style="color: <?= ($p['unidades_disponibles'] ?? 0) >= $p['cantidad'] ? '#2E7D32' : '#C62828' ?>; font-size: 1.1rem;">
+                            <?= $p['unidades_disponibles'] ?? 0 ?>
+                            <?php if (($p['unidades_disponibles'] ?? 0) <= 0): ?>
+                                <span style="font-size: 0.8rem; font-weight: 700;">AGOTADO</span>
+                            <?php endif; ?>
                         </span>
                     </div>
                     <div class="pedido-info-item">
@@ -312,15 +353,27 @@
                     </div>
                 </div>
                 <div class="pedido-acciones">
-                    <button class="btn-responder btn-enviando" onclick="abrirModalRespuesta(<?= $p['id'] ?>, 'enviando', '<?= htmlspecialchars($p['repuesto_nombre']) ?>')">
-                        &#128230; Enviando
-                    </button>
-                    <button class="btn-responder btn-no-existe" onclick="abrirModalRespuesta(<?= $p['id'] ?>, 'no_existe', '<?= htmlspecialchars($p['repuesto_nombre']) ?>')">
-                        &#10060; No Existe
-                    </button>
-                    <button class="btn-responder btn-stock-agotado" onclick="abrirModalRespuesta(<?= $p['id'] ?>, 'stock_agotado', '<?= htmlspecialchars($p['repuesto_nombre']) ?>')">
-                        &#9888; Stock Agotado
-                    </button>
+                    <?php 
+                    $stock_disponible = $p['unidades_disponibles'] ?? 0;
+                    if ($stock_disponible <= 0): 
+                    ?>
+                        <button class="btn-responder btn-no-existe" disabled style="cursor: not-allowed; opacity: 0.8;">
+                            AGOTADO
+                        </button>
+                        <span style="color: #C62828; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center;">
+                            Sin stock disponible - El solicitante sera notificado
+                        </span>
+                    <?php else: ?>
+                        <button class="btn-responder btn-enviando" onclick="abrirModalRespuesta(<?= $p['id'] ?>, 'enviando', '<?= htmlspecialchars($p['repuesto_nombre']) ?>')">
+                            &#128230; Enviando
+                        </button>
+                        <button class="btn-responder btn-no-existe" onclick="abrirModalRespuesta(<?= $p['id'] ?>, 'no_existe', '<?= htmlspecialchars($p['repuesto_nombre']) ?>')">
+                            &#10060; No Existe
+                        </button>
+                        <button class="btn-responder btn-stock-agotado" onclick="abrirModalRespuesta(<?= $p['id'] ?>, 'stock_agotado', '<?= htmlspecialchars($p['repuesto_nombre']) ?>')">
+                            &#9888; Stock Agotado
+                        </button>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php endforeach; ?>
@@ -414,6 +467,72 @@
     </div>
 </div>
 
+<?php if (!empty($compras_externas)): ?>
+<div class="card" style="border-left: 4px solid #FF6F00; margin-bottom: 20px;">
+    <div class="card-header" style="background: #FFF3E0;">
+        <h2>🛒 Compras Externas Pendientes</h2>
+        <span class="badge badge-amarillo"><?= count($compras_externas) ?></span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Técnico</th>
+                    <th>Cliente</th>
+                    <th>Equipo</th>
+                    <th>Repuesto</th>
+                    <th>Cant.</th>
+                    <th>Proveedor</th>
+                    <th>Precio Est.</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($compras_externas as $ce): ?>
+                <tr>
+                    <td><?= date('d/m/Y H:i', strtotime($ce['fecha_solicitud'])) ?></td>
+                    <td><strong><?= htmlspecialchars($ce['tecnico_nombre'] . ' ' . $ce['tecnico_ap']) ?></strong></td>
+                    <td><?= htmlspecialchars($ce['cliente_nombre'] . ' ' . $ce['cliente_ap']) ?></td>
+                    <td>
+                        <strong><?= htmlspecialchars($ce['tipo_equipo']) ?></strong><br>
+                        <small><?= htmlspecialchars($ce['equipo_marca'] . ' ' . $ce['equipo_modelo']) ?></small>
+                    </td>
+                    <td>
+                        <strong><?= htmlspecialchars($ce['repuesto_nombre']) ?></strong><br>
+                        <small><?= htmlspecialchars($ce['repuesto_codigo']) ?></small>
+                    </td>
+                    <td><strong><?= $ce['cantidad'] ?></strong></td>
+                    <td><?= htmlspecialchars($ce['proveedor'] ?: '-') ?></td>
+                    <td><strong>S/ <?= number_format($ce['precio_unitario'], 2) ?></strong></td>
+                    <td>
+                        <?php if ($ce['estado'] === 'pendiente'): ?>
+                            <span class="badge badge-amarillo">Pendiente</span>
+                        <?php elseif ($ce['estado'] === 'recibida'): ?>
+                            <span class="badge badge-verde">Recibida</span>
+                        <?php else: ?>
+                            <span class="badge badge-gris">Cancelada</span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php if ($ce['estado'] === 'pendiente'): ?>
+                            <form method="POST" action="<?= APP_URL ?>/public/pedidos/recibir-compra-externa" style="display: inline;" onsubmit="return confirm('¿Confirmas que recibiste este componente? Se agregará al stock y se enviará al técnico.');">
+                                <input type="hidden" name="compra_id" value="<?= $ce['id'] ?>">
+                                <button type="submit" class="btn btn-success btn-sm">✓ Recibir</button>
+                            </form>
+                        <?php else: ?>
+                            <span style="color: #999;">-</span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>
+
 <div id="modalRespuesta" class="modal-respuesta">
     <div class="modal-respuesta-content">
         <h3 id="modalTitulo">Responder Pedido</h3>
@@ -429,6 +548,46 @@
             <div style="display: flex; gap: 10px; margin-top: 16px;">
                 <button type="submit" class="btn btn-primary">Enviar Respuesta</button>
                 <button type="button" class="btn btn-outline" onclick="cerrarModalRespuesta()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalCompraExterna" class="modal-respuesta">
+    <div class="modal-respuesta-content">
+        <h3>🛒 Registrar Compra Externa</h3>
+        <form method="POST" action="<?= APP_URL ?>/public/pedidos/comprar-externo">
+            <input type="hidden" name="solicitud_id" id="inputCompraSolicitudId">
+            
+            <div class="form-group">
+                <label>Repuesto</label>
+                <input type="text" id="inputCompraRepuesto" readonly style="width: 100%; padding: 10px; border: 2px solid var(--gris-claro); border-radius: 8px; background: #f5f5f5;">
+            </div>
+            
+            <div class="form-group">
+                <label>Cantidad</label>
+                <input type="text" id="inputCompraCantidad" readonly style="width: 100%; padding: 10px; border: 2px solid var(--gris-claro); border-radius: 8px; background: #f5f5f5;">
+            </div>
+            
+            <div class="form-group">
+                <label>Proveedor</label>
+                <input type="text" name="proveedor" id="inputCompraProveedor" placeholder="Nombre del proveedor externo..." style="width: 100%; padding: 10px; border: 2px solid var(--gris-claro); border-radius: 8px;">
+            </div>
+            
+            <div class="form-group">
+                <label>Precio Unitario Estimado (S/)</label>
+                <input type="number" name="precio_unitario" id="inputCompraPrecio" step="0.01" min="0" placeholder="0.00" style="width: 100%; padding: 10px; border: 2px solid var(--gris-claro); border-radius: 8px;">
+            </div>
+            
+            <div style="background: #FFF3E0; border: 1px solid #FFB74D; border-radius: 8px; padding: 12px; margin: 16px 0;">
+                <small style="color: #E65100;">
+                    <strong>Nota:</strong> Al registrar la compra externa, la solicitud del técnico quedará marcada como "AGOTADO" y se creará un registro de compra pendiente. Cuando recibas el componente, podrás actualizar el stock y notificar al técnico.
+                </small>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 16px;">
+                <button type="submit" class="btn" style="background: #FF6F00; color: white;">🛒 Registrar Compra</button>
+                <button type="button" class="btn btn-outline" onclick="cerrarModalCompraExterna()">Cancelar</button>
             </div>
         </form>
     </div>
@@ -471,6 +630,24 @@ function cerrarModalRespuesta() {
 
 document.getElementById('modalRespuesta').addEventListener('click', function(e) {
     if (e.target === this) cerrarModalRespuesta();
+});
+
+function abrirModalCompraExterna(solicitudId, repuestoNombre, cantidad) {
+    var modal = document.getElementById('modalCompraExterna');
+    document.getElementById('inputCompraSolicitudId').value = solicitudId;
+    document.getElementById('inputCompraRepuesto').value = repuestoNombre;
+    document.getElementById('inputCompraCantidad').value = cantidad;
+    document.getElementById('inputCompraProveedor').value = '';
+    document.getElementById('inputCompraPrecio').value = '';
+    modal.classList.add('active');
+}
+
+function cerrarModalCompraExterna() {
+    document.getElementById('modalCompraExterna').classList.remove('active');
+}
+
+document.getElementById('modalCompraExterna').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalCompraExterna();
 });
 </script>
 

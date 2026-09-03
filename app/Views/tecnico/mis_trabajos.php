@@ -1,5 +1,12 @@
 <?php $titulo = 'Mis Trabajos'; ob_start(); ?>
 
+<?php if (!empty($_SESSION['error_solicitud'])): ?>
+<div style="background: #FFEBEE; border: 2px solid #C62828; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+    <strong style="color: #C62828;">⚠️ <?= htmlspecialchars($_SESSION['error_solicitud']) ?></strong>
+    <?php unset($_SESSION['error_solicitud']); ?>
+</div>
+<?php endif; ?>
+
 <style>
 .costo-badge {
     background: #2196F3;
@@ -64,7 +71,151 @@
 .btn-recibir:hover {
     background: #45a049;
 }
+.filtros-container {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+.filtros-container h3 {
+    margin: 0 0 10px 0;
+    font-size: 1em;
+    color: #333;
+}
+.filtros-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: end;
+}
+.filtros-row .form-group {
+    margin: 0;
+    min-width: 120px;
+}
+.filtros-row label {
+    font-size: 0.85em;
+    margin-bottom: 3px;
+    display: block;
+}
+.filtros-row select, .filtros-row input {
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+.btn-filtrar {
+    background: #2196F3;
+    color: white;
+    border: none;
+    padding: 7px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.btn-filtrar:hover {
+    background: #1976D2;
+}
+.btn-limpiar {
+    background: #757575;
+    color: white;
+    border: none;
+    padding: 7px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-limpiar:hover {
+    background: #616161;
+}
+.badge-pendiente {
+    background: #FF9800;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    font-weight: bold;
+}
+.badge-pausa {
+    background: #9C27B0;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    font-weight: bold;
+}
+.badge-naranja {
+    background: #FF9800;
+    color: white;
+}
+.badge-morado {
+    background: #9C27B0;
+    color: white;
+}
 </style>
+
+<!-- Filtros -->
+<div class="filtros-container">
+    <h3>🔍 Filtrar Trabajos</h3>
+    <form method="GET" action="<?= APP_URL ?>/public/tecnico/mis-trabajos">
+        <div class="filtros-row">
+            <div class="form-group">
+                <label>Estado</label>
+                <select name="estado">
+                    <option value="">Todos los estados</option>
+                    <option value="todos" <?= ($filtros['estado'] ?? '') === 'todos' ? 'selected' : '' ?>>Todos (incluye entregados)</option>
+                    <option value="activos" <?= ($filtros['estado'] ?? '') === 'activos' ? 'selected' : '' ?>>Activos (no entregados)</option>
+                    <option value="pendiente_asignacion" <?= ($filtros['estado'] ?? '') === 'pendiente_asignacion' ? 'selected' : '' ?>>Pendiente Asignación</option>
+                    <option value="asignado_sucursal" <?= ($filtros['estado'] ?? '') === 'asignado_sucursal' ? 'selected' : '' ?>>Asignado a Sucursal</option>
+                    <option value="recibido" <?= ($filtros['estado'] ?? '') === 'recibido' ? 'selected' : '' ?>>Recibido</option>
+                    <option value="en_reparacion" <?= ($filtros['estado'] ?? '') === 'en_reparacion' ? 'selected' : '' ?>>En Reparación</option>
+                    <option value="completado" <?= ($filtros['estado'] ?? '') === 'completado' ? 'selected' : '' ?>>Completado</option>
+                    <option value="entregado" <?= ($filtros['estado'] ?? '') === 'entregado' ? 'selected' : '' ?>>Entregado</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Día</label>
+                <select name="dia">
+                    <option value="">Todos</option>
+                    <?php for ($i = 1; $i <= 31; $i++): ?>
+                        <option value="<?= $i ?>" <?= ($filtros['dia'] ?? '') == $i ? 'selected' : '' ?>><?= $i ?></option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Mes</label>
+                <select name="mes">
+                    <option value="">Todos</option>
+                    <?php 
+                    $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                    for ($i = 1; $i <= 12; $i++): 
+                    ?>
+                        <option value="<?= $i ?>" <?= ($filtros['mes'] ?? '') == $i ? 'selected' : '' ?>><?= $meses[$i-1] ?></option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Año</label>
+                <select name="anio">
+                    <option value="">Todos</option>
+                    <?php 
+                    $anio_actual = date('Y');
+                    for ($i = $anio_actual; $i >= $anio_actual - 5; $i--): 
+                    ?>
+                        <option value="<?= $i ?>" <?= ($filtros['anio'] ?? '') == $i ? 'selected' : '' ?>><?= $i ?></option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-filtrar">Filtrar</button>
+                <a href="<?= APP_URL ?>/public/tecnico/mis-trabajos" class="btn-limpiar">Limpiar</a>
+            </div>
+        </div>
+    </form>
+</div>
 
 <?php if (!empty($solicitudes_enviadas)): ?>
 <div class="alerta-envio">
@@ -109,9 +260,126 @@
 </div>
 <?php endif; ?>
 
+<?php if (!empty($solicitudes_agotadas)): ?>
+<div style="background: #FFEBEE; border: 2px solid #C62828; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px;">
+    <h3 style="color: #C62828; margin-bottom: 10px;">⚠️ Componentes AGOTADOS - Sin Stock en Almacén</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha Solicitud</th>
+                    <th>Cliente</th>
+                    <th>Equipo</th>
+                    <th>Repuesto</th>
+                    <th>Cantidad</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($solicitudes_agotadas as $sol): ?>
+                <tr>
+                    <td><?= date('d/m/Y H:i', strtotime($sol['fecha_solicitud'])) ?></td>
+                    <td><?= htmlspecialchars($sol['cliente_nombre'] . ' ' . $sol['cliente_ap']) ?></td>
+                    <td>
+                        <strong><?= htmlspecialchars($sol['tipo_equipo']) ?></strong><br>
+                        <small><?= htmlspecialchars($sol['equipo_marca'] . ' ' . $sol['equipo_modelo']) ?></small>
+                    </td>
+                    <td>
+                        <strong><?= htmlspecialchars($sol['repuesto_nombre']) ?></strong><br>
+                        <small><?= htmlspecialchars($sol['repuesto_codigo']) ?></small>
+                    </td>
+                    <td><strong><?= $sol['cantidad'] ?></strong></td>
+                    <td>
+                        <?php if (!empty($sol['compra_externa_id'])): ?>
+                            <?php if ($sol['ce_estado'] === 'pendiente'): ?>
+                                <span style="background: #FF6F00; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+                                    🛒 COMPRA EXTERNA EN PROCESO
+                                </span>
+                                <div style="font-size: 0.75rem; color: #FF6F00; margin-top: 4px;">
+                                    Proveedor: <?= htmlspecialchars($sol['proveedor'] ?: 'Por definir') ?>
+                                    <?php if (!empty($sol['ce_precio'])): ?>
+                                        <br>Precio est: S/ <?= number_format($sol['ce_precio'], 2) ?>
+                                    <?php endif; ?>
+                                </div>
+                            <?php elseif ($sol['ce_estado'] === 'recibida'): ?>
+                                <span style="background: #2E7D32; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+                                    ✓ COMPRA RECIBIDA - EN CAMINO
+                                </span>
+                            <?php else: ?>
+                                <span class="badge badge-rojo" style="background: #C62828; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold;">
+                                    ⚠️ YA NO HAY DISPONIBLE EN ALMACEN
+                                </span>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <span class="badge badge-rojo" style="background: #C62828; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold;">
+                                ⚠️ YA NO HAY DISPONIBLE EN ALMACEN
+                            </span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- Resumen de Trabajos -->
+<?php
+$contadores = [
+    'total' => count($trabajos),
+    'pendiente' => 0,
+    'recibido' => 0,
+    'en_reparacion' => 0,
+    'pausado' => 0,
+    'completado' => 0,
+    'entregado' => 0
+];
+foreach ($trabajos as $t) {
+    $estado = $t['estado'];
+    if (isset($contadores[$estado])) {
+        $contadores[$estado]++;
+    }
+}
+?>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px;">
+    <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: center; border-left: 4px solid #2196F3;">
+        <div style="font-size: 1.5em; font-weight: bold; color: #2196F3;"><?= $contadores['total'] ?></div>
+        <div style="font-size: 0.8em; color: #666;">Total</div>
+    </div>
+    <div style="background: #FFF3E0; padding: 10px; border-radius: 8px; text-align: center; border-left: 4px solid #FF9800;">
+        <div style="font-size: 1.5em; font-weight: bold; color: #FF9800;"><?= $contadores['pendiente'] ?></div>
+        <div style="font-size: 0.8em; color: #666;">Pendientes</div>
+    </div>
+    <div style="background: #E3F2FD; padding: 10px; border-radius: 8px; text-align: center; border-left: 4px solid #2196F3;">
+        <div style="font-size: 1.5em; font-weight: bold; color: #2196F3;"><?= $contadores['recibido'] ?></div>
+        <div style="font-size: 0.8em; color: #666;">Recibidos</div>
+    </div>
+    <div style="background: #FFF8E1; padding: 10px; border-radius: 8px; text-align: center; border-left: 4px solid #FFC107;">
+        <div style="font-size: 1.5em; font-weight: bold; color: #FFC107;"><?= $contadores['en_reparacion'] ?></div>
+        <div style="font-size: 0.8em; color: #666;">En Reparación</div>
+    </div>
+    <div style="background: #F3E5F5; padding: 10px; border-radius: 8px; text-align: center; border-left: 4px solid #9C27B0;">
+        <div style="font-size: 1.5em; font-weight: bold; color: #9C27B0;"><?= $contadores['pausado'] ?></div>
+        <div style="font-size: 0.8em; color: #666;">En Pausa</div>
+    </div>
+    <div style="background: #E8F5E9; padding: 10px; border-radius: 8px; text-align: center; border-left: 4px solid #4CAF50;">
+        <div style="font-size: 1.5em; font-weight: bold; color: #4CAF50;"><?= $contadores['completado'] ?></div>
+        <div style="font-size: 0.8em; color: #666;">Completados</div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
         <h2>Mis Trabajos Asignados</h2>
+        <?php
+        $hay_filtros = !empty($filtros['estado']) || !empty($filtros['dia']) || !empty($filtros['mes']) || !empty($filtros['anio']);
+        if ($hay_filtros):
+        ?>
+        <span style="background: #FF9800; color: white; padding: 5px 10px; border-radius: 4px; font-size: 0.8em;">
+            🔍 Filtros activos - <?= count($trabajos) ?> trabajo(s)
+        </span>
+        <?php endif; ?>
     </div>
     <div class="table-container">
         <table>
@@ -124,17 +392,18 @@
                     <th>Falla Reportada</th>
                     <th>Estado</th>
                     <th>Costo Reparación</th>
+                    <th>Observaciones</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($trabajos)): ?>
                 <tr>
-                    <td colspan="8" style="text-align: center; padding: 20px;">No tienes trabajos asignados</td>
+                    <td colspan="9" style="text-align: center; padding: 20px;">No tienes trabajos asignados</td>
                 </tr>
                 <?php else: ?>
                     <?php foreach ($trabajos as $trabajo): ?>
-                    <tr>
+                    <tr style="<?= $trabajo['estado'] === 'pausado' ? 'background: #F3E5F5;' : '' ?>">
                         <td><?= date('d/m/Y', strtotime($trabajo['fecha_asignacion'])) ?></td>
                         <td>
                             <strong><?= htmlspecialchars($trabajo['cliente_nombre'] . ' ' . $trabajo['cliente_ap']) ?></strong>
@@ -151,22 +420,39 @@
                             <?php
                             $estado_class = 'badge-gris';
                             $estado_texto = $trabajo['estado'];
+                            $estado_icono = '';
                             
                             if ($trabajo['estado'] === 'en_reparacion') {
                                 $estado_class = 'badge-amarillo';
                                 $estado_texto = 'En Reparación';
+                                $estado_icono = '🔧';
                             } elseif ($trabajo['estado'] === 'completado') {
                                 $estado_class = 'badge-verde';
                                 $estado_texto = 'Completado';
+                                $estado_icono = '✅';
                             } elseif ($trabajo['estado'] === 'asignado_sucursal') {
                                 $estado_class = 'badge-azul';
                                 $estado_texto = 'Asignado';
+                                $estado_icono = '📍';
                             } elseif ($trabajo['estado'] === 'recibido') {
                                 $estado_class = 'badge-azul';
                                 $estado_texto = 'Recibido';
+                                $estado_icono = '📥';
+                            } elseif ($trabajo['estado'] === 'pendiente_asignacion') {
+                                $estado_class = 'badge-naranja';
+                                $estado_texto = 'Pendiente';
+                                $estado_icono = '⏳';
+                            } elseif ($trabajo['estado'] === 'pausado') {
+                                $estado_class = 'badge-morado';
+                                $estado_texto = 'En Pausa';
+                                $estado_icono = '⏸️';
+                            } elseif ($trabajo['estado'] === 'entregado') {
+                                $estado_class = 'badge-verde';
+                                $estado_texto = 'Entregado';
+                                $estado_icono = '📦';
                             }
                             ?>
-                            <span class="badge <?= $estado_class ?>"><?= $estado_texto ?></span>
+                            <span class="badge <?= $estado_class ?>"><?= $estado_icono ?> <?= $estado_texto ?></span>
                         </td>
                         <td>
                             <div class="costo-badge" id="costo-<?= $trabajo['id'] ?>">
@@ -179,11 +465,20 @@
                             <?php endif; ?>
                         </td>
                         <td>
+                            <?php if (!empty($trabajo['observaciones'])): ?>
+                                <small style="color: #666;"><?= htmlspecialchars(nl2br(substr($trabajo['observaciones'], 0, 100))) ?><?= strlen($trabajo['observaciones']) > 100 ? '...' : '' ?></small>
+                            <?php else: ?>
+                                <span style="color: #ccc;">-</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
                             <?php if ($trabajo['estado'] === 'asignado_sucursal'): ?>
                                 <button onclick="confirmarRecibido(<?= $trabajo['id'] ?>)" class="btn btn-success btn-sm">✓ Recibido</button>
                                 <button onclick="abrirModalRechazo(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>')" class="btn btn-danger btn-sm">✗ Rechazar</button>
                             <?php elseif ($trabajo['estado'] === 'recibido'): ?>
                                 <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>')" class="btn btn-primary btn-sm">Iniciar Reparación</button>
+                            <?php elseif ($trabajo['estado'] === 'pausado'): ?>
+                                <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>')" class="btn btn-warning btn-sm" style="background: #9C27B0;">▶ Reanudar</button>
                             <?php elseif ($trabajo['estado'] !== 'completado'): ?>
                                 <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>')" class="btn btn-primary btn-sm">Actualizar</button>
                             <?php else: ?>
@@ -218,6 +513,7 @@
                     <option value="nota_tecnica">Agregar Nota Técnica</option>
                     <option value="completado">Marcar como Completado</option>
                     <option value="pausado">Pausar Trabajo</option>
+                    <option value="reanudar">Reanudar Trabajo (desde pausa)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -262,7 +558,7 @@
             <h2>Solicitar Componente</h2>
             <button class="modal-close" onclick="cerrarModalSolicitud()">×</button>
         </div>
-        <form method="POST" action="<?= APP_URL ?>/public/tecnico/solicitar-componente">
+        <form method="POST" action="<?= APP_URL ?>/public/tecnico/solicitar-componente" onsubmit="return validarSolicitud()">
             <input type="hidden" name="equipo_id" id="solicitud_equipo_id">
             <div class="form-group">
                 <label>Equipo</label>
@@ -283,6 +579,14 @@
                     <label>Precio Unitario</label>
                     <input type="text" id="precio_unitario_solicitud" readonly>
                 </div>
+            </div>
+            <div id="alerta_stock" style="display: none; background: #FFEBEE; border: 2px solid #C62828; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+                <strong style="color: #C62828;">⚠️ YA NO HAY DISPONIBLE EN ALMACEN</strong>
+                <p style="color: #C62828; font-size: 0.9rem; margin: 5px 0 0 0;">Este componente no tiene stock disponible.</p>
+            </div>
+            <div id="info_disponible" style="display: none; background: #E8F5E9; border: 2px solid #2E7D32; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+                <strong style="color: #2E7D32;">📦 Disponibles en Almacén: <span id="cantidad_disponible">0</span></strong>
+                <p style="color: #2E7D32; font-size: 0.9rem; margin: 5px 0 0 0;">No puedes solicitar más de esta cantidad.</p>
             </div>
             <div class="form-group">
                 <label>Total</label>
@@ -361,8 +665,40 @@ function cerrarModalSolicitud() {
     document.getElementById('modalSolicitud').classList.remove('active');
     document.getElementById('select_repuesto').value = '';
     document.getElementById('cantidad_solicitud').value = '1';
+    document.getElementById('cantidad_solicitud').disabled = false;
     document.getElementById('precio_unitario_solicitud').value = '';
     document.getElementById('total_solicitud').value = '';
+    document.getElementById('alerta_stock').style.display = 'none';
+    document.getElementById('info_disponible').style.display = 'none';
+}
+
+function validarSolicitud() {
+    const select = document.getElementById('select_repuesto');
+    const option = select.options[select.selectedIndex];
+    const disponibles = parseInt(option.dataset.disponibles || 0);
+    const cantidad = parseInt(document.getElementById('cantidad_solicitud').value || 0);
+    
+    if (!select.value) {
+        alert('Por favor selecciona un repuesto');
+        return false;
+    }
+    
+    if (disponibles <= 0) {
+        alert('⚠️ YA NO HAY DISPONIBLE EN ALMACEN para este componente');
+        return false;
+    }
+    
+    if (cantidad <= 0) {
+        alert('La cantidad debe ser mayor a 0');
+        return false;
+    }
+    
+    if (cantidad > disponibles) {
+        alert('⚠️ No puedes solicitar más de ' + disponibles + ' unidades. Stock disponible: ' + disponibles);
+        return false;
+    }
+    
+    return true;
 }
 
 function cargarRepuestos() {
@@ -372,10 +708,19 @@ function cargarRepuestos() {
             const select = document.getElementById('select_repuesto');
             select.innerHTML = '<option value="">Seleccionar repuesto...</option>';
             data.forEach(repuesto => {
+                const disponibles = parseInt(repuesto.unidades_disponibles || 0);
                 const option = document.createElement('option');
                 option.value = repuesto.id;
-                option.textContent = `${repuesto.nombre} - ${repuesto.marca || 'Sin marca'} (Stock: ${repuesto.stock}) - S/ ${parseFloat(repuesto.precio_unitario || 0).toFixed(2)}`;
                 option.dataset.precio = repuesto.precio_unitario || 0;
+                option.dataset.disponibles = disponibles;
+                
+                if (disponibles <= 0) {
+                    option.textContent = `${repuesto.nombre} - ${repuesto.marca || 'Sin marca'} (AGOTADO) - S/ ${parseFloat(repuesto.precio_unitario || 0).toFixed(2)}`;
+                    option.disabled = true;
+                    option.style.color = '#C62828';
+                } else {
+                    option.textContent = `${repuesto.nombre} - ${repuesto.marca || 'Sin marca'} (Disp: ${disponibles}) - S/ ${parseFloat(repuesto.precio_unitario || 0).toFixed(2)}`;
+                }
                 select.appendChild(option);
             });
         });
@@ -393,10 +738,40 @@ function cargarCostoEquipo(equipoId) {
                 data.solicitudes.forEach(sol => {
                     const item = document.createElement('div');
                     item.className = 'solicitud-item';
-                    item.innerHTML = `
-                        <strong>${sol.repuesto_nombre}</strong> - ${sol.cantidad} x S/ ${parseFloat(sol.precio_unitario).toFixed(2)} = S/ ${parseFloat(sol.total).toFixed(2)}
-                        <br><small>${sol.motivo || 'Sin observaciones'}</small>
-                    `;
+                    
+                    if (sol.estado === 'recibido') {
+                        item.style.background = '#E8F5E9';
+                        item.style.borderLeft = '3px solid #2E7D32';
+                        item.innerHTML = `
+                            <strong style="color: #2E7D32;">✓ ${sol.repuesto_nombre}</strong> - ${sol.cantidad} x S/ ${parseFloat(sol.precio_unitario).toFixed(2)} = S/ ${parseFloat(sol.total).toFixed(2)}
+                            <br><small style="color: #2E7D32; font-weight: bold;">RECIBIDO - Suma al costo</small>
+                            <br><small>${sol.motivo || 'Sin observaciones'}</small>
+                        `;
+                    } else if (sol.estado === 'agotado') {
+                        item.style.background = '#FFEBEE';
+                        item.style.borderLeft = '3px solid #C62828';
+                        item.innerHTML = `
+                            <strong style="color: #C62828;">⚠️ ${sol.repuesto_nombre}</strong> - ${sol.cantidad} unidades
+                            <br><small style="color: #C62828; font-weight: bold;">AGOTADO - No suma al costo</small>
+                            <br><small>${sol.motivo || 'Sin observaciones'}</small>
+                        `;
+                    } else if (sol.estado === 'enviado') {
+                        item.style.background = '#E3F2FD';
+                        item.style.borderLeft = '3px solid #1565C0';
+                        item.innerHTML = `
+                            <strong style="color: #1565C0;">📦 ${sol.repuesto_nombre}</strong> - ${sol.cantidad} unidades
+                            <br><small style="color: #1565C0; font-weight: bold;">ENVIADO - Confirma recibido para sumar al costo</small>
+                            <br><small>${sol.motivo || 'Sin observaciones'}</small>
+                        `;
+                    } else {
+                        item.style.background = '#FFF3E0';
+                        item.style.borderLeft = '3px solid #E65100';
+                        item.innerHTML = `
+                            <strong style="color: #E65100;">⏳ ${sol.repuesto_nombre}</strong> - ${sol.cantidad} unidades
+                            <br><small style="color: #E65100; font-weight: bold;">SOLICITADO - Pendiente de envío</small>
+                            <br><small>${sol.motivo || 'Sin observaciones'}</small>
+                        `;
+                    }
                     lista.appendChild(item);
                 });
                 document.getElementById('solicitudes_anteriores').style.display = 'block';
@@ -409,11 +784,54 @@ function cargarCostoEquipo(equipoId) {
 document.getElementById('select_repuesto').addEventListener('change', function() {
     const option = this.options[this.selectedIndex];
     const precio = parseFloat(option.dataset.precio || 0);
+    const disponibles = parseInt(option.dataset.disponibles || 0);
+    const alertaStock = document.getElementById('alerta_stock');
+    const infoDisponible = document.getElementById('info_disponible');
+    const inputCantidad = document.getElementById('cantidad_solicitud');
+    
     document.getElementById('precio_unitario_solicitud').value = `S/ ${precio.toFixed(2)}`;
+    
+    if (!option.value) {
+        alertaStock.style.display = 'none';
+        infoDisponible.style.display = 'none';
+        inputCantidad.max = '';
+        inputCantidad.value = 1;
+        return;
+    }
+    
+    if (disponibles <= 0) {
+        alertaStock.style.display = 'block';
+        infoDisponible.style.display = 'none';
+        inputCantidad.max = 0;
+        inputCantidad.value = 0;
+        inputCantidad.disabled = true;
+    } else {
+        alertaStock.style.display = 'none';
+        infoDisponible.style.display = 'block';
+        document.getElementById('cantidad_disponible').textContent = disponibles;
+        inputCantidad.max = disponibles;
+        inputCantidad.disabled = false;
+        if (parseInt(inputCantidad.value) > disponibles) {
+            inputCantidad.value = disponibles;
+        }
+    }
+    
     calcularTotalSolicitud();
 });
 
-document.getElementById('cantidad_solicitud').addEventListener('input', calcularTotalSolicitud);
+document.getElementById('cantidad_solicitud').addEventListener('input', function() {
+    const select = document.getElementById('select_repuesto');
+    const option = select.options[select.selectedIndex];
+    const disponibles = parseInt(option.dataset.disponibles || 0);
+    const cantidad = parseInt(this.value || 0);
+    
+    if (disponibles > 0 && cantidad > disponibles) {
+        this.value = disponibles;
+        alert('⚠️ No puedes solicitar más de ' + disponibles + ' unidades');
+    }
+    
+    calcularTotalSolicitud();
+});
 
 function calcularTotalSolicitud() {
     const precio = parseFloat(document.getElementById('precio_unitario_solicitud').value.replace('S/ ', '') || 0);

@@ -1,5 +1,12 @@
 <?php $titulo = 'Pedidos de Repuestos'; ob_start(); ?>
 
+<?php if (!empty($_SESSION['error_pedido'])): ?>
+<div class="alert alert-error" style="background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #c62828; font-weight: bold; font-size: 1.1em;">
+    ⚠️ <?= htmlspecialchars($_SESSION['error_pedido']) ?>
+    <?php unset($_SESSION['error_pedido']); ?>
+</div>
+<?php endif; ?>
+
 <style>
 .solicitudes-tecnicos {
     background: #FFF3E0;
@@ -194,8 +201,8 @@
                     <option value="">Seleccionar repuesto...</option>
                     <?php if (!empty($repuestos)): ?>
                         <?php foreach ($repuestos as $r): ?>
-                        <option value="<?= $r['id'] ?>" data-precio="<?= $r['precio_unitario'] ?>" data-stock="<?= $r['stock'] ?>">
-                            <?= htmlspecialchars($r['nombre']) ?> - <?= htmlspecialchars($r['marca'] ?? '') ?> (Stock: <?= $r['stock'] ?>)
+                        <option value="<?= $r['id'] ?>" data-precio="<?= $r['precio_unitario'] ?>" data-stock="<?= $r['unidades_disponibles'] ?? 0 ?>">
+                            <?= htmlspecialchars($r['nombre']) ?> - <?= htmlspecialchars($r['marca'] ?? '') ?> (Disp: <?= $r['unidades_disponibles'] ?? 0 ?>)
                         </option>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -253,7 +260,22 @@ function actualizarPrecio() {
     var select = document.getElementById('selectRepuesto');
     var option = select.options[select.selectedIndex];
     var precio = option.getAttribute('data-precio') || 0;
+    var stock = parseInt(option.getAttribute('data-stock')) || 0;
     document.getElementById('precioUnitario').value = parseFloat(precio).toFixed(2);
+    
+    var inputCantidad = document.getElementById('inputCantidad');
+    if (stock <= 0) {
+        alert('⚠️ YA NO HAY DISPONIBLE EN ALMACEN para este repuesto');
+        inputCantidad.max = 0;
+        inputCantidad.value = 0;
+        inputCantidad.disabled = true;
+    } else {
+        inputCantidad.max = stock;
+        inputCantidad.disabled = false;
+        if (parseInt(inputCantidad.value) > stock) {
+            inputCantidad.value = stock;
+        }
+    }
     calcularTotal();
 }
 
@@ -268,6 +290,7 @@ function cerrarModal() {
     document.getElementById('modalNuevo').classList.remove('active');
     document.getElementById('selectRepuesto').value = '';
     document.getElementById('inputCantidad').value = 1;
+    document.getElementById('inputCantidad').disabled = false;
     document.getElementById('precioUnitario').value = '0.00';
     document.getElementById('totalPedido').value = '0.00';
 }

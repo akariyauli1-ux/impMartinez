@@ -115,13 +115,15 @@ class PedidoController extends Controller {
         require_once __DIR__ . '/../Models/SolicitudComponente.php';
         $solicitudModel = new \SolicitudComponente();
         $solicitudes = $solicitudModel->obtenerTodas();
+        $compras_externas = $solicitudModel->obtenerComprasExternas();
         
         $this->view('pedidos/almacen', [
             'usuario' => $this->obtenerUsuarioActual(),
             'pendientes' => $pendientes,
             'todos_pedidos' => $todos,
             'total_pendientes' => $total_pendientes,
-            'solicitudes' => $solicitudes
+            'solicitudes' => $solicitudes,
+            'compras_externas' => $compras_externas
         ]);
     }
     
@@ -215,10 +217,56 @@ class PedidoController extends Controller {
             return;
         }
         
+        $repuesto = $this->repuestoModel->obtenerPorId($solicitud['repuesto_id']);
+        $disponibles = $repuesto['unidades_disponibles'] ?? 0;
+        
+        if ($disponibles < $solicitud['cantidad']) {
+            $_SESSION['error_pedido'] = 'YA NO HAY DISPONIBLE EN ALMACEN para "' . $repuesto['nombre'] . '". Stock actual: ' . $disponibles;
+            $this->redirect('pedidos/almacen');
+            return;
+        }
+        
         $solicitudModel->actualizarEstado($solicitud_id, 'enviado');
         
-        $this->repuestoModel->actualizarStock($solicitud['repuesto_id'], $solicitud['cantidad'], 'resta');
-        $this->repuestoModel->incrementarSolicitudes($solicitud['repuesto_id'], $solicitud['cantidad']);
+        $this->repuestoModel->confirmarSalidaInventario($solicitud['repuesto_id'], $solicitud['cantidad'], $_SESSION['usuario_id']);
+        
+        $this->redirect('pedidos/almacen');
+    }
+    
+    public function marcarAgotado() {
+        $this->verificarRol(['almacenista']);
+        
+        $solicitud_id = $_POST['solicitud_id'] ?? null;
+        
+        if (!$solicitud_id) {
+            $this->redirect('pedidos/almacen');
+            return;
+        }
+        
+        require_once __DIR__ . '/../Models/SolicitudComponente.php';
+        $solicitudModel = new \SolicitudComponente();
+        
+        $solicitud = $solicitudModel->obtenerPorIdConDetalles($solicitud_id);
+        
+        if (!$solicitud) {
+            $this->redirect('pedidos/almacen');
+            return;
+        }
+        
+        $solicitudModel->actualizarEstado($solicitud_id, 'agotado');
+        
+        $this->repuestoModel->devolverStockReservado($solicitud['repuesto_id'], $solicitud['cantidad']);
+        
+        $solicitudModel->actualizarCostoEquipo($solicitud['equipo_id']);
+        
+        require_once __DIR__ . '/../Models/Equipo.php';
+        $equipoModel = new \Equipo();
+        $equipo = $equipoModel->obtenerPorId($solicitud['equipo_id']);
+        
+        $observacion_actual = $equipo['observaciones'] ?? '';
+        $nueva_observacion = $observacion_actual . "\n[" . date('d/m/Y H:i') . "] COMPONENTE AGOTADO: " . $solicitud['repuesto_nombre'] . " (Cantidad solicitada: " . $solicitud['cantidad'] . ") - Sin stock disponible en almacen";
+        
+        $equipoModel->actualizar($solicitud['equipo_id'], ['observaciones' => trim($nueva_observacion)]);
         
         $this->redirect('pedidos/almacen');
     }
@@ -237,7 +285,91 @@ class PedidoController extends Controller {
         $tecnico_id = $_SESSION['usuario_id'];
         $solicitudModel->confirmarRecibido($solicitud_id, $tecnico_id);
         
+        $solicitud = $solicitudModel->obtenerPorIdConDetalles($solicitud_id);
+        if ($solicitud) {
+            $solicitudModel->actualizarCostoEquipo($solicitud['equipo_id']);
+        }
+        
         $this->redirect('tecnico/mis-trabajos');
+    }
+    
+    public function comprarExterno() {
+        $this->verificarRol(['almacenista']);
+        
+        $solicitud_id = $_POST['solicitud_id'] ?? null;
+        $proveedor = $_POST['proveedor'] ?? '';
+        $precio_unitario = $_POST['precio_unitario'] ?? 0;
+        
+        if (!$solicitud_id) {
+            $this->redirect('pedidos/almacen');
+            return;
+        }
+        
+        require_once __DIR__ . '/../Models/SolicitudComponente.php';
+        $solicitudModel = new \SolicitudComponente();
+        
+        $solicitud = $solicitudModel->obtenerPorIdConDetalles($solicitud_id);
+        
+        if (!$solicitud) {
+            $this->redirect('pedidos/almacen');
+            return;
+        }
+        
+        $solicitudModel->actualizarEstado($solicitud_id, 'agotado');
+        
+        $this->repuestoModel->devolverStockReservado($solicitud['repuesto_id'], $solicitud['cantidad']);
+        
+        $compra_id = $solicitudModel->crearCompraExterna(
+            $solicitud_id,
+            $solicitud['equipo_id'],
+            $solicitud['repuesto_id'],
+            $solicitud['tecnico_id'] ?? 0,
+            $solicitud['cantidad'],
+            $precio_unitario,
+            $proveedor
+        );
+        
+        $solicitudModel->actualizarCompraExternaId($solicitud_id, $compra_id);
+        
+        require_once __DIR__ . '/../Models/Equipo.php';
+        $equipoModel = new \Equipo();
+        $equipo = $equipoModel->obtenerPorId($solicitud['equipo_id']);
+        
+        $observacion_actual = $equipo['observaciones'] ?? '';
+        $nueva_observacion = $observacion_actual . "\n[" . date('d/m/Y H:i') . "] COMPRA EXTERNA: " . $solicitud['repuesto_nombre'] . " (Cant: " . $solicitud['cantidad'] . ") - Proveedor: " . $proveedor . " - Precio est: S/ " . number_format($precio_unitario, 2);
+        
+        $equipoModel->actualizar($solicitud['equipo_id'], ['observaciones' => trim($nueva_observacion)]);
+        
+        $this->redirect('pedidos/almacen');
+    }
+    
+    public function recibirCompraExterna() {
+        $this->verificarRol(['almacenista']);
+        
+        $compra_id = $_POST['compra_id'] ?? null;
+        
+        if (!$compra_id) {
+            $this->redirect('pedidos/almacen');
+            return;
+        }
+        
+        require_once __DIR__ . '/../Models/SolicitudComponente.php';
+        $solicitudModel = new \SolicitudComponente();
+        
+        $compra = $solicitudModel->obtenerCompraExternaPorId($compra_id);
+        
+        if (!$compra || $compra['estado'] !== 'pendiente') {
+            $this->redirect('pedidos/almacen');
+            return;
+        }
+        
+        $this->repuestoModel->actualizarStock($compra['repuesto_id'], $compra['cantidad'], 'suma');
+        
+        $solicitudModel->marcarCompraExternaRecibida($compra_id);
+        
+        $solicitudModel->actualizarEstadoSolicitud($compra['solicitud_id'], 'enviado');
+        
+        $this->redirect('pedidos/almacen');
     }
     
     public function historial() {
