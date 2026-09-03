@@ -150,26 +150,36 @@
         
         <!-- Ajuste de Precio -->
         <div class="seccion" style="background: #fff3e0; padding: 20px; margin-bottom: 20px; border-left: 4px solid #ff9800;">
-            <h3 style="margin: 0 0 15px 0; color: #ff9800;">💰 Ajuste de Precio de Reparación</h3>
+            <h3 style="margin: 0 0 15px 0; color: #ff9800;">💰 Costos de Reparación</h3>
             
             <div class="form-group">
                 <label for="costo_estimado">Costo Estimado Original:</label>
                 <input type="text" id="costo_estimado" value="S/ <?= number_format($equipo['costo_estimado'] ?? 0, 2) ?>" readonly style="background: #f5f5f5;">
             </div>
             
+            <div class="form-group">
+                <label for="costo_reparacion">Costo de Reparación (Mano de Obra): *</label>
+                <input type="number" id="costo_reparacion" step="0.01" min="0" required 
+                       value="<?= number_format(0, 2, '.', '') ?>" 
+                       placeholder="Ingrese el costo de mano de obra"
+                       oninput="calcularCostoFinal()">
+                <small style="color: #666;">Costo por el trabajo de reparación realizado</small>
+            </div>
+            
             <?php if (!empty($componentes)): ?>
             <div class="form-group">
-                <label for="costo_componentes">Costo de Componentes (calculado):</label>
+                <label for="costo_componentes">Costo de Componentes:</label>
                 <input type="text" id="costo_componentes" value="S/ <?= number_format($equipo['costo_reparacion'] ?? 0, 2) ?>" readonly style="background: #E8F5E9; color: #2E7D32; font-weight: bold;">
             </div>
+            <?php else: ?>
+            <input type="hidden" id="costo_componentes_valor" value="0">
             <?php endif; ?>
             
-            <div class="form-group">
-                <label for="costo_final">Costo Final de Reparación: *</label>
-                <input type="number" id="costo_final" name="costo_final" step="0.01" min="0" required 
-                       value="<?= number_format($equipo['costo_reparacion'] ?? 0, 2, '.', '') ?>" 
-                       placeholder="Ingrese el costo final">
-                <small style="color: #666;">Puede ajustar el precio según el trabajo realizado. Se sugiere el costo de componentes como base.</small>
+            <div class="form-group" style="background: #E3F2FD; padding: 15px; border-radius: 8px; border: 2px solid #1565C0;">
+                <label for="costo_final" style="font-size: 1.1em; color: #1565C0; font-weight: bold;">Costo Final de Reparación:</label>
+                <input type="text" id="costo_final" value="S/ <?= number_format($equipo['costo_reparacion'] ?? 0, 2) ?>" readonly style="background: white; color: #1565C0; font-weight: bold; font-size: 1.3em; border: none;">
+                <input type="hidden" name="costo_final" id="costo_final_hidden" value="<?= number_format($equipo['costo_reparacion'] ?? 0, 2, '.', '') ?>">
+                <small style="color: #666; display: block; margin-top: 5px;">Este valor se calcula automáticamente: Costo de Reparación + Costo de Componentes</small>
             </div>
         </div>
         
@@ -281,6 +291,26 @@ function handleTouchMove(e) {
 function limpiarFirma() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
+
+// Calcular costo final automáticamente
+function calcularCostoFinal() {
+    const costoReparacion = parseFloat(document.getElementById('costo_reparacion').value) || 0;
+    <?php if (!empty($componentes)): ?>
+    const costoComponentes = <?= $equipo['costo_reparacion'] ?? 0 ?>;
+    <?php else: ?>
+    const costoComponentes = 0;
+    <?php endif; ?>
+    
+    const costoFinal = costoReparacion + costoComponentes;
+    
+    document.getElementById('costo_final').value = 'S/ ' + costoFinal.toFixed(2);
+    document.getElementById('costo_final_hidden').value = costoFinal.toFixed(2);
+}
+
+// Calcular al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    calcularCostoFinal();
+});
 
 // Validar formulario antes de enviar
 document.getElementById('formEntrega').addEventListener('submit', function(e) {
