@@ -7,18 +7,6 @@
 </div>
 <?php endif; ?>
 
-<?php if ($componentes_pendientes > 0): ?>
-<div style="background: #FFF3E0; border: 2px solid #FF9800; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
-    <div style="background: #FF9800; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; font-weight: bold;">
-        <?= $componentes_pendientes ?>
-    </div>
-    <div>
-        <strong style="color: #E65100; font-size: 1.1em;">📦 Esperando <?= $componentes_pendientes ?> componente(s) de Almacén</strong>
-        <p style="color: #BF360C; margin: 5px 0 0 0; font-size: 0.9em;">Tienes solicitudes pendientes de componentes para tus trabajos</p>
-    </div>
-</div>
-<?php endif; ?>
-
 <style>
 .costo-badge {
     background: #2196F3;
@@ -419,6 +407,14 @@ foreach ($trabajos as $t) {
                         <td><?= date('d/m/Y', strtotime($trabajo['fecha_asignacion'])) ?></td>
                         <td>
                             <strong><?= htmlspecialchars($trabajo['cliente_nombre'] . ' ' . $trabajo['cliente_ap']) ?></strong>
+                            <?php 
+                            $componentes_pendientes_equipo = $componentes_por_equipo[$trabajo['id']] ?? 0;
+                            if ($componentes_pendientes_equipo > 0): 
+                            ?>
+                                <div style="background: #FFF3E0; border: 1px solid #FF9800; border-radius: 4px; padding: 4px 8px; margin-top: 5px; font-size: 0.8em;">
+                                    <span style="color: #E65100; font-weight: bold;">📦 Esperando <?= $componentes_pendientes_equipo ?> componente(s)</span>
+                                </div>
+                            <?php endif; ?>
                         </td>
                         <td><?= htmlspecialchars($trabajo['cliente_tel'] ?? '-') ?></td>
                         <td>

@@ -110,6 +110,12 @@ class SolicitudComponente extends Model {
         return $result['total'] ?? 0;
     }
     
+    public function contarPendientesPorEquipo($equipo_id) {
+        $sql = "SELECT COUNT(*) as total FROM solicitudes_componentes WHERE equipo_id = ? AND estado IN ('solicitado', 'enviado')";
+        $result = $this->fetchOne($sql, [$equipo_id]);
+        return $result['total'] ?? 0;
+    }
+    
     public function obtenerCostoTotalEquipo($equipo_id) {
         $sql = "SELECT COALESCE(SUM(total), 0) as total FROM solicitudes_componentes WHERE equipo_id = ? AND estado = 'recibido'";
         $result = $this->fetchOne($sql, [$equipo_id]);

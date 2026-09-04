@@ -68,6 +68,12 @@ class TecnicoController extends Controller {
         $solicitudes_agotadas = $this->solicitudModel->obtenerAgotadasTecnico($tecnico_id);
         $componentes_pendientes = $this->solicitudModel->contarPendientesTecnico($tecnico_id);
         
+        // Obtener componentes pendientes por equipo
+        $componentes_por_equipo = [];
+        foreach ($trabajos as $trabajo) {
+            $componentes_por_equipo[$trabajo['id']] = $this->solicitudModel->contarPendientesPorEquipo($trabajo['id']);
+        }
+        
         $this->solicitudModel->marcarNotificacionesLeidas($tecnico_id);
         
         $this->view('tecnico/mis_trabajos', [
@@ -76,6 +82,7 @@ class TecnicoController extends Controller {
             'solicitudes_enviadas' => $solicitudes_enviadas,
             'solicitudes_agotadas' => $solicitudes_agotadas,
             'componentes_pendientes' => $componentes_pendientes,
+            'componentes_por_equipo' => $componentes_por_equipo,
             'filtros' => $filtros
         ]);
     }
