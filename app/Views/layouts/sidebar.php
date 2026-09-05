@@ -107,6 +107,14 @@ $sucursal_nombre = $usuario['sucursal_nombre'] ?? 'Central';
             <h2><?= APP_NAME ?></h2>
         <?php endif; ?>
         <p><?= htmlspecialchars($sucursal_nombre) ?></p>
+        
+        <div class="user-info-header" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--negro-suave);">
+            <div class="user-name" style="font-weight: 600; font-size: 0.95rem; color: var(--blanco);"><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellido_paterno']) ?></div>
+            <div class="user-role" style="color: var(--gris); font-size: 0.8rem; margin-top: 3px;">
+                <strong style="color: var(--rojo);"><?= $rol_labels[$rol_activo] ?? $rol_activo ?></strong>
+            </div>
+            <a href="<?= APP_URL ?>/public/logout" class="btn btn-outline btn-sm btn-block" style="margin-top: 10px; font-size: 0.8rem; padding: 6px 12px;">Cerrar Sesión</a>
+        </div>
     </div>
     
     <nav class="sidebar-nav">
@@ -119,29 +127,17 @@ $sucursal_nombre = $usuario['sucursal_nombre'] ?? 'Central';
     </nav>
     
     <div class="sidebar-footer">
-        <div class="user-info">
-            <div class="name"><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellido_paterno']) ?></div>
-            <div class="role" style="margin-bottom: 10px;">
-                <?php 
-                // Mostrar rol activo
-                echo '<strong>' . ($rol_labels[$rol_activo] ?? $rol_activo) . '</strong>';
-                
-                // Si tiene múltiples roles, mostrar selector
-                if (count($roles_usuario) > 1):
-                ?>
-                    <div style="margin-top: 10px;">
-                        <select onchange="window.location.href='<?= APP_URL ?>/public/auth/cambiar-rol?rol=' + this.value" 
-                                style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--gris-claro); font-size: 13px; cursor: pointer;">
-                            <?php foreach ($roles_usuario as $rol): ?>
-                                <option value="<?= $rol ?>" <?= $rol === $rol_activo ? 'selected' : '' ?>>
-                                    <?= $rol_labels[$rol] ?? $rol ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                <?php endif; ?>
+        <?php if (count($roles_usuario) > 1): ?>
+            <div style="margin-bottom: 10px;">
+                <select onchange="window.location.href='<?= APP_URL ?>/public/auth/cambiar-rol?rol=' + this.value" 
+                        style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--gris-claro); font-size: 13px; cursor: pointer;">
+                    <?php foreach ($roles_usuario as $rol): ?>
+                        <option value="<?= $rol ?>" <?= $rol === $rol_activo ? 'selected' : '' ?>>
+                            <?= $rol_labels[$rol] ?? $rol ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
-        </div>
-        <a href="<?= APP_URL ?>/public/logout" class="btn btn-outline btn-sm btn-block">Cerrar Sesión</a>
+        <?php endif; ?>
     </div>
 </div>

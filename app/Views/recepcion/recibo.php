@@ -310,10 +310,12 @@
     <?php if (!empty($fotos)): ?>
     <div class="seccion">
         <h3>📸 Fotos del Equipo</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;">
             <?php foreach ($fotos as $foto): ?>
                 <div style="text-align: center;">
-                    <img src="<?= APP_URL ?>/public/imagen/foto-equipo?id=<?= $foto['id'] ?>" alt="Foto del equipo" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;">
+                    <div style="width: 150px; height: 150px; margin: 0 auto; overflow: hidden; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5;">
+                        <img src="<?= APP_URL ?>/public/imagen/foto-equipo?id=<?= $foto['id'] ?>" alt="Foto del equipo" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
                     <p style="margin-top: 5px; font-size: 12px; color: #666;"><?= htmlspecialchars(ucfirst($foto['tipo'] ?? 'General')) ?></p>
                 </div>
             <?php endforeach; ?>

@@ -1,5 +1,12 @@
 <?php $titulo = 'Mis Trabajos'; ob_start(); ?>
 
+<?php if (!empty($_SESSION['mensaje_exito'])): ?>
+<div style="background: #E8F5E9; border: 2px solid #4CAF50; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+    <strong style="color: #2E7D32;">✅ <?= htmlspecialchars($_SESSION['mensaje_exito']) ?></strong>
+    <?php unset($_SESSION['mensaje_exito']); ?>
+</div>
+<?php endif; ?>
+
 <?php if (!empty($_SESSION['error_solicitud'])): ?>
 <div style="background: #FFEBEE; border: 2px solid #C62828; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
     <strong style="color: #C62828;">⚠️ <?= htmlspecialchars($_SESSION['error_solicitud']) ?></strong>
@@ -273,6 +280,7 @@
                     <th>Repuesto</th>
                     <th>Cantidad</th>
                     <th>Estado</th>
+                    <th>Acción</th>
                 </tr>
             </thead>
             <tbody>
@@ -297,8 +305,10 @@
                                 </span>
                                 <div style="font-size: 0.75rem; color: #FF6F00; margin-top: 4px;">
                                     Proveedor: <?= htmlspecialchars($sol['proveedor'] ?: 'Por definir') ?>
-                                    <?php if (!empty($sol['ce_precio'])): ?>
+                                    <?php if (!empty($sol['ce_precio']) && $sol['ce_precio'] > 0): ?>
                                         <br>Precio est: S/ <?= number_format($sol['ce_precio'], 2) ?>
+                                    <?php else: ?>
+                                        <br><em>Precio por confirmar</em>
                                     <?php endif; ?>
                                 </div>
                             <?php elseif ($sol['ce_estado'] === 'recibida'): ?>
@@ -312,9 +322,139 @@
                             <?php endif; ?>
                         <?php else: ?>
                             <span class="badge badge-rojo" style="background: #C62828; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold;">
-                                ⚠️ YA NO HAY DISPONIBLE EN ALMACEN
+                                ⚠️ AGOTADO
                             </span>
                         <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php if (empty($sol['compra_externa_id'])): ?>
+                            <button type="button" class="btn btn-sm" style="background: #FF6F00; color: white;" onclick="abrirModalCompraExternaTecnico(<?= $sol['id'] ?>, '<?= htmlspecialchars($sol['repuesto_nombre']) ?>', <?= $sol['cantidad'] ?>)">
+                                🛒 Solicitar Compra Externa
+                            </button>
+                        <?php else: ?>
+                            <span style="color: #999; font-size: 0.85rem;">Solicitud enviada</span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>
+
+<?php if (!empty($solicitudes_repuestos_nuevos)): ?>
+<div style="background: #E8F5E9; border: 2px solid #4CAF50; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px;">
+    <h3 style="color: #2E7D32; margin-bottom: 10px;">🔍 Solicitudes de Repuestos Nuevos</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Repuesto Solicitado</th>
+                    <th>Cliente</th>
+                    <th>Equipo</th>
+                    <th>Cant.</th>
+                    <th>Estado</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($solicitudes_repuestos_nuevos as $srn): ?>
+                <tr>
+                    <td><?= date('d/m/Y H:i', strtotime($srn['fecha_solicitud'])) ?></td>
+                    <td>
+                        <strong><?= htmlspecialchars($srn['nombre_repuesto']) ?></strong>
+                        <?php if (!empty($srn['marca'])): ?>
+                            <br><small><?= htmlspecialchars($srn['marca']) ?></small>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= htmlspecialchars($srn['cliente_nombre'] . ' ' . $srn['cliente_ap']) ?></td>
+                    <td>
+                        <strong><?= htmlspecialchars($srn['tipo_equipo']) ?></strong><br>
+                        <small><?= htmlspecialchars($srn['equipo_marca'] . ' ' . $srn['equipo_modelo']) ?></small>
+                    </td>
+                    <td><strong><?= $srn['cantidad'] ?></strong></td>
+                    <td>
+                        <?php if ($srn['estado'] === 'pendiente'): ?>
+                            <span class="badge badge-amarillo">⏳ Pendiente</span>
+                        <?php elseif ($srn['estado'] === 'creado'): ?>
+                            <span class="badge badge-verde">✓ Creado</span>
+                            <?php if (!empty($srn['repuesto_nombre'])): ?>
+                                <div style="font-size: 0.75rem; color: #2E7D32; margin-top: 4px;">
+                                    <?= htmlspecialchars($srn['repuesto_nombre']) ?>
+                                </div>
+                            <?php endif; ?>
+                        <?php elseif ($srn['estado'] === 'comprado_externo'): ?>
+                            <span class="badge badge-azul">🛒 Compra Externa</span>
+                            <?php if (!empty($srn['proveedor'])): ?>
+                                <div style="font-size: 0.75rem; color: #1565C0; margin-top: 4px;">
+                                    Prov: <?= htmlspecialchars($srn['proveedor']) ?>
+                                </div>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <span class="badge badge-gris"><?= ucfirst($srn['estado']) ?></span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php if ($srn['precio_unitario'] > 0): ?>
+                            <strong style="color: #2E7D32;">S/ <?= number_format($srn['precio_unitario'], 2) ?></strong>
+                            <div style="font-size: 0.75rem; color: #666;">
+                                Total: S/ <?= number_format($srn['precio_unitario'] * $srn['cantidad'], 2) ?>
+                            </div>
+                        <?php else: ?>
+                            <span style="color: #999; font-size: 0.85rem;">Por definir</span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>
+
+<?php if (!empty($compras_externas_pendientes)): ?>
+<div style="background: #E3F2FD; border: 2px solid #1565C0; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px;">
+    <h3 style="color: #1565C0; margin-bottom: 10px;">📦 Repuestos Nuevos Recibidos por Almacén - Pendientes de Confirmación</h3>
+    <p style="color: #1565C0; font-size: 0.9rem; margin-bottom: 15px;">Almacén ha recibido estos repuestos. Confirma que los recibiste para que se sumen al costo de reparación.</p>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Equipo</th>
+                    <th>Repuesto</th>
+                    <th>Cant.</th>
+                    <th>Proveedor</th>
+                    <th>Precio Unit.</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($compras_externas_pendientes as $ce): ?>
+                <tr>
+                    <td><?= date('d/m/Y H:i', strtotime($ce['fecha_solicitud'])) ?></td>
+                    <td><?= htmlspecialchars($ce['cliente_nombre'] . ' ' . $ce['cliente_ap']) ?></td>
+                    <td>
+                        <strong><?= htmlspecialchars($ce['tipo_equipo']) ?></strong><br>
+                        <small><?= htmlspecialchars($ce['equipo_marca'] . ' ' . $ce['equipo_modelo']) ?></small>
+                    </td>
+                    <td>
+                        <strong><?= htmlspecialchars($ce['nombre_repuesto']) ?></strong>
+                        <?php if (!empty($ce['marca_repuesto'])): ?>
+                            <br><small><?= htmlspecialchars($ce['marca_repuesto']) ?></small>
+                        <?php endif; ?>
+                    </td>
+                    <td><strong><?= $ce['cantidad'] ?></strong></td>
+                    <td><?= htmlspecialchars($ce['proveedor'] ?? '-') ?></td>
+                    <td><strong style="color: #1565C0;">S/ <?= number_format($ce['precio_unitario'], 2) ?></strong></td>
+                    <td>
+                        <form method="POST" action="<?= APP_URL ?>/public/tecnico/confirmar-recibido-repuesto-nuevo" style="display: inline;" onsubmit="return confirm('¿Confirmas que recibiste este repuesto? Se agregará S/ <?= number_format($ce['precio_unitario'] * $ce['cantidad'], 2) ?> al costo de reparación del equipo.');">
+                            <input type="hidden" name="compra_id" value="<?= $ce['id'] ?>">
+                            <button type="submit" class="btn btn-success btn-sm">✓ Confirmar Recibido</button>
+                        </form>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -470,6 +610,9 @@ foreach ($trabajos as $t) {
                                 <button class="btn-solicitar" onclick="abrirModalSolicitud(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>')">
                                     + Solicitar Componente
                                 </button>
+                                <button class="btn-solicitar" style="background: #9C27B0; margin-top: 5px;" onclick="abrirModalRepuestoNuevo(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>')">
+                                    🔍 Repuesto No Disponible
+                                </button>
                             <?php endif; ?>
                         </td>
                         <td>
@@ -616,6 +759,109 @@ foreach ($trabajos as $t) {
             <div style="display: flex; gap: 10px;">
                 <button type="submit" class="btn btn-primary">Solicitar</button>
                 <button type="button" class="btn btn-outline" onclick="cerrarModalSolicitud()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalCompraExternaTecnico" class="modal-overlay">
+    <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2>🛒 Solicitar Compra Externa</h2>
+            <button class="modal-close" onclick="cerrarModalCompraExternaTecnico()">×</button>
+        </div>
+        <form method="POST" action="<?= APP_URL ?>/public/tecnico/solicitar-compra-externa">
+            <input type="hidden" name="solicitud_id" id="compra_externa_solicitud_id">
+            
+            <div class="form-group">
+                <label>Repuesto</label>
+                <input type="text" id="compra_externa_repuesto" readonly style="background: #f5f5f5;">
+            </div>
+            
+            <div class="form-group">
+                <label>Cantidad Solicitada</label>
+                <input type="text" id="compra_externa_cantidad" readonly style="background: #f5f5f5;">
+            </div>
+            
+            <div class="form-group">
+                <label>Proveedor Sugerido</label>
+                <input type="text" name="proveedor" id="compra_externa_proveedor" placeholder="Opcional - Si no lo sabes, déjalo vacío">
+                <small style="color: #666; font-size: 0.85rem;">Si no conoces el proveedor, almacén lo buscará</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Precio Unitario Estimado (S/)</label>
+                <input type="number" name="precio_unitario" id="compra_externa_precio" step="0.01" min="0" placeholder="Opcional - Si no lo sabes, déjalo en 0">
+                <small style="color: #666; font-size: 0.85rem;">Si no conoces el precio, almacén lo averiguará con el proveedor</small>
+            </div>
+            
+            <div style="background: #FFF3E0; border: 1px solid #FFB74D; border-radius: 8px; padding: 12px; margin: 16px 0;">
+                <small style="color: #E65100;">
+                    <strong>Nota:</strong> Solo necesitas indicar qué componente necesitas. Almacén se encargará de buscar el proveedor y confirmar el precio.
+                </small>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn" style="background: #FF6F00; color: white;">🛒 Solicitar Compra</button>
+                <button type="button" class="btn btn-outline" onclick="cerrarModalCompraExternaTecnico()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalRepuestoNuevo" class="modal-overlay">
+    <div class="modal" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2>🔍 Solicitar Repuesto que No Existe en Almacén</h2>
+            <button class="modal-close" onclick="cerrarModalRepuestoNuevo()">×</button>
+        </div>
+        <form method="POST" action="<?= APP_URL ?>/public/tecnico/solicitar-repuesto-nuevo">
+            <input type="hidden" name="equipo_id" id="repuesto_nuevo_equipo_id">
+            
+            <div class="form-group">
+                <label>Equipo</label>
+                <input type="text" id="repuesto_nuevo_equipo_nombre" readonly style="background: #f5f5f5;">
+            </div>
+            
+            <div class="form-group">
+                <label>Nombre del Repuesto *</label>
+                <input type="text" name="nombre_repuesto" id="repuesto_nuevo_nombre" required placeholder="Ej: Pantalla iPhone 14 Pro Max">
+                <small style="color: #666; font-size: 0.85rem;">Describe el repuesto que necesitas</small>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Marca</label>
+                    <input type="text" name="marca" id="repuesto_nuevo_marca" placeholder="Ej: Apple, Samsung">
+                </div>
+                <div class="form-group">
+                    <label>Cantidad *</label>
+                    <input type="number" name="cantidad" id="repuesto_nuevo_cantidad" min="1" value="1" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Descripción / Especificaciones</label>
+                <textarea name="descripcion" rows="3" placeholder="Color, tamaño, características específicas..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Motivo / Observaciones</label>
+                <textarea name="motivo" rows="2" placeholder="¿Por qué necesitas este repuesto?"></textarea>
+            </div>
+            
+            <div style="background: #E8F5E9; border: 1px solid #4CAF50; border-radius: 8px; padding: 12px; margin: 16px 0;">
+                <small style="color: #2E7D32;">
+                    <strong>📋 ¿Cómo funciona?</strong><br>
+                    1. Tú solicitas el repuesto que no existe en almacén<br>
+                    2. Almacén busca el componente y lo registra<br>
+                    3. Cuando almacén ingrese el precio, se sumará automáticamente al costo de reparación del equipo
+                </small>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">🔍 Solicitar Repuesto</button>
+                <button type="button" class="btn btn-outline" onclick="cerrarModalRepuestoNuevo()">Cancelar</button>
             </div>
         </form>
     </div>
@@ -899,6 +1145,40 @@ document.getElementById('modalRechazo').addEventListener('click', function(e) {
 
 document.getElementById('modalSolicitud').addEventListener('click', function(e) {
     if (e.target === this) cerrarModalSolicitud();
+});
+
+function abrirModalCompraExternaTecnico(solicitudId, repuestoNombre, cantidad) {
+    document.getElementById('compra_externa_solicitud_id').value = solicitudId;
+    document.getElementById('compra_externa_repuesto').value = repuestoNombre;
+    document.getElementById('compra_externa_cantidad').value = cantidad;
+    document.getElementById('compra_externa_proveedor').value = '';
+    document.getElementById('compra_externa_precio').value = '';
+    document.getElementById('modalCompraExternaTecnico').classList.add('active');
+}
+
+function cerrarModalCompraExternaTecnico() {
+    document.getElementById('modalCompraExternaTecnico').classList.remove('active');
+}
+
+document.getElementById('modalCompraExternaTecnico').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalCompraExternaTecnico();
+});
+
+function abrirModalRepuestoNuevo(equipoId, equipoNombre) {
+    document.getElementById('repuesto_nuevo_equipo_id').value = equipoId;
+    document.getElementById('repuesto_nuevo_equipo_nombre').value = equipoNombre;
+    document.getElementById('repuesto_nuevo_nombre').value = '';
+    document.getElementById('repuesto_nuevo_marca').value = '';
+    document.getElementById('repuesto_nuevo_cantidad').value = '1';
+    document.getElementById('modalRepuestoNuevo').classList.add('active');
+}
+
+function cerrarModalRepuestoNuevo() {
+    document.getElementById('modalRepuestoNuevo').classList.remove('active');
+}
+
+document.getElementById('modalRepuestoNuevo').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalRepuestoNuevo();
 });
 </script>
 

@@ -5,6 +5,7 @@ require_once __DIR__ . '/../Models/Usuario.php';
 require_once __DIR__ . '/../Models/AsignacionTecnico.php';
 require_once __DIR__ . '/../Models/SeguimientoTrabajo.php';
 require_once __DIR__ . '/../Models/SolicitudComponente.php';
+require_once __DIR__ . '/../Models/SolicitudRepuestoNuevo.php';
 require_once __DIR__ . '/../Models/Repuesto.php';
 
 class TecnicoController extends Controller {
@@ -13,6 +14,7 @@ class TecnicoController extends Controller {
     private $asignacionTecnicoModel;
     private $seguimientoModel;
     private $solicitudModel;
+    private $solicitudRepuestoNuevoModel;
     private $repuestoModel;
     
     public function __construct() {
@@ -21,6 +23,7 @@ class TecnicoController extends Controller {
         $this->asignacionTecnicoModel = new AsignacionTecnico();
         $this->seguimientoModel = new SeguimientoTrabajo();
         $this->solicitudModel = new SolicitudComponente();
+        $this->solicitudRepuestoNuevoModel = new SolicitudRepuestoNuevo();
         $this->repuestoModel = new Repuesto();
         $this->verificarSesion();
         $this->verificarRol(['tecnico']);
@@ -66,6 +69,8 @@ class TecnicoController extends Controller {
         
         $solicitudes_enviadas = $this->solicitudModel->obtenerEnviadasTecnico($tecnico_id);
         $solicitudes_agotadas = $this->solicitudModel->obtenerAgotadasTecnico($tecnico_id);
+        $solicitudes_repuestos_nuevos = $this->solicitudRepuestoNuevoModel->obtenerPorTecnico($tecnico_id);
+        $compras_externas_pendientes = $this->solicitudRepuestoNuevoModel->obtenerComprasExternasPendientesTecnico($tecnico_id);
         $componentes_pendientes = $this->solicitudModel->contarPendientesTecnico($tecnico_id);
         
         // Obtener componentes pendientes por equipo
@@ -81,6 +86,8 @@ class TecnicoController extends Controller {
             'trabajos' => $trabajos,
             'solicitudes_enviadas' => $solicitudes_enviadas,
             'solicitudes_agotadas' => $solicitudes_agotadas,
+            'solicitudes_repuestos_nuevos' => $solicitudes_repuestos_nuevos,
+            'compras_externas_pendientes' => $compras_externas_pendientes,
             'componentes_pendientes' => $componentes_pendientes,
             'componentes_por_equipo' => $componentes_por_equipo,
             'filtros' => $filtros
@@ -198,6 +205,103 @@ class TecnicoController extends Controller {
         $this->equipoModel->actualizar($equipo_id, ['estado' => 'asignado_sucursal']);
         
         $this->asignacionTecnicoModel->eliminarPorEquipo($equipo_id);
+        
+        $this->redirect('tecnico/mis-trabajos');
+    }
+    
+    public function solicitarCompraExterna() {
+        $solicitud_id = $_POST['solicitud_id'];
+        $proveedor = $_POST['proveedor'] ?? '';
+        $precio_unitario = $_POST['precio_unitario'] ?? 0;
+        
+        if (!$solicitud_id) {
+            $_SESSION['error_solicitud'] = 'Solicitud no encontrada';
+            $this->redirect('tecnico/mis-trabajos');
+            return;
+        }
+        
+        $solicitud = $this->solicitudModel->obtenerPorIdConDetalles($solicitud_id);
+        if (!$solicitud) {
+            $_SESSION['error_solicitud'] = 'Solicitud no encontrada';
+            $this->redirect('tecnico/mis-trabajos');
+            return;
+        }
+        
+        $compra_id = $this->solicitudModel->crearCompraExterna(
+            $solicitud_id,
+            $solicitud['equipo_id'],
+            $solicitud['repuesto_id'],
+            $_SESSION['usuario_id'],
+            $solicitud['cantidad'],
+            $precio_unitario,
+            $proveedor
+        );
+        
+        if ($compra_id) {
+            $this->solicitudModel->actualizarCompraExternaId($solicitud_id, $compra_id);
+            $_SESSION['mensaje_exito'] = 'Solicitud de compra externa registrada. Almacén se encargará de buscar el proveedor y confirmar el precio.';
+        } else {
+            $_SESSION['error_solicitud'] = 'Error al registrar la solicitud de compra externa';
+        }
+        
+        $this->redirect('tecnico/mis-trabajos');
+    }
+    
+    public function solicitarRepuestoNuevo() {
+        $equipo_id = $_POST['equipo_id'];
+        $nombre_repuesto = trim($_POST['nombre_repuesto'] ?? '');
+        $marca = trim($_POST['marca'] ?? '');
+        $descripcion = trim($_POST['descripcion'] ?? '');
+        $cantidad = intval($_POST['cantidad'] ?? 1);
+        $motivo = trim($_POST['motivo'] ?? '');
+        
+        if (!$equipo_id || !$nombre_repuesto || $cantidad < 1) {
+            $_SESSION['error_solicitud'] = 'Por favor completa los campos obligatorios: nombre del repuesto y cantidad';
+            $this->redirect('tecnico/mis-trabajos');
+            return;
+        }
+        
+        $this->solicitudRepuestoNuevoModel->crear([
+            'equipo_id' => $equipo_id,
+            'tecnico_id' => $_SESSION['usuario_id'],
+            'nombre_repuesto' => $nombre_repuesto,
+            'marca' => $marca,
+            'descripcion' => $descripcion,
+            'cantidad' => $cantidad,
+            'motivo' => $motivo,
+            'estado' => 'pendiente'
+        ]);
+        
+        $_SESSION['mensaje_exito'] = 'Solicitud de repuesto nuevo registrada. Almacén buscará el componente y lo agregará al costo de reparación.';
+        
+        $this->redirect('tecnico/mis-trabajos');
+    }
+    
+    public function confirmarRecibidoRepuestoNuevo() {
+        $compra_id = $_POST['compra_id'] ?? null;
+        
+        if (!$compra_id) {
+            $this->redirect('tecnico/mis-trabajos');
+            return;
+        }
+        
+        $tecnico_id = $_SESSION['usuario_id'];
+        
+        require_once __DIR__ . '/../Models/SolicitudComponente.php';
+        $solicitudComponenteModel = new \SolicitudComponente();
+        $compra = $solicitudComponenteModel->obtenerCompraExternaPorId($compra_id);
+        
+        if (!$compra || $compra['tipo_origen'] !== 'repuesto_nuevo') {
+            $this->redirect('tecnico/mis-trabajos');
+            return;
+        }
+        
+        $this->solicitudRepuestoNuevoModel->confirmarRecibidoTecnico($compra_id, $tecnico_id);
+        
+        $costo_total = $compra['precio_unitario'] * $compra['cantidad'];
+        $this->solicitudRepuestoNuevoModel->agregarAlCostoReparacion($compra['equipo_id'], $costo_total);
+        
+        $_SESSION['mensaje_exito'] = 'Repuesto confirmado como recibido. Se agregaron S/ ' . number_format($costo_total, 2) . ' al costo de reparación.';
         
         $this->redirect('tecnico/mis-trabajos');
     }

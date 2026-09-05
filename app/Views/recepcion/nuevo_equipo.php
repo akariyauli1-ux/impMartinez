@@ -150,7 +150,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Marco Doblado</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Estado del Marco</td>
                         <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
                             <input type="radio" name="marco_doblado" value="buen_estado">
                         </td>

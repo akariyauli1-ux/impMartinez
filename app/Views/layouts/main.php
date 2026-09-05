@@ -114,6 +114,7 @@
         
         function mostrarAlertaVisual(notificacion) {
             const alerta = document.createElement('div');
+            alerta.className = 'notification-alert';
             alerta.style.cssText = `
                 position: fixed;
                 top: 80px;

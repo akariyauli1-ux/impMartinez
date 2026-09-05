@@ -109,11 +109,12 @@ class PedidoController extends Controller {
         $this->verificarRol(['almacenista']);
         
         $pendientes = $this->pedidoModel->obtenerPendientesAlmacen();
-        $todos = $this->pedidoModel->obtenerTodos();
         $total_pendientes = count($pendientes);
         
         require_once __DIR__ . '/../Models/SolicitudComponente.php';
+        require_once __DIR__ . '/../Models/SolicitudRepuestoNuevo.php';
         $solicitudModel = new \SolicitudComponente();
+        $solicitudNuevoModel = new \SolicitudRepuestoNuevo();
         
         $filtros = [
             'dia' => $_GET['dia'] ?? '',
@@ -126,11 +127,14 @@ class PedidoController extends Controller {
         
         if ($hay_filtros) {
             $solicitudes = $solicitudModel->obtenerConFiltros($filtros);
+            $todos = $this->pedidoModel->obtenerTodos($filtros, 100);
         } else {
             $solicitudes = $solicitudModel->obtenerConFiltros([], 10);
+            $todos = $this->pedidoModel->obtenerTodos([], 10);
         }
         
         $compras_externas = $solicitudModel->obtenerComprasExternas();
+        $solicitudes_repuestos_nuevos = $solicitudNuevoModel->obtenerPendientes();
         
         $this->view('pedidos/almacen', [
             'usuario' => $this->obtenerUsuarioActual(),
@@ -139,6 +143,7 @@ class PedidoController extends Controller {
             'total_pendientes' => $total_pendientes,
             'solicitudes' => $solicitudes,
             'compras_externas' => $compras_externas,
+            'solicitudes_repuestos_nuevos' => $solicitudes_repuestos_nuevos,
             'filtros' => $filtros
         ]);
     }
@@ -352,7 +357,9 @@ class PedidoController extends Controller {
         $equipo = $equipoModel->obtenerPorId($solicitud['equipo_id']);
         
         $observacion_actual = $equipo['observaciones'] ?? '';
-        $nueva_observacion = $observacion_actual . "\n[" . date('d/m/Y H:i') . "] COMPRA EXTERNA: " . $solicitud['repuesto_nombre'] . " (Cant: " . $solicitud['cantidad'] . ") - Proveedor: " . $proveedor . " - Precio est: S/ " . number_format($precio_unitario, 2);
+        $precio_texto = $precio_unitario > 0 ? 'S/ ' . number_format($precio_unitario, 2) : 'Por confirmar';
+        $proveedor_texto = $proveedor ?: 'Por definir';
+        $nueva_observacion = $observacion_actual . "\n[" . date('d/m/Y H:i') . "] COMPRA EXTERNA: " . $solicitud['repuesto_nombre'] . " (Cant: " . $solicitud['cantidad'] . ") - Proveedor: " . $proveedor_texto . " - Precio est: " . $precio_texto;
         
         $equipoModel->actualizar($solicitud['equipo_id'], ['observaciones' => trim($nueva_observacion)]);
         
@@ -379,11 +386,170 @@ class PedidoController extends Controller {
             return;
         }
         
-        $this->repuestoModel->actualizarStock($compra['repuesto_id'], $compra['cantidad'], 'suma');
+        if ($compra['tipo_origen'] === 'repuesto_nuevo') {
+            $solicitudModel->marcarCompraExternaRecibida($compra_id);
+            
+            require_once __DIR__ . '/../Models/SolicitudRepuestoNuevo.php';
+            $solicitudNuevoModel = new \SolicitudRepuestoNuevo();
+            $solicitudNuevoModel->actualizar($compra['solicitud_repuesto_nuevo_id'], [
+                'estado' => 'enviado'
+            ]);
+            
+            $_SESSION['mensaje_exito'] = 'Compra externa marcada como recibida. El técnico será notificado para confirmar recepción del repuesto.';
+        } else {
+            $this->repuestoModel->actualizarStock($compra['repuesto_id'], $compra['cantidad'], 'suma');
+            
+            $solicitudModel->marcarCompraExternaRecibida($compra_id);
+            
+            $solicitudModel->actualizarEstadoSolicitud($compra['solicitud_id'], 'enviado');
+        }
         
-        $solicitudModel->marcarCompraExternaRecibida($compra_id);
+        $this->redirect('pedidos/almacen');
+    }
+    
+    public function actualizarPrecioCompra() {
+        $this->verificarRol(['almacenista']);
         
-        $solicitudModel->actualizarEstadoSolicitud($compra['solicitud_id'], 'enviado');
+        $compra_id = $_POST['compra_id'] ?? null;
+        $precio_unitario = $_POST['precio_unitario'] ?? 0;
+        $proveedor = $_POST['proveedor'] ?? '';
+        
+        if (!$compra_id || $precio_unitario <= 0 || !$proveedor) {
+            $this->redirect('pedidos/almacen');
+            return;
+        }
+        
+        require_once __DIR__ . '/../Models/SolicitudComponente.php';
+        $solicitudModel = new \SolicitudComponente();
+        
+        $compra = $solicitudModel->obtenerCompraExternaPorId($compra_id);
+        
+        if (!$compra) {
+            $this->redirect('pedidos/almacen');
+            return;
+        }
+        
+        $solicitudModel->actualizarDatosCompraExterna($compra_id, $precio_unitario, $proveedor);
+        
+        $this->redirect('pedidos/almacen');
+    }
+    
+    public function procesarRepuestoNuevo() {
+        $this->verificarRol(['almacenista']);
+        
+        $solicitud_id = $_POST['solicitud_id'] ?? null;
+        $tipo_procesamiento = $_POST['tipo_procesamiento'] ?? '';
+        $precio_unitario = floatval($_POST['precio_unitario'] ?? 0);
+        $proveedor = trim($_POST['proveedor'] ?? '');
+        
+        if (!$solicitud_id || $precio_unitario <= 0) {
+            $_SESSION['error_pedido'] = 'Datos incompletos. El precio es obligatorio.';
+            $this->redirect('pedidos/almacen');
+            return;
+        }
+        
+        require_once __DIR__ . '/../Models/SolicitudRepuestoNuevo.php';
+        $solicitudNuevoModel = new \SolicitudRepuestoNuevo();
+        
+        $solicitud = $solicitudNuevoModel->obtenerPorId($solicitud_id);
+        
+        if (!$solicitud || $solicitud['estado'] !== 'pendiente') {
+            $_SESSION['error_pedido'] = 'Solicitud no encontrada o ya procesada.';
+            $this->redirect('pedidos/almacen');
+            return;
+        }
+        
+        if ($tipo_procesamiento === 'crear_repuesto') {
+            $codigo = trim($_POST['codigo'] ?? '');
+            $categoria = trim($_POST['categoria'] ?? '');
+            $stock = intval($_POST['stock'] ?? $solicitud['cantidad']);
+            
+            if (!$codigo || !$categoria) {
+                $_SESSION['error_pedido'] = 'Código y categoría son obligatorios para crear el repuesto.';
+                $this->redirect('pedidos/almacen');
+                return;
+            }
+            
+            $repuesto_id = $this->repuestoModel->crear([
+                'codigo' => $codigo,
+                'nombre' => $solicitud['nombre_repuesto'],
+                'marca' => $solicitud['marca'],
+                'categoria' => $categoria,
+                'stock' => $stock,
+                'stock_minimo' => 5,
+                'precio_unitario' => $precio_unitario,
+                'sucursal_id' => $_SESSION['sucursal_id'] ?? 1,
+                'clave_producto' => ''
+            ]);
+            
+            if ($repuesto_id) {
+                $solicitudNuevoModel->marcarComoCreado($solicitud_id, $repuesto_id, $precio_unitario, $_SESSION['usuario_id']);
+                
+                $costo_total = $precio_unitario * $solicitud['cantidad'];
+                $solicitudNuevoModel->agregarAlCostoReparacion($solicitud['equipo_id'], $costo_total);
+                
+                require_once __DIR__ . '/../Models/SolicitudComponente.php';
+                $solicitudModel = new \SolicitudComponente();
+                
+                $solicitudModel->crear([
+                    'equipo_id' => $solicitud['equipo_id'],
+                    'tecnico_id' => $solicitud['tecnico_id'],
+                    'repuesto_id' => $repuesto_id,
+                    'cantidad' => $solicitud['cantidad'],
+                    'precio_unitario' => $precio_unitario,
+                    'total' => $costo_total,
+                    'motivo' => 'Repuesto nuevo creado desde solicitud: ' . $solicitud['nombre_repuesto'],
+                    'estado' => 'recibido'
+                ]);
+                
+                $this->repuestoModel->incrementarSolicitudes($repuesto_id, $solicitud['cantidad']);
+                
+                $_SESSION['mensaje_exito'] = 'Repuesto creado, registrado como solicitud y agregado al costo de reparación. Total: S/ ' . number_format($costo_total, 2);
+            } else {
+                $_SESSION['error_pedido'] = 'Error al crear el repuesto.';
+            }
+            
+        } elseif ($tipo_procesamiento === 'compra_externa') {
+            if (!$proveedor) {
+                $_SESSION['error_pedido'] = 'El proveedor es obligatorio para compra externa.';
+                $this->redirect('pedidos/almacen');
+                return;
+            }
+            
+            require_once __DIR__ . '/../Models/SolicitudComponente.php';
+            $solicitudModel = new \SolicitudComponente();
+            
+            $compra_id = $solicitudModel->crearCompraExternaRepuestoNuevo(
+                $solicitud_id,
+                $solicitud['equipo_id'],
+                $solicitud['nombre_repuesto'],
+                $solicitud['tecnico_id'],
+                $solicitud['cantidad'],
+                $precio_unitario,
+                $proveedor
+            );
+            
+            $solicitudNuevoModel->actualizar($solicitud_id, [
+                'compra_externa_id' => $compra_id,
+                'estado' => 'comprado_externo',
+                'precio_unitario' => $precio_unitario,
+                'proveedor' => $proveedor,
+                'procesado_por' => $_SESSION['usuario_id'],
+                'fecha_procesado' => date('Y-m-d H:i:s')
+            ]);
+            
+            require_once __DIR__ . '/../Models/Equipo.php';
+            $equipoModel = new \Equipo();
+            $equipo = $equipoModel->obtenerPorId($solicitud['equipo_id']);
+            $observacion_actual = $equipo['observaciones'] ?? '';
+            $nueva_observacion = $observacion_actual . "\n[" . date('d/m/Y H:i') . "] COMPRA EXTERNA (Repuesto Nuevo): " . $solicitud['nombre_repuesto'] . " (Cant: " . $solicitud['cantidad'] . ") - Proveedor: " . $proveedor . " - Precio est: S/ " . number_format($precio_unitario, 2);
+            $equipoModel->actualizar($solicitud['equipo_id'], ['observaciones' => trim($nueva_observacion)]);
+            
+            $_SESSION['mensaje_exito'] = 'Compra externa registrada. El técnico será notificado para confirmar recepción. Cuando confirme, se sumará S/ ' . number_format($precio_unitario * $solicitud['cantidad'], 2) . ' al costo de reparación.';
+            
+        } else {
+            $_SESSION['error_pedido'] = 'Tipo de procesamiento no válido.';
+        }
         
         $this->redirect('pedidos/almacen');
     }

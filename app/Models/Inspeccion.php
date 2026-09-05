@@ -45,7 +45,7 @@ class Inspeccion extends Model {
             $params[] = $fecha_fin;
         }
         
-        $sql = "SELECT i.*, u.nombre, u.apellido_paterno, u.rol, CONCAT(reg.nombre, ' ', reg.apellido_paterno) as registrado_por_nombre FROM inspecciones i JOIN usuarios u ON i.usuario_id = u.id LEFT JOIN usuarios reg ON i.registrado_por = reg.id $where ORDER BY i.fecha DESC, u.apellido_paterno";
+        $sql = "SELECT i.*, u.nombre, u.apellido_paterno, u.rol, CONCAT(reg.nombre, ' ', reg.apellido_paterno) as registrado_por_nombre FROM inspecciones i JOIN usuarios u ON i.usuario_id = u.id LEFT JOIN usuarios reg ON i.registrado_por = reg.id $where ORDER BY i.fecha DESC, u.apellido_paterno LIMIT 10";
         return $this->fetchAll($sql, $params);
     }
 }

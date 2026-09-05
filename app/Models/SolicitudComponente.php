@@ -217,14 +217,17 @@ class SolicitudComponente extends Model {
     
     public function obtenerComprasExternas() {
         $sql = "SELECT ce.*, 
-                       sc.equipo_id, sc.cantidad as solicitud_cantidad,
-                       r.nombre as repuesto_nombre, r.codigo as repuesto_codigo,
+                       COALESCE(r.nombre, ce.nombre_repuesto, srn.nombre_repuesto) as repuesto_nombre,
+                       COALESCE(r.codigo, '') as repuesto_codigo,
                        e.tipo_equipo, e.marca as equipo_marca, e.modelo as equipo_modelo,
                        c.nombre as cliente_nombre, c.apellido_paterno as cliente_ap,
-                       t.nombre as tecnico_nombre, t.apellido_paterno as tecnico_ap
+                       t.nombre as tecnico_nombre, t.apellido_paterno as tecnico_ap,
+                       ce.equipo_id,
+                       CASE WHEN ce.solicitud_repuesto_nuevo_id IS NOT NULL THEN 'repuesto_nuevo' ELSE 'componente' END as tipo_origen
                 FROM compras_externas ce
-                JOIN solicitudes_componentes sc ON ce.solicitud_id = sc.id
-                JOIN repuestos r ON ce.repuesto_id = r.id
+                LEFT JOIN solicitudes_componentes sc ON ce.solicitud_id = sc.id
+                LEFT JOIN solicitudes_repuestos_nuevos srn ON ce.solicitud_repuesto_nuevo_id = srn.id
+                LEFT JOIN repuestos r ON ce.repuesto_id = r.id
                 JOIN equipos e ON ce.equipo_id = e.id
                 JOIN clientes c ON e.cliente_id = c.id
                 JOIN usuarios t ON ce.tecnico_id = t.id
@@ -233,10 +236,16 @@ class SolicitudComponente extends Model {
     }
     
     public function obtenerCompraExternaPorId($id) {
-        $sql = "SELECT ce.*, sc.equipo_id, r.nombre as repuesto_nombre
+        $sql = "SELECT ce.*, 
+                       COALESCE(r.nombre, ce.nombre_repuesto, srn.nombre_repuesto) as repuesto_nombre,
+                       COALESCE(r.codigo, '') as repuesto_codigo,
+                       ce.repuesto_id,
+                       ce.equipo_id,
+                       CASE WHEN ce.solicitud_repuesto_nuevo_id IS NOT NULL THEN 'repuesto_nuevo' ELSE 'componente' END as tipo_origen
                 FROM compras_externas ce
-                JOIN solicitudes_componentes sc ON ce.solicitud_id = sc.id
-                JOIN repuestos r ON ce.repuesto_id = r.id
+                LEFT JOIN solicitudes_componentes sc ON ce.solicitud_id = sc.id
+                LEFT JOIN solicitudes_repuestos_nuevos srn ON ce.solicitud_repuesto_nuevo_id = srn.id
+                LEFT JOIN repuestos r ON ce.repuesto_id = r.id
                 WHERE ce.id = ?";
         return $this->fetchOne($sql, [$id]);
     }
@@ -256,6 +265,21 @@ class SolicitudComponente extends Model {
         return $this->db->insert_id;
     }
     
+    public function crearCompraExternaRepuestoNuevo($solicitud_repuesto_nuevo_id, $equipo_id, $nombre_repuesto, $tecnico_id, $cantidad, $precio_unitario, $proveedor) {
+        $sql = "INSERT INTO compras_externas (solicitud_repuesto_nuevo_id, equipo_id, nombre_repuesto, tecnico_id, cantidad, precio_unitario, proveedor, estado) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')";
+        $this->query($sql, [
+            $solicitud_repuesto_nuevo_id,
+            $equipo_id,
+            $nombre_repuesto,
+            $tecnico_id,
+            $cantidad,
+            $precio_unitario,
+            $proveedor
+        ]);
+        return $this->db->insert_id;
+    }
+    
     public function marcarCompraExternaRecibida($compra_id) {
         $sql = "UPDATE compras_externas SET estado = 'recibida', fecha_recibido = NOW() WHERE id = ?";
         $this->query($sql, [$compra_id]);
@@ -265,6 +289,18 @@ class SolicitudComponente extends Model {
     public function actualizarEstadoSolicitud($id, $estado) {
         $sql = "UPDATE solicitudes_componentes SET estado = ? WHERE id = ?";
         $this->query($sql, [$estado, $id]);
+        return true;
+    }
+    
+    public function actualizarPrecioCompraExterna($compra_id, $precio_unitario) {
+        $sql = "UPDATE compras_externas SET precio_unitario = ? WHERE id = ?";
+        $this->query($sql, [$precio_unitario, $compra_id]);
+        return true;
+    }
+    
+    public function actualizarDatosCompraExterna($compra_id, $precio_unitario, $proveedor) {
+        $sql = "UPDATE compras_externas SET precio_unitario = ?, proveedor = ? WHERE id = ?";
+        $this->query($sql, [$precio_unitario, $proveedor, $compra_id]);
         return true;
     }
 }

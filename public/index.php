@@ -63,6 +63,9 @@ $router->add('POST', '/tecnico/actualizar-trabajo', 'TecnicoController', 'actual
 $router->add('POST', '/tecnico/confirmar-recibido', 'TecnicoController', 'confirmarRecibido');
 $router->add('POST', '/tecnico/rechazar-trabajo', 'TecnicoController', 'rechazarTrabajo');
 $router->add('POST', '/tecnico/solicitar-componente', 'TecnicoController', 'solicitarComponente');
+$router->add('POST', '/tecnico/solicitar-compra-externa', 'TecnicoController', 'solicitarCompraExterna');
+$router->add('POST', '/tecnico/solicitar-repuesto-nuevo', 'TecnicoController', 'solicitarRepuestoNuevo');
+$router->add('POST', '/tecnico/confirmar-recibido-repuesto-nuevo', 'TecnicoController', 'confirmarRecibidoRepuestoNuevo');
 $router->add('GET', '/tecnico/obtener-repuestos', 'TecnicoController', 'obtenerRepuestos');
 $router->add('GET', '/tecnico/obtener-costo-equipo', 'TecnicoController', 'obtenerCostoEquipo');
 
@@ -97,6 +100,8 @@ $router->add('POST', '/pedidos/entregar-solicitud', 'PedidoController', 'entrega
 $router->add('POST', '/pedidos/marcar-agotado', 'PedidoController', 'marcarAgotado');
 $router->add('POST', '/pedidos/comprar-externo', 'PedidoController', 'comprarExterno');
 $router->add('POST', '/pedidos/recibir-compra-externa', 'PedidoController', 'recibirCompraExterna');
+$router->add('POST', '/pedidos/actualizar-precio-compra', 'PedidoController', 'actualizarPrecioCompra');
+$router->add('POST', '/pedidos/procesar-repuesto-nuevo', 'PedidoController', 'procesarRepuestoNuevo');
 $router->add('POST', '/pedidos/confirmar-recibido-solicitud', 'PedidoController', 'confirmarRecibidoSolicitud');
 $router->add('GET', '/pedidos/notificacion', 'PedidoController', 'notificacion');
 

@@ -43,7 +43,7 @@ class PedidoRepuesto extends Model {
         return $this->fetchAll($sql, [$sucursal_id]);
     }
     
-    public function obtenerTodos() {
+    public function obtenerTodos($filtros = [], $limite = 10) {
         $sql = "SELECT p.*, 
                 r.nombre as repuesto_nombre, r.codigo as repuesto_codigo, r.marca,
                 u.nombre as solicitante_nombre, u.apellido_paterno as solicitante_ap,
@@ -54,8 +54,26 @@ class PedidoRepuesto extends Model {
                 JOIN usuarios u ON p.solicitado_por = u.id
                 JOIN sucursales s ON p.sucursal_id = s.id
                 LEFT JOIN usuarios t ON p.tecnico_id = t.id
-                ORDER BY p.fecha_solicitud DESC";
-        return $this->fetchAll($sql);
+                WHERE 1=1";
+        
+        $params = [];
+        
+        if (!empty($filtros['dia'])) {
+            $sql .= " AND DAY(p.fecha_solicitud) = ?";
+            $params[] = $filtros['dia'];
+        }
+        if (!empty($filtros['mes'])) {
+            $sql .= " AND MONTH(p.fecha_solicitud) = ?";
+            $params[] = $filtros['mes'];
+        }
+        if (!empty($filtros['anio'])) {
+            $sql .= " AND YEAR(p.fecha_solicitud) = ?";
+            $params[] = $filtros['anio'];
+        }
+        
+        $sql .= " ORDER BY p.fecha_solicitud DESC LIMIT " . intval($limite);
+        
+        return $this->fetchAll($sql, $params);
     }
     
     public function obtenerPorSolicitante($usuario_id) {

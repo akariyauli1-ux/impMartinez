@@ -17,6 +17,27 @@ class Repuesto extends Model {
     }
     
     public function crear($data) {
+        if (!isset($data['unidades_disponibles'])) {
+            $data['unidades_disponibles'] = $data['stock'] ?? 0;
+        }
+        if (!isset($data['stock_reservado'])) {
+            $data['stock_reservado'] = 0;
+        }
+        if (!isset($data['solicitudes'])) {
+            $data['solicitudes'] = 0;
+        }
+        if (!isset($data['ventas'])) {
+            $data['ventas'] = 0;
+        }
+        if (!isset($data['movimiento_salida'])) {
+            $data['movimiento_salida'] = 0;
+        }
+        if (!isset($data['inversion'])) {
+            $data['inversion'] = 0;
+        }
+        if (!isset($data['descontinuado'])) {
+            $data['descontinuado'] = 0;
+        }
         return $this->insert($data);
     }
     
