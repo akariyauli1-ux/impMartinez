@@ -116,6 +116,7 @@ $router->add('GET', '/gerente/asistencia', 'GerenteController', 'asistencia');
 $router->add('GET', '/gerente/inspecciones', 'GerenteController', 'inspecciones');
 $router->add('GET', '/gerente/trazabilidad', 'GerenteController', 'trazabilidad');
 $router->add('GET', '/gerente/trazabilidad-detalle', 'GerenteController', 'trazabilidadDetalle');
+$router->add('GET', '/gerente/estadisticas-ajax', 'GerenteController', 'estadisticasAjax');
 
 $router->add('GET', '/rrhh', 'RRHHController', 'dashboard');
 $router->add('GET', '/rrhh/asistencia', 'RRHHController', 'asistencia');

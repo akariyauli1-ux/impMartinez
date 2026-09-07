@@ -8,6 +8,7 @@ require_once __DIR__ . '/../Models/Repuesto.php';
 require_once __DIR__ . '/../Models/PedidoRepuesto.php';
 require_once __DIR__ . '/../Models/Asistencia.php';
 require_once __DIR__ . '/../Models/Inspeccion.php';
+require_once __DIR__ . '/../Models/SolicitudComponente.php';
 
 class GerenteController extends Controller {
     private $equipoModel;
@@ -18,6 +19,7 @@ class GerenteController extends Controller {
     private $pedidoModel;
     private $asistenciaModel;
     private $inspeccionModel;
+    private $solicitudComponenteModel;
     
     public function __construct() {
         $this->equipoModel = new Equipo();
@@ -28,6 +30,7 @@ class GerenteController extends Controller {
         $this->pedidoModel = new PedidoRepuesto();
         $this->asistenciaModel = new Asistencia();
         $this->inspeccionModel = new Inspeccion();
+        $this->solicitudComponenteModel = new SolicitudComponente();
         $this->verificarSesion();
         $this->verificarRol(['gerente']);
     }
@@ -44,12 +47,19 @@ class GerenteController extends Controller {
         $completados = $this->equipoModel->obtenerCountPorEstado('completado');
         $sucursales = $this->sucursalModel->obtenerTodas();
         
+        $trabajosPorSucursal = $this->equipoModel->obtenerTrabajosPorSucursal();
+        $solicitudesPorSucursal = $this->solicitudComponenteModel->obtenerSolicitudesPorSucursal();
+        $productosMasSolicitados = $this->solicitudComponenteModel->obtenerProductosMasSolicitadosAlmacen(10);
+        
         $this->view('gerente/dashboard', [
             'usuario' => $this->obtenerUsuarioActual(),
             'total_equipos' => $total_equipos,
             'en_reparacion' => $en_reparacion,
             'completados' => $completados,
-            'sucursales' => $sucursales
+            'sucursales' => $sucursales,
+            'trabajosPorSucursal' => $trabajosPorSucursal,
+            'solicitudesPorSucursal' => $solicitudesPorSucursal,
+            'productosMasSolicitados' => $productosMasSolicitados
         ]);
     }
     
@@ -229,6 +239,22 @@ class GerenteController extends Controller {
             'equipo' => $equipo,
             'timeline' => $timeline
         ]);
+    }
+    
+    public function estadisticasAjax() {
+        header('Content-Type: application/json');
+        $filtro = $_GET['filtro'] ?? null;
+        
+        $trabajosPorSucursal = $this->equipoModel->obtenerTrabajosPorSucursal($filtro);
+        $solicitudesPorSucursal = $this->solicitudComponenteModel->obtenerSolicitudesPorSucursal($filtro);
+        $productosMasSolicitados = $this->solicitudComponenteModel->obtenerProductosMasSolicitadosAlmacen(10, $filtro);
+        
+        echo json_encode([
+            'trabajosPorSucursal' => $trabajosPorSucursal,
+            'solicitudesPorSucursal' => $solicitudesPorSucursal,
+            'productosMasSolicitados' => $productosMasSolicitados
+        ]);
+        exit;
     }
     
     private function obtenerUsuarioActual() {

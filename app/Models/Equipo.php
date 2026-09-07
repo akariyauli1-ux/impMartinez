@@ -173,6 +173,30 @@ class Equipo extends Model {
         return $this->fetchAll($sql, [$recepcionista_id]);
     }
     
+    public function obtenerTrabajosPorSucursal($filtro = null) {
+        $sql = "SELECT s.nombre as sucursal,
+                    SUM(CASE WHEN e.estado IN ('completado', 'entregado') THEN 1 ELSE 0 END) as completados,
+                    SUM(CASE WHEN e.estado IN ('en_reparacion', 'recibido') THEN 1 ELSE 0 END) as en_reparacion,
+                    SUM(CASE WHEN e.estado IN ('registrado', 'pendiente_asignacion', 'asignado_sucursal') THEN 1 ELSE 0 END) as pendientes,
+                    COUNT(*) as total
+                FROM sucursales s
+                LEFT JOIN equipos e ON e.sucursal_actual_id = s.id
+                WHERE s.activo = 1";
+        
+        $params = [];
+        
+        if ($filtro === 'semana') {
+            $sql .= " AND YEARWEEK(e.fecha_registro, 1) = YEARWEEK(CURDATE(), 1)";
+        } elseif ($filtro === 'mes') {
+            $sql .= " AND MONTH(e.fecha_registro) = MONTH(CURDATE()) AND YEAR(e.fecha_registro) = YEAR(CURDATE())";
+        } elseif ($filtro === 'anio') {
+            $sql .= " AND YEAR(e.fecha_registro) = YEAR(CURDATE())";
+        }
+        
+        $sql .= " GROUP BY s.id, s.nombre ORDER BY total DESC";
+        return $this->fetchAll($sql, $params);
+    }
+
     public function obtenerCountPorEstado($estado, $sucursal_id = null) {
         if ($sucursal_id) {
             $sql = "SELECT COUNT(*) as total FROM equipos WHERE estado = ? AND sucursal_actual_id = ?";

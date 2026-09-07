@@ -6,6 +6,52 @@ class SolicitudComponente extends Model {
         return $this->insert($data);
     }
     
+    public function obtenerSolicitudesPorSucursal($filtro = null) {
+        $sql = "SELECT s.nombre as sucursal, COUNT(sc.id) as total_solicitudes
+                FROM sucursales s
+                LEFT JOIN usuarios t ON t.sucursal_id = s.id
+                LEFT JOIN solicitudes_componentes sc ON sc.tecnico_id = t.id
+                WHERE s.activo = 1";
+        
+        if ($filtro === 'semana') {
+            $sql .= " AND YEARWEEK(sc.fecha_solicitud, 1) = YEARWEEK(CURDATE(), 1)";
+        } elseif ($filtro === 'mes') {
+            $sql .= " AND MONTH(sc.fecha_solicitud) = MONTH(CURDATE()) AND YEAR(sc.fecha_solicitud) = YEAR(CURDATE())";
+        } elseif ($filtro === 'anio') {
+            $sql .= " AND YEAR(sc.fecha_solicitud) = YEAR(CURDATE())";
+        }
+        
+        $sql .= " GROUP BY s.id, s.nombre ORDER BY total_solicitudes DESC";
+        return $this->fetchAll($sql);
+    }
+
+    public function obtenerProductosMasSolicitadosAlmacen($limite = 10, $filtro = null) {
+        $where_filtro = "";
+        if ($filtro === 'semana') {
+            $where_filtro = " AND YEARWEEK(sc.fecha_solicitud, 1) = YEARWEEK(CURDATE(), 1)";
+            $where_filtro_pedidos = " AND YEARWEEK(p.fecha_solicitud, 1) = YEARWEEK(CURDATE(), 1)";
+        } elseif ($filtro === 'mes') {
+            $where_filtro = " AND MONTH(sc.fecha_solicitud) = MONTH(CURDATE()) AND YEAR(sc.fecha_solicitud) = YEAR(CURDATE())";
+            $where_filtro_pedidos = " AND MONTH(p.fecha_solicitud) = MONTH(CURDATE()) AND YEAR(p.fecha_solicitud) = YEAR(CURDATE())";
+        } elseif ($filtro === 'anio') {
+            $where_filtro = " AND YEAR(sc.fecha_solicitud) = YEAR(CURDATE())";
+            $where_filtro_pedidos = " AND YEAR(p.fecha_solicitud) = YEAR(CURDATE())";
+        } else {
+            $where_filtro = "";
+            $where_filtro_pedidos = "";
+        }
+        
+        $sql = "SELECT r.nombre, r.codigo, r.marca, r.categoria,
+                    (SELECT COUNT(*) FROM solicitudes_componentes sc WHERE sc.repuesto_id = r.id" . $where_filtro . ") as solicitudes_componentes,
+                    (SELECT COALESCE(SUM(p.cantidad), 0) FROM pedidos_repuestos p WHERE p.repuesto_id = r.id" . $where_filtro_pedidos . ") as pedidos,
+                    (SELECT COUNT(*) FROM solicitudes_componentes sc WHERE sc.repuesto_id = r.id" . $where_filtro . ") + (SELECT COALESCE(SUM(p.cantidad), 0) FROM pedidos_repuestos p WHERE p.repuesto_id = r.id" . $where_filtro_pedidos . ") as total
+                FROM repuestos r
+                WHERE r.descontinuado = 0
+                ORDER BY total DESC
+                LIMIT ?";
+        return $this->fetchAll($sql, [$limite]);
+    }
+
     public function obtenerPorEquipo($equipo_id) {
         $sql = "SELECT sc.*, r.nombre as repuesto_nombre, r.codigo as repuesto_codigo, r.marca 
                 FROM solicitudes_componentes sc
