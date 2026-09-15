@@ -1,5 +1,5 @@
--- Migración para guardar imágenes en la base de datos
-USE impmartinez;
+﻿-- Migración para guardar imágenes en la base de datos
+USE laboratorioia;
 
 -- Agregar columnas BLOB para imágenes
 ALTER TABLE sucursales 

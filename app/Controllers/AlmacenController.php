@@ -7,6 +7,7 @@ require_once __DIR__ . '/../Models/Usuario.php';
 require_once __DIR__ . '/../Models/Sucursal.php';
 require_once __DIR__ . '/../Models/AlmacenAuditoria.php';
 require_once __DIR__ . '/../Models/SolicitudComponente.php';
+require_once __DIR__ . '/../Models/LoteInventario.php';
 
 class AlmacenController extends Controller {
     private $repuestoModel;
@@ -16,6 +17,7 @@ class AlmacenController extends Controller {
     private $sucursalModel;
     private $auditoriaModel;
     private $solicitudModel;
+    private $loteModel;
     
     public function __construct() {
         $this->repuestoModel = new Repuesto();
@@ -25,6 +27,7 @@ class AlmacenController extends Controller {
         $this->sucursalModel = new Sucursal();
         $this->auditoriaModel = new AlmacenAuditoria();
         $this->solicitudModel = new SolicitudComponente();
+        $this->loteModel = new LoteInventario();
         $this->verificarSesion();
         $this->verificarRol(['almacenista']);
     }
@@ -80,22 +83,29 @@ class AlmacenController extends Controller {
             $categoria = $_POST['nueva_categoria'];
         }
         
+        $stock = $_POST['stock'] ?? 0;
+        $precio = $_POST['precio_unitario'] ?? 0;
+        
         $data = [
             'codigo' => $_POST['codigo'],
             'nombre' => $_POST['nombre'],
             'marca' => $_POST['marca'] ?? '',
             'clave_producto' => $_POST['clave_producto'] ?? '',
             'categoria' => $categoria,
-            'stock' => $_POST['stock'] ?? 0,
+            'stock' => $stock,
             'stock_minimo' => $_POST['stock_minimo'] ?? 5,
-            'precio_unitario' => $_POST['precio_unitario'] ?? 0,
-            'unidades_disponibles' => $_POST['stock'] ?? 0,
+            'precio_unitario' => $precio,
+            'precio_promedio' => $precio,
+            'unidades_disponibles' => $stock,
             'sucursal_id' => $_SESSION['sucursal_id']
         ];
         
         $nuevo_id = $this->repuestoModel->crear($data);
         
-        // Registrar en auditoría
+        if ($stock > 0 && $precio > 0) {
+            $this->loteModel->registrarEntrada($nuevo_id, $stock, $precio, $_SESSION['usuario_id'], 'Creación de repuesto');
+        }
+        
         $this->auditoriaModel->registrar(
             $_SESSION['usuario_id'],
             'crear',
@@ -116,8 +126,12 @@ class AlmacenController extends Controller {
             $categoria = $_POST['nueva_categoria'];
         }
         
-        // Obtener datos antiguos para auditoría
         $datos_antiguos = $this->repuestoModel->obtenerPorId($id);
+        
+        $nuevo_stock = $_POST['stock'] ?? 0;
+        $nuevo_precio = $_POST['precio_unitario'] ?? 0;
+        $stock_anterior = $datos_antiguos['stock'] ?? 0;
+        $precio_anterior = $datos_antiguos['precio_unitario'] ?? 0;
         
         $data = [
             'codigo' => $_POST['codigo'],
@@ -125,16 +139,28 @@ class AlmacenController extends Controller {
             'marca' => $_POST['marca'] ?? '',
             'clave_producto' => $_POST['clave_producto'] ?? '',
             'categoria' => $categoria,
-            'stock' => $_POST['stock'] ?? 0,
+            'stock' => $nuevo_stock,
             'stock_minimo' => $_POST['stock_minimo'] ?? 5,
-            'precio_unitario' => $_POST['precio_unitario'] ?? 0,
-            'unidades_disponibles' => $_POST['stock'] ?? 0,
+            'precio_unitario' => $nuevo_precio,
+            'unidades_disponibles' => $nuevo_stock,
             'descontinuado' => isset($_POST['descontinuado']) ? 1 : 0
         ];
         
+        $stock_incremento = $nuevo_stock - $stock_anterior;
+        
+        if ($stock_incremento > 0 && $nuevo_precio > 0) {
+            $this->loteModel->registrarEntrada($id, $stock_incremento, $nuevo_precio, $_SESSION['usuario_id'], 'Reabastecimiento de stock');
+            
+            $precio_promedio = $this->loteModel->calcularPrecioPromedio($id);
+            $data['precio_promedio'] = $precio_promedio;
+        } elseif ($nuevo_precio != $precio_anterior && $nuevo_stock > 0) {
+            $this->loteModel->registrarEntrada($id, 0, $nuevo_precio, $_SESSION['usuario_id'], 'Ajuste de precio');
+            $precio_promedio = $this->loteModel->calcularPrecioPromedio($id);
+            $data['precio_promedio'] = $precio_promedio;
+        }
+        
         $this->repuestoModel->actualizar($id, $data);
         
-        // Registrar en auditoría
         $this->auditoriaModel->registrar(
             $_SESSION['usuario_id'],
             'editar',
@@ -180,7 +206,8 @@ class AlmacenController extends Controller {
             return;
         }
         
-        $precio_unitario = $repuesto['precio_unitario'];
+        $costo_fifo = $this->loteModel->consumirFIFO($repuesto_id, $cantidad);
+        $precio_unitario = $costo_fifo > 0 ? round($costo_fifo / $cantidad, 2) : ($repuesto['precio_unitario'] ?? 0);
         $total = $precio_unitario * $cantidad;
         
         $pedido_id = $this->pedidoModel->crear([
@@ -197,7 +224,11 @@ class AlmacenController extends Controller {
         $this->repuestoModel->incrementarSolicitudes($repuesto_id, $cantidad);
         $this->repuestoModel->actualizarStock($repuesto_id, $cantidad, 'resta');
         
-        // Registrar en auditoría
+        $precio_promedio = $this->loteModel->calcularPrecioPromedio($repuesto_id);
+        if ($precio_promedio > 0) {
+            $this->repuestoModel->actualizar($repuesto_id, ['precio_promedio' => $precio_promedio]);
+        }
+        
         $this->auditoriaModel->registrar(
             $_SESSION['usuario_id'],
             'enviar_pedido',
@@ -205,7 +236,7 @@ class AlmacenController extends Controller {
             $pedido_id,
             'Envió pedido de ' . $cantidad . ' unidad(es) de ' . $repuesto['nombre'] . ' al técnico ID: ' . $tecnico_id,
             null,
-            ['repuesto_id' => $repuesto_id, 'cantidad' => $cantidad, 'tecnico_id' => $tecnico_id, 'total' => $total]
+            ['repuesto_id' => $repuesto_id, 'cantidad' => $cantidad, 'tecnico_id' => $tecnico_id, 'total' => $total, 'costo_fifo' => $costo_fifo]
         );
         
         $this->redirect('almacen/pedidos');
@@ -305,9 +336,16 @@ class AlmacenController extends Controller {
             return;
         }
         
+        $costo_fifo = $this->loteModel->consumirFIFO($solicitud['repuesto_id'], $solicitud['cantidad']);
+        
         $this->solicitudModel->actualizarEstado($solicitud_id, 'entregado');
         
         $this->repuestoModel->confirmarSalidaInventario($solicitud['repuesto_id'], $solicitud['cantidad'], $_SESSION['usuario_id']);
+        
+        $precio_promedio = $this->loteModel->calcularPrecioPromedio($solicitud['repuesto_id']);
+        if ($precio_promedio > 0) {
+            $this->repuestoModel->actualizar($solicitud['repuesto_id'], ['precio_promedio' => $precio_promedio]);
+        }
         
         $this->auditoriaModel->registrar(
             $_SESSION['usuario_id'],
@@ -316,10 +354,82 @@ class AlmacenController extends Controller {
             $solicitud_id,
             'Entregó solicitud de ' . $solicitud['cantidad'] . ' unidad(es) de ' . $solicitud['repuesto_nombre'] . ' al técnico ID: ' . $solicitud['tecnico_id'],
             null,
-            ['solicitud_id' => $solicitud_id, 'repuesto_id' => $solicitud['repuesto_id'], 'cantidad' => $solicitud['cantidad']]
+            ['solicitud_id' => $solicitud_id, 'repuesto_id' => $solicitud['repuesto_id'], 'cantidad' => $solicitud['cantidad'], 'costo_fifo' => $costo_fifo]
         );
         
         $this->redirect('almacen/pedidos');
+    }
+    
+    public function verLotes($repuesto_id = null) {
+        $repuesto_id = $repuesto_id ?? ($_GET['id'] ?? null);
+        
+        if (!$repuesto_id) {
+            $this->redirect('almacen/inventario');
+            return;
+        }
+        
+        $repuesto = $this->repuestoModel->obtenerPorId($repuesto_id);
+        if (!$repuesto) {
+            $this->redirect('almacen/inventario');
+            return;
+        }
+        
+        $lotes = $this->loteModel->obtenerTodosLotesPorRepuesto($repuesto_id);
+        $precio_promedio = $this->loteModel->calcularPrecioPromedio($repuesto_id);
+        $precio_anterior = $this->loteModel->obtenerPrecioAnterior($repuesto_id);
+        $precio_actual = $this->loteModel->obtenerPrecioActual($repuesto_id);
+        
+        $this->view('almacen/lotes', [
+            'usuario' => $this->obtenerUsuarioActual(),
+            'repuesto' => $repuesto,
+            'lotes' => $lotes,
+            'precio_promedio' => $precio_promedio,
+            'precio_anterior' => $precio_anterior,
+            'precio_actual' => $precio_actual
+        ]);
+    }
+    
+    public function reabastecer() {
+        $repuesto_id = $_POST['repuesto_id'] ?? null;
+        $cantidad = $_POST['cantidad'] ?? 0;
+        $precio_compra = $_POST['precio_compra'] ?? 0;
+        
+        if (!$repuesto_id || $cantidad <= 0 || $precio_compra <= 0) {
+            $_SESSION['error_pedido'] = 'Datos inválidos para reabastecimiento';
+            $this->redirect('almacen/inventario');
+            return;
+        }
+        
+        $repuesto = $this->repuestoModel->obtenerPorId($repuesto_id);
+        if (!$repuesto) {
+            $this->redirect('almacen/inventario');
+            return;
+        }
+        
+        $this->loteModel->registrarEntrada($repuesto_id, $cantidad, $precio_compra, $_SESSION['usuario_id'], 'Reabastecimiento de stock');
+        
+        $nuevo_stock = ($repuesto['stock'] ?? 0) + $cantidad;
+        $nuevas_unidades = ($repuesto['unidades_disponibles'] ?? 0) + $cantidad;
+        $precio_promedio = $this->loteModel->calcularPrecioPromedio($repuesto_id);
+        
+        $this->repuestoModel->actualizar($repuesto_id, [
+            'stock' => $nuevo_stock,
+            'unidades_disponibles' => $nuevas_unidades,
+            'precio_unitario' => $precio_compra,
+            'precio_promedio' => $precio_promedio
+        ]);
+        
+        $this->auditoriaModel->registrar(
+            $_SESSION['usuario_id'],
+            'reabastecer',
+            'lotes_inventario',
+            $repuesto_id,
+            'Reabasteció ' . $cantidad . ' unidad(es) de ' . $repuesto['nombre'] . ' a precio ' . $precio_compra,
+            null,
+            ['repuesto_id' => $repuesto_id, 'cantidad' => $cantidad, 'precio_compra' => $precio_compra]
+        );
+        
+        $this->redirect('almacen/inventario');
     }
     
     private function obtenerUsuarioActual() {

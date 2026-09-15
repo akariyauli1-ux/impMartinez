@@ -1,4 +1,4 @@
-USE impmartinez;
+﻿USE laboratorioia;
 
 CREATE TABLE IF NOT EXISTS limpieza_local (
     id INT AUTO_INCREMENT PRIMARY KEY,

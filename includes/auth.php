@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 session_start();
 require_once __DIR__ . '/../config/database.php';
 
 function verificarSesion() {
     if (!isset($_SESSION['usuario_id'])) {
-        header('Location: /impMartines/index.php');
+        header('Location: /laboratorioIA/index.php');
         exit;
     }
 }
@@ -26,7 +26,7 @@ function obtenerUsuarioActual() {
 function verificarRol($roles_permitidos) {
     $usuario = obtenerUsuarioActual();
     if (!$usuario || !in_array($usuario['rol'], $roles_permitidos)) {
-        header('Location: /impMartines/dashboard.php?error=acceso');
+        header('Location: /laboratorioIA/dashboard.php?error=acceso');
         exit;
     }
     return $usuario;
@@ -34,19 +34,19 @@ function verificarRol($roles_permitidos) {
 
 function redirigirSegunRol() {
     $usuario = obtenerUsuarioActual();
-    if (!$usuario) return '/impMartines/index.php';
+    if (!$usuario) return '/laboratorioIA/index.php';
     
     $rutas = [
-        'recepcionista' => '/impMartines/modules/recepcion/dashboard.php',
-        'tecnico' => '/impMartines/modules/tecnico/dashboard.php',
-        'admin_sucursal' => '/impMartines/modules/admin_sucursal/dashboard.php',
-        'jefe_tecnico' => '/impMartines/modules/jefe_tecnico/dashboard.php',
-        'almacenista' => '/impMartines/modules/almacen/dashboard.php',
-        'gerente' => '/impMartines/modules/gerente/dashboard.php',
-        'rrhh' => '/impMartines/modules/rrhh/dashboard.php'
+        'recepcionista' => '/laboratorioIA/modules/recepcion/dashboard.php',
+        'tecnico' => '/laboratorioIA/modules/tecnico/dashboard.php',
+        'admin_sucursal' => '/laboratorioIA/modules/admin_sucursal/dashboard.php',
+        'jefe_tecnico' => '/laboratorioIA/modules/jefe_tecnico/dashboard.php',
+        'almacenista' => '/laboratorioIA/modules/almacen/dashboard.php',
+        'gerente' => '/laboratorioIA/modules/gerente/dashboard.php',
+        'rrhh' => '/laboratorioIA/modules/rrhh/dashboard.php'
     ];
     
-    return $rutas[$usuario['rol']] ?? '/impMartines/index.php';
+    return $rutas[$usuario['rol']] ?? '/laboratorioIA/index.php';
 }
 
 function sanitizar($dato) {

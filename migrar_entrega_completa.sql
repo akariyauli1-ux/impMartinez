@@ -1,4 +1,4 @@
-USE impmartinez;
+﻿USE laboratorioia;
 
 ALTER TABLE equipos 
 ADD COLUMN costo_final DECIMAL(10,2) NULL,

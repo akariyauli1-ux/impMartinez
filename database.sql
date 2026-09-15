@@ -1,6 +1,6 @@
--- Base de datos impMartinez
-CREATE DATABASE IF NOT EXISTS impmartinez CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE impmartinez;
+﻿-- Base de datos laboratorioia
+CREATE DATABASE IF NOT EXISTS laboratorioia CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE laboratorioia;
 
 -- Tabla de sucursales
 CREATE TABLE sucursales (
@@ -186,14 +186,14 @@ INSERT INTO sucursales (nombre, direccion, telefono) VALUES
 
 -- Insertar usuario gerente (apellido: Admin, carnet: 0001)
 INSERT INTO usuarios (nombre, apellido_paterno, apellido_materno, carnet, email, rol, sucursal_id) VALUES
-('Gerente', 'Admin', 'Sistema', '0001', 'gerente@impmartinez.com', 'gerente', 1);
+('Gerente', 'Admin', 'Sistema', '0001', 'gerente@laboratorioia.com', 'gerente', 1);
 
 -- Insertar usuario RRHH (apellido: Admin, carnet: 0002)
 INSERT INTO usuarios (nombre, apellido_paterno, apellido_materno, carnet, email, rol, sucursal_id) VALUES
-('RRHH', 'Admin', 'Sistema', '0002', 'rrhh@impmartinez.com', 'rrhh', 1);
+('RRHH', 'Admin', 'Sistema', '0002', 'rrhh@laboratorioia.com', 'rrhh', 1);
 
 -- Insertar usuario de ejemplo para cada sucursal (admin)
 INSERT INTO usuarios (nombre, apellido_paterno, apellido_materno, carnet, email, rol, sucursal_id) VALUES
-('Admin', 'Sucursal1', 'Demo', '1001', 'admin1@impmartinez.com', 'admin_sucursal', 1),
-('Admin', 'Sucursal2', 'Demo', '1002', 'admin2@impmartinez.com', 'admin_sucursal', 2),
-('Admin', 'Sucursal3', 'Demo', '1003', 'admin3@impmartinez.com', 'admin_sucursal', 3);
+('Admin', 'Sucursal1', 'Demo', '1001', 'admin1@laboratorioia.com', 'admin_sucursal', 1),
+('Admin', 'Sucursal2', 'Demo', '1002', 'admin2@laboratorioia.com', 'admin_sucursal', 2),
+('Admin', 'Sucursal3', 'Demo', '1003', 'admin3@laboratorioia.com', 'admin_sucursal', 3);

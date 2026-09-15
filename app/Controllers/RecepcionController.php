@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../Core/Controller.php';
 require_once __DIR__ . '/../Models/Equipo.php';
 require_once __DIR__ . '/../Models/Cliente.php';
@@ -292,7 +292,7 @@ class RecepcionController extends Controller {
         }
         
         // Generar hash de seguridad único
-        $hash_seguridad = hash('sha256', $equipo_id . time() . random_int(100000, 999999) . $_SESSION['usuario_id'] . 'impmartinez_salt_2024');
+        $hash_seguridad = hash('sha256', $equipo_id . time() . random_int(100000, 999999) . $_SESSION['usuario_id'] . 'laboratorioia_salt_2024');
         
         $this->equipoModel->actualizar($equipo_id, [
             'estado' => 'entregado',

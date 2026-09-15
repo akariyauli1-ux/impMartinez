@@ -1,4 +1,4 @@
-<?php $titulo = 'Recibo de Servicio'; ob_start(); ?>
+﻿<?php $titulo = 'Recibo de Servicio'; ob_start(); ?>
 
 <style>
 @media print {
@@ -441,7 +441,7 @@
         <p>Generado el <?= date('d/m/Y H:i:s') ?></p>
         
         <?php 
-        $hash_seguridad = $equipo['hash_seguridad'] ?? hash('sha256', $equipo['id'] . $equipo['fecha_registro'] . 'recepcion_impmartinez');
+        $hash_seguridad = $equipo['hash_seguridad'] ?? hash('sha256', $equipo['id'] . $equipo['fecha_registro'] . 'recepcion_laboratorioia');
         $url_verificacion = APP_URL . '/public/recepcion/verificar-entrega?hash=' . urlencode($hash_seguridad);
         $qr_url = 'https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' . urlencode($url_verificacion) . '&color=1565c0&bgcolor=ffffff&margin=4';
         ?>

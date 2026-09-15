@@ -1,5 +1,5 @@
--- Migración para agregar campos de orden de servicio a la tabla equipos
-USE impmartinez;
+﻿-- Migración para agregar campos de orden de servicio a la tabla equipos
+USE laboratorioia;
 
 ALTER TABLE equipos 
 ADD COLUMN costo_estimado DECIMAL(10,2) NULL AFTER equipo_reacondicionado,

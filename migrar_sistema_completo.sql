@@ -1,7 +1,7 @@
--- Migración completa del sistema de gestión de reparaciones
+﻿-- Migración completa del sistema de gestión de reparaciones
 -- Fecha: 2026-03-24
 
-USE impmartinez;
+USE laboratorioia;
 
 -- ============================================
 -- CAMPOS ADICIONALES EN TABLA EQUIPOS

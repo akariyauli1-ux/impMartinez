@@ -1,4 +1,4 @@
-USE impmartinez;
+﻿USE laboratorioia;
 
 ALTER TABLE equipos 
 MODIFY COLUMN estado ENUM('registrado', 'pendiente_asignacion', 'asignado_sucursal', 'recibido', 'en_reparacion', 'completado', 'entregado') DEFAULT 'registrado';

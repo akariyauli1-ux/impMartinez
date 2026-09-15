@@ -1,5 +1,5 @@
--- Migración para agregar campo tipo a equipos_fotos
-USE impmartinez;
+﻿-- Migración para agregar campo tipo a equipos_fotos
+USE laboratorioia;
 
 ALTER TABLE equipos_fotos 
 ADD COLUMN tipo VARCHAR(20) DEFAULT 'general' AFTER orden;

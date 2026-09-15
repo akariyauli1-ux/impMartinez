@@ -1,5 +1,5 @@
-RewriteEngine On
-RewriteBase /impMartines/public/
+﻿RewriteEngine On
+RewriteBase /laboratorioIA/public/
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

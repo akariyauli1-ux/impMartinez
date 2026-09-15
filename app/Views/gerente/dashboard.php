@@ -15,7 +15,7 @@
     </div>
     <div class="stat-card">
         <div class="stat-value"><?= $completados ?></div>
-        <div class="stat-label">CompletadoS...</div>
+        <div class="stat-label">CompletadoS</div>
     </div>
 </div>
 

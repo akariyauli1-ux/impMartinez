@@ -1,4 +1,4 @@
-<?php
-header('Location: http://localhost/impMartines/public/rrhh/inspecciones');
+﻿<?php
+header('Location: http://localhost/laboratorioIA/public/rrhh/inspecciones');
 exit;
 ?>

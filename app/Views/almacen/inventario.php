@@ -80,7 +80,9 @@
                     <th>Stock</th>
                     <th>Reservado</th>
                     <th>Disp.</th>
-                    <th>Precio</th>
+                    <th>Precio Anterior</th>
+                    <th>Precio Actual</th>
+                    <th>Precio Prom.</th>
                     <th>Solic.</th>
                     <th>Ventas</th>
                     <th>Inversion</th>
@@ -91,7 +93,7 @@
             <tbody>
                 <?php if (empty($repuestos)): ?>
                 <tr>
-                    <td colspan="14" style="text-align: center; padding: 20px;">No hay repuestos registrados</td>
+                    <td colspan="16" style="text-align: center; padding: 20px;">No hay repuestos registrados</td>
                 </tr>
                 <?php else: ?>
                     <?php foreach ($repuestos as $r): ?>
@@ -124,7 +126,20 @@
                             ?>
                             <span style="color: <?= $color ?>; font-weight: 600;"><?= $texto ?></span>
                         </td>
-                        <td>S/ <?= number_format($r['precio_unitario'] ?? 0, 2) ?></td>
+                        <td>
+                            <?php 
+                            $precioAnterior = $r['precio_promedio'] ?? $r['precio_unitario'] ?? 0;
+                            $precioActual = $r['precio_unitario'] ?? 0;
+                            ?>
+                            <span style="color: #757575;">S/ <?= number_format($precioAnterior, 2) ?></span>
+                        </td>
+                        <td><strong>S/ <?= number_format($precioActual, 2) ?></strong></td>
+                        <td>
+                            <?php $precioProm = $r['precio_promedio'] ?? 0; ?>
+                            <span style="<?= $precioProm > 0 ? 'color: #1565C0;' : '' ?>">
+                                S/ <?= number_format($precioProm, 2) ?>
+                            </span>
+                        </td>
                         <td><?= $r['solicitudes'] ?? 0 ?></td>
                         <td><?= $r['ventas'] ?? 0 ?></td>
                         <td>S/ <?= number_format($r['inversion'] ?? 0, 2) ?></td>
@@ -140,8 +155,10 @@
                             <?php endif; ?>
                         </td>
                         <td>
-                            <div style="display: flex; gap: 5px;">
+                            <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                                 <button type="button" class="btn btn-primary btn-sm" onclick="editarRepuesto(<?= htmlspecialchars(json_encode($r)) ?>)">Editar</button>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="abrirReabastecer(<?= $r['id'] ?>, '<?= htmlspecialchars($r['nombre']) ?>')">Reabastecer</button>
+                                <a href="<?= APP_URL ?>/public/almacen/lotes?id=<?= $r['id'] ?>" class="btn btn-outline btn-sm">Lotes</a>
                                 <form method="POST" action="<?= APP_URL ?>/public/almacen/toggle-descontinuado" style="display: inline;">
                                     <input type="hidden" name="id" value="<?= $r['id'] ?>">
                                     <button type="submit" class="btn btn-outline btn-sm"><?= ($r['descontinuado'] ?? 0) ? 'Habilitar' : 'Deshabilitar' ?></button>
@@ -318,6 +335,41 @@
     </div>
 </div>
 
+<div id="modalReabastecer" class="modal-overlay">
+    <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2>Reabastecer Stock (FIFO)</h2>
+            <button class="modal-close" onclick="cerrarModalReabastecer()">x</button>
+        </div>
+        <form method="POST" action="<?= APP_URL ?>/public/almacen/reabastecer">
+            <input type="hidden" name="repuesto_id" id="reabastecer_repuesto_id">
+            <div class="form-group">
+                <label>Repuesto</label>
+                <input type="text" id="reabastecer_nombre" readonly style="background: #f5f5f5;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Cantidad a ingresar *</label>
+                    <input type="number" name="cantidad" id="reabastecer_cantidad" min="1" required placeholder="Ej: 10">
+                </div>
+                <div class="form-group">
+                    <label>Nuevo Precio de Compra (S/) *</label>
+                    <input type="number" name="precio_compra" id="reabastecer_precio" min="0" step="0.01" required placeholder="Ej: 25.00">
+                </div>
+            </div>
+            <div style="background: #E3F2FD; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                <small style="color: #1565C0;">
+                    <strong>Metodo FIFO:</strong> El stock anterior conservara su precio. Al despachar, se consumira primero el stock mas antiguo.
+                </small>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">Reabastecer</button>
+                <button type="button" class="btn btn-outline" onclick="cerrarModalReabastecer()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function mostrarNuevaCategoria() {
     var select = document.getElementById('selectCategoria');
@@ -475,6 +527,22 @@ function cerrarModalCategoria() {
 
 document.getElementById('modalEditarCategoria').addEventListener('click', function(e) {
     if (e.target === this) cerrarModalCategoria();
+});
+
+function abrirReabastecer(repuestoId, nombre) {
+    document.getElementById('reabastecer_repuesto_id').value = repuestoId;
+    document.getElementById('reabastecer_nombre').value = nombre;
+    document.getElementById('reabastecer_cantidad').value = '';
+    document.getElementById('reabastecer_precio').value = '';
+    document.getElementById('modalReabastecer').classList.add('active');
+}
+
+function cerrarModalReabastecer() {
+    document.getElementById('modalReabastecer').classList.remove('active');
+}
+
+document.getElementById('modalReabastecer').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalReabastecer();
 });
 </script>
 

@@ -1,5 +1,5 @@
-<?php
+﻿<?php
 // Redirigir a la carpeta public
-header('Location: /impMartines/public/');
+header('Location: /laboratorioIA/public/');
 exit;
 ?>

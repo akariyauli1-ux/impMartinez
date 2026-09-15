@@ -1,5 +1,5 @@
--- Migración para el módulo de almacén mejorado
-USE impmartinez;
+﻿-- Migración para el módulo de almacén mejorado
+USE laboratorioia;
 
 -- Agregar nuevos campos a la tabla repuestos
 ALTER TABLE repuestos 

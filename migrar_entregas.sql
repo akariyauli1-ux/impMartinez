@@ -1,4 +1,4 @@
-USE impmartinez;
+﻿USE laboratorioia;
 
 ALTER TABLE equipos 
 ADD COLUMN entregado_por INT NULL,

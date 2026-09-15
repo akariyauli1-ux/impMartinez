@@ -1,5 +1,5 @@
--- Migración para sistema de roles múltiples
-USE impmartinez;
+﻿-- Migración para sistema de roles múltiples
+USE laboratorioia;
 
 -- Crear tabla de roles
 CREATE TABLE IF NOT EXISTS roles (

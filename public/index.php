@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -12,7 +12,7 @@ session_start();
 
 $uri = $_SERVER['REQUEST_URI'];
 $uri = parse_url($uri, PHP_URL_PATH);
-$uri = str_replace('/impMartines/public', '', $uri);
+$uri = str_replace('/laboratorioIA/public', '', $uri);
 $uri = rtrim($uri, '/') ?: '/';
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -87,6 +87,8 @@ $router->add('GET', '/almacen/pedidos', 'AlmacenController', 'pedidos');
 $router->add('POST', '/almacen/guardar-pedido', 'AlmacenController', 'guardarPedido');
 $router->add('POST', '/almacen/entregar-solicitud', 'AlmacenController', 'entregarSolicitud');
 $router->add('GET', '/almacen/historial', 'AlmacenController', 'historial');
+$router->add('GET', '/almacen/lotes', 'AlmacenController', 'verLotes');
+$router->add('POST', '/almacen/reabastecer', 'AlmacenController', 'reabastecer');
 
 $router->add('GET', '/pedidos', 'PedidoController', 'index');
 $router->add('GET', '/pedidos/nuevo', 'PedidoController', 'nuevo');

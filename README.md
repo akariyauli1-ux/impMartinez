@@ -1,4 +1,4 @@
-# ImpMartínez - Sistema de Gestión de Servicio Técnico
+﻿# Laboratorio IA - Sistema de Gestión de Servicio Técnico
 
 Sistema web para gestión de cadena de servicio técnico de dispositivos electrónicos (celulares, laptops, PC, TVs, radios).
 
@@ -18,10 +18,10 @@ Sistema web para gestión de cadena de servicio técnico de dispositivos electr�
 7. **Recursos Humanos** - Asistencia, inspecciones de limpieza/uniforme y productividad
 
 ## Instalación
-1. Copiar la carpeta `impMartines` en `C:\xampp\htdocs\`
+1. Copiar la carpeta `laboratorioIA` en `C:\xampp\htdocs\`
 2. Iniciar Apache y MySQL desde XAMPP
 3. Importar `database.sql` en phpMyAdmin o ejecutar con MySQL CLI
-4. Acceder a `http://localhost/impMartines/`
+4. Acceder a `http://localhost/laboratorioIA/`
 
 ## Usuarios de Prueba
 | Rol | Apellido | Carnet | Contraseña |

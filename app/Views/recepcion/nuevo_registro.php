@@ -13,21 +13,23 @@
     </div>
     
     <div class="form-group">
-        <label>
-            <input type="radio" name="cliente_option" value="existente" checked onchange="toggleClienteForm()"> 
-            Seleccionar cliente existente
-        </label>
-        <label style="margin-left: 20px;">
-            <input type="radio" name="cliente_option" value="nuevo" onchange="toggleClienteForm()"> 
-            Registrar nuevo cliente
-        </label>
+        <div class="radio-group">
+            <label class="radio-label">
+                <input type="radio" name="cliente_option" value="existente" checked onchange="toggleClienteForm()"> 
+                <span>Seleccionar cliente existente</span>
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="cliente_option" value="nuevo" onchange="toggleClienteForm()"> 
+                <span>Registrar nuevo cliente</span>
+            </label>
+        </div>
     </div>
     
     <div id="cliente_existente_section">
         <div class="form-group">
             <label>Buscar Cliente (Nombre, Teléfono o DNI)</label>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="buscar_cliente" placeholder="Escribe para buscar..." style="flex: 1;">
+            <div class="search-bar">
+                <input type="text" id="buscar_cliente" placeholder="Escribe para buscar...">
                 <button type="button" class="btn btn-primary" onclick="filtrarClientes()">🔍 Buscar</button>
                 <button type="button" class="btn btn-outline" onclick="limpiarBusquedaCliente()">✖ Limpiar</button>
             </div>
@@ -49,10 +51,9 @@
             </select>
         </div>
         
-        <!-- Sección para mostrar datos completos del cliente -->
         <div id="datos_cliente_completo" style="display: none; margin-top: 15px; padding: 15px; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 4px;">
             <h4 style="margin: 0 0 10px 0; color: #2e7d32;">📋 Datos del Cliente Seleccionado</h4>
-            <div id="contenido_datos_cliente"></div>
+            <div id="contenido_datos_cliente" class="datos-cliente-grid"></div>
         </div>
     </div>
     
@@ -144,192 +145,120 @@
             <textarea name="descripcion_falla" rows="4" required></textarea>
         </div>
         
-        <div class="form-group">
-            <label>Estado de Componentes</label>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <thead>
-                    <tr style="background-color: #f5f5f5;">
-                        <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Componente</th>
-                        <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">Buen Estado</th>
-                        <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">Mal Estado</th>
-                        <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">No Aplica</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Estado de Pantalla</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_pantalla" value="buen_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_pantalla" value="mal_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_pantalla" value="no_aplica">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Estado de Carga</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_carga" value="buen_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_carga" value="mal_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_carga" value="no_aplica">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Estado de Puertos</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_puertos" value="buen_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_puertos" value="mal_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_puertos" value="no_aplica">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Estado de Case</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_case" value="buen_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_case" value="mal_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_case" value="no_aplica">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Estado Touch</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_touch" value="buen_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_touch" value="mal_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_touch" value="no_aplica">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Estado Cámara</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_camara" value="buen_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_camara" value="mal_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_camara" value="no_aplica">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Estado de Encendido</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_encendido" value="buen_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_encendido" value="mal_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_encendido" value="no_aplica">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Marco Doblado</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="marco_doblado" value="buen_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="marco_doblado" value="mal_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="marco_doblado" value="no_aplica">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Estado de Parlantes/Audio</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_parlantes" value="buen_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_parlantes" value="mal_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_parlantes" value="no_aplica">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Estado de Imágenes/Rayaduras o Manchas</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_imagenes" value="buen_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_imagenes" value="mal_estado">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="estado_imagenes" value="no_aplica">
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="form-group">
-            <label>Estado Físico del Equipo</label>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <thead>
-                    <tr style="background-color: #f5f5f5;">
-                        <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Pregunta</th>
-                        <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">Sí</th>
-                        <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">No</th>
-                        <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">No Sabe</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">¿Está previamente abierto?</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="previamente_abierto" value="si">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="previamente_abierto" value="no">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="previamente_abierto" value="no_sabe">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">¿Contacto con líquidos / Entró al agua?</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="contacto_liquidos" value="si">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="contacto_liquidos" value="no">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="contacto_liquidos" value="no_sabe">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #ddd;">¿Equipo reacondicionado / Adquirido a medio uso?</td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="equipo_reacondicionado" value="si">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="equipo_reacondicionado" value="no">
-                        </td>
-                        <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
-                            <input type="radio" name="equipo_reacondicionado" value="no_sabe">
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="tablas-estado-container">
+            <div class="tabla-estado-col"> 
+                <label><center><h3>Estado de Componentes</h3></center></label>
+                <div class="table-responsive">
+                <table class="tabla-estado">
+                    <thead>
+                        <tr>
+                            <th>Componente</th>
+                            <th>Buen Estado</th>
+                            <th>Mal Estado</th>
+                            <th>No Aplica</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="Componente">Estado de Pantalla</td>
+                            <td data-label="Buen Estado" class="text-center"><input type="radio" name="estado_pantalla" value="buen_estado"></td>
+                            <td data-label="Mal Estado" class="text-center"><input type="radio" name="estado_pantalla" value="mal_estado"></td>
+                            <td data-label="No Aplica" class="text-center"><input type="radio" name="estado_pantalla" value="no_aplica"></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Componente">Estado de Carga</td>
+                            <td data-label="Buen Estado" class="text-center"><input type="radio" name="estado_carga" value="buen_estado"></td>
+                            <td data-label="Mal Estado" class="text-center"><input type="radio" name="estado_carga" value="mal_estado"></td>
+                            <td data-label="No Aplica" class="text-center"><input type="radio" name="estado_carga" value="no_aplica"></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Componente">Estado de Puertos</td>
+                            <td data-label="Buen Estado" class="text-center"><input type="radio" name="estado_puertos" value="buen_estado"></td>
+                            <td data-label="Mal Estado" class="text-center"><input type="radio" name="estado_puertos" value="mal_estado"></td>
+                            <td data-label="No Aplica" class="text-center"><input type="radio" name="estado_puertos" value="no_aplica"></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Componente">Estado de Case</td>
+                            <td data-label="Buen Estado" class="text-center"><input type="radio" name="estado_case" value="buen_estado"></td>
+                            <td data-label="Mal Estado" class="text-center"><input type="radio" name="estado_case" value="mal_estado"></td>
+                            <td data-label="No Aplica" class="text-center"><input type="radio" name="estado_case" value="no_aplica"></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Componente">Estado Touch</td>
+                            <td data-label="Buen Estado" class="text-center"><input type="radio" name="estado_touch" value="buen_estado"></td>
+                            <td data-label="Mal Estado" class="text-center"><input type="radio" name="estado_touch" value="mal_estado"></td>
+                            <td data-label="No Aplica" class="text-center"><input type="radio" name="estado_touch" value="no_aplica"></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Componente">Estado Cámara</td>
+                            <td data-label="Buen Estado" class="text-center"><input type="radio" name="estado_camara" value="buen_estado"></td>
+                            <td data-label="Mal Estado" class="text-center"><input type="radio" name="estado_camara" value="mal_estado"></td>
+                            <td data-label="No Aplica" class="text-center"><input type="radio" name="estado_camara" value="no_aplica"></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Componente">Estado de Encendido</td>
+                            <td data-label="Buen Estado" class="text-center"><input type="radio" name="estado_encendido" value="buen_estado"></td>
+                            <td data-label="Mal Estado" class="text-center"><input type="radio" name="estado_encendido" value="mal_estado"></td>
+                            <td data-label="No Aplica" class="text-center"><input type="radio" name="estado_encendido" value="no_aplica"></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Componente">Estado del Marco </td>
+                            <td data-label="Buen Estado" class="text-center"><input type="radio" name="marco_doblado" value="buen_estado"></td>
+                            <td data-label="Mal Estado" class="text-center"><input type="radio" name="marco_doblado" value="mal_estado"></td>
+                            <td data-label="No Aplica" class="text-center"><input type="radio" name="marco_doblado" value="no_aplica"></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Componente">Estado de Parlantes/Audio</td>
+                            <td data-label="Buen Estado" class="text-center"><input type="radio" name="estado_parlantes" value="buen_estado"></td>
+                            <td data-label="Mal Estado" class="text-center"><input type="radio" name="estado_parlantes" value="mal_estado"></td>
+                            <td data-label="No Aplica" class="text-center"><input type="radio" name="estado_parlantes" value="no_aplica"></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Componente">Estado de Imágenes/Rayaduras o Manchas</td>
+                            <td data-label="Buen Estado" class="text-center"><input type="radio" name="estado_imagenes" value="buen_estado"></td>
+                            <td data-label="Mal Estado" class="text-center"><input type="radio" name="estado_imagenes" value="mal_estado"></td>
+                            <td data-label="No Aplica" class="text-center"><input type="radio" name="estado_imagenes" value="no_aplica"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            
+            <div class="tabla-estado-col"> 
+                <label><center><h3>Estado Físico del Equipo</h3></center></label>
+                <div class="table-responsive">
+                <table class="tabla-estado">
+                    <thead>
+                        <tr>
+                            <th>Pregunta</th>
+                            <th>Sí</th>
+                            <th>No</th>
+                            <th>No Sabe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="Pregunta">¿Está previamente abierto?</td>
+                            <td data-label="Sí" class="text-center"><input type="radio" name="previamente_abierto" value="si"></td>
+                            <td data-label="No" class="text-center"><input type="radio" name="previamente_abierto" value="no"></td>
+                            <td data-label="No Sabe" class="text-center"><input type="radio" name="previamente_abierto" value="no_sabe"></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Pregunta">¿Contacto con líquidos / Entró al agua?</td>
+                            <td data-label="Sí" class="text-center"><input type="radio" name="contacto_liquidos" value="si"></td>
+                            <td data-label="No" class="text-center"><input type="radio" name="contacto_liquidos" value="no"></td>
+                            <td data-label="No Sabe" class="text-center"><input type="radio" name="contacto_liquidos" value="no_sabe"></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Pregunta">¿Equipo reacondicionado / Adquirido a medio uso?</td>
+                            <td data-label="Sí" class="text-center"><input type="radio" name="equipo_reacondicionado" value="si"></td>
+                            <td data-label="No" class="text-center"><input type="radio" name="equipo_reacondicionado" value="no"></td>
+                            <td data-label="No Sabe" class="text-center"><input type="radio" name="equipo_reacondicionado" value="no_sabe"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
         </div>
         
         <div class="form-group">
@@ -522,13 +451,12 @@ function mostrarDatosCliente() {
     const email = selectedOption.getAttribute('data-email') || '';
     const direccion = selectedOption.getAttribute('data-direccion') || '';
     
-    let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">';
-    html += `<p><strong>Nombre Completo:</strong> ${nombre.charAt(0).toUpperCase() + nombre.slice(1)}</p>`;
-    html += `<p><strong>DNI:</strong> ${dni || 'No registrado'}</p>`;
-    html += `<p><strong>Teléfono:</strong> ${telefono}</p>`;
-    html += `<p><strong>Email:</strong> ${email || 'No registrado'}</p>`;
-    html += `<p style="grid-column: 1 / -1;"><strong>Dirección:</strong> ${direccion || 'No registrada'}</p>`;
-    html += '</div>';
+    let html = '';
+    html += `<div class="dato-item"><strong>Nombre Completo:</strong> ${nombre.charAt(0).toUpperCase() + nombre.slice(1)}</div>`;
+    html += `<div class="dato-item"><strong>DNI:</strong> ${dni || 'No registrado'}</div>`;
+    html += `<div class="dato-item"><strong>Teléfono:</strong> ${telefono}</div>`;
+    html += `<div class="dato-item"><strong>Email:</strong> ${email || 'No registrado'}</div>`;
+    html += `<div class="dato-item dato-full"><strong>Dirección:</strong> ${direccion || 'No registrada'}</div>`;
     
     contenidoDatos.innerHTML = html;
     datosSection.style.display = 'block';
@@ -937,5 +865,405 @@ function filtrarRepuestos() {
     });
 }
 </script>
+
+<style>
+.radio-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.2s;
+    background: white;
+    font-size: 0.85rem;
+}
+
+.radio-label:hover {
+    border-color: #D32F2F;
+    background: #fff5f5;
+}
+
+.radio-label input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #D32F2F;
+}
+
+.radio-label input[type="radio"]:checked + span {
+    font-weight: 600;
+    color: #D32F2F;
+}
+
+.search-bar {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.search-bar input {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-bar button {
+    white-space: nowrap;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+}
+
+.datos-cliente-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.dato-item {
+    padding: 6px 10px;
+    background: white;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.dato-item.dato-full {
+    grid-column: 1 / -1;
+}
+
+.tabla-estado {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.tabla-estado thead tr {
+    background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+    color: white;
+}
+
+.tabla-estado th {
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tabla-estado th:not(:first-child) {
+    text-align: center;
+}
+
+.tabla-estado td {
+    padding: 8px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 0.8rem;
+}
+
+.tabla-estado td.text-center {
+    text-align: center;
+}
+
+.tabla-estado tbody tr {
+    background: white;
+    transition: background 0.2s;
+}
+
+.tabla-estado tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.tabla-estado tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tabla-estado input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #D32F2F;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.card {
+    padding: 16px;
+}
+
+.card-header {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+}
+
+.card-header h2 {
+    font-size: 1rem;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+}
+
+.form-group textarea {
+    min-height: 60px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.tablas-estado-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.tabla-estado-col label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: var(--negro-suave);
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .content-area {
+        padding: 12px;
+    }
+    
+    .card {
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 10px;
+    }
+    
+    .card-header {
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+    }
+    
+    .card-header h2 {
+        font-size: 1.05rem;
+    }
+    
+    .form-group {
+        margin-bottom: 14px;
+    }
+    
+    .form-group label {
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .form-group textarea {
+        min-height: 70px;
+    }
+    
+    .form-row {
+        display: block;
+    }
+    
+    .form-row .form-group {
+        margin-bottom: 12px;
+    }
+    
+    .tablas-estado-container {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .tabla-estado-col label {
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+    }
+    
+    .tabla-estado {
+        font-size: 0.8rem;
+    }
+    
+    .tabla-estado th {
+        padding: 10px 8px;
+        font-size: 0.75rem;
+    }
+    
+    .tabla-estado td {
+        padding: 10px 8px;
+    }
+    
+    .tabla-estado input[type="radio"] {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .radio-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .radio-label {
+        width: 100%;
+        padding: 12px 14px;
+        font-size: 0.85rem;
+        justify-content: flex-start;
+    }
+    
+    .search-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .search-bar input {
+        width: 100%;
+    }
+    
+    .search-bar button {
+        width: 100%;
+        padding: 10px 14px;
+    }
+    
+    .datos-cliente-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .dato-item {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .btn {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    #modalConfirmacion .modal,
+    #modalInventario .modal {
+        max-width: 95%;
+        margin: 10px auto;
+        border-radius: 10px;
+    }
+    
+    #modalConfirmacion .modal .modal-header,
+    #modalInventario .modal .modal-header {
+        padding: 16px;
+    }
+    
+    #modalConfirmacion .modal .modal-header h2,
+    #modalInventario .modal .modal-header h2 {
+        font-size: 1.1rem;
+    }
+    
+    #modalConfirmacion .modal > div:last-child,
+    #modalInventario .modal > div:last-child {
+        padding: 16px;
+    }
+    
+    #canvasFirma {
+        max-width: 100%;
+        height: auto !important;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-area {
+        padding: 10px;
+    }
+    
+    .card {
+        padding: 14px;
+        margin-bottom: 14px;
+    }
+    
+    .card-header h2 {
+        font-size: 1rem;
+    }
+    
+    .card-header h3 {
+        font-size: 0.95rem;
+    }
+    
+    .form-group {
+        margin-bottom: 12px;
+    }
+    
+    .form-group label {
+        font-size: 0.8rem;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 9px 11px;
+        font-size: 0.85rem;
+    }
+    
+    .tabla-estado th {
+        font-size: 0.7rem;
+        padding: 8px 6px;
+    }
+    
+    .tabla-estado td {
+        font-size: 0.75rem;
+        padding: 8px 6px;
+    }
+    
+    .tabla-estado input[type="radio"] {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .radio-label {
+        padding: 11px 13px;
+        font-size: 0.8rem;
+    }
+    
+    .dato-item {
+        font-size: 0.8rem;
+        padding: 7px 10px;
+    }
+    
+    .btn {
+        padding: 11px 18px;
+        font-size: 0.85rem;
+    }
+}
+</style>
 
 <?php $contenido = ob_get_clean(); require __DIR__ . '/../layouts/main.php'; ?>

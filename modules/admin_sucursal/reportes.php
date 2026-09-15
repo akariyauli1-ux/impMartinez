@@ -1,4 +1,4 @@
-<?php
-header('Location: http://localhost/impMartines/public/admin-sucursal/reportes');
+﻿<?php
+header('Location: http://localhost/laboratorioIA/public/admin-sucursal/reportes');
 exit;
 ?>

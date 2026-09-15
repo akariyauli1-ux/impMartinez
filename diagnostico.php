@@ -1,6 +1,6 @@
-<?php
+﻿<?php
 // Diagnóstico del sistema
-echo "<h2>Diagnóstico ImpMartínez</h2>";
+echo "<h2>Diagnóstico Laboratorio IA</h2>";
 
 // Verificar PHP
 echo "<p><strong>PHP Version:</strong> " . phpversion() . "</p>";
@@ -53,6 +53,6 @@ try {
 
 // Enlaces de prueba
 echo "<h3>Enlaces de prueba:</h3>";
-echo "<p><a href='/impMartines/public/'>Ir al Login</a></p>";
-echo "<p><a href='/impMartines/public/usuarios'>Ir a Usuarios</a></p>";
+echo "<p><a href='/laboratorioIA/public/'>Ir al Login</a></p>";
+echo "<p><a href='/laboratorioIA/public/usuarios'>Ir a Usuarios</a></p>";
 ?>
