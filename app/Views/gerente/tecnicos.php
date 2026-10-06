@@ -111,15 +111,5 @@ foreach ($tecnicos as $t) {
     </div>
 </div>
 
-<style>
-.badge-morado {
-    background: #9C27B0;
-    color: white;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 0.75em;
-    font-weight: bold;
-}
-</style>
 
-<?php $contenido = ob_get_clean(); require __DIR__ . '/../layouts/main.php'; ?>
+<?php $css_extra = 'gerente.css'; $contenido = ob_get_clean(); require __DIR__ . '/../layouts/main.php'; ?>

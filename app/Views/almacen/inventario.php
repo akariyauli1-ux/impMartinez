@@ -1,26 +1,5 @@
-<?php $titulo = 'Inventario de Repuestos'; ob_start(); ?>
+<?php $titulo = 'Inventario de Repuestos'; $css_extra = 'almacen.css'; ob_start(); ?>
 
-<style>
-.filtros-container {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    align-items: end;
-}
-.filtros-container .form-group {
-    margin-bottom: 0;
-    min-width: 200px;
-}
-.badge-descontinuado {
-    background: #9e9e9e;
-    color: white;
-}
-.badge-activo {
-    background: #4caf50;
-    color: white;
-}
-</style>
 
 <div class="stats-grid">
     <div class="stat-card">

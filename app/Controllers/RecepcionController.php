@@ -44,27 +44,6 @@ class RecepcionController extends Controller {
         ]);
     }
     
-    public function nuevoCliente() {
-        $this->view('recepcion/nuevo_cliente', [
-            'usuario' => $this->obtenerUsuarioActual()
-        ]);
-    }
-    
-    public function guardarCliente() {
-        $data = [
-            'nombre' => $_POST['nombre'],
-            'apellido_paterno' => $_POST['apellido_paterno'],
-            'apellido_materno' => $_POST['apellido_materno'] ?? '',
-            'dni' => $_POST['dni'] ?? '',
-            'telefono' => $_POST['telefono'],
-            'email' => $_POST['email'] ?? '',
-            'direccion' => $_POST['direccion'] ?? ''
-        ];
-        
-        $this->clienteModel->crear($data);
-        $this->redirect('recepcion/nuevo-cliente');
-    }
-    
     public function nuevoEquipo() {
         $clientes = $this->clienteModel->obtenerTodos();
         

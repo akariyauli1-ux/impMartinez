@@ -7,7 +7,9 @@ class Usuario extends Model {
     }
     
     public function obtenerFoto($id) {
-        return $this->fetchOne("SELECT foto_data, foto_tipo FROM usuarios WHERE id = ?", [$id]);
+        $sql = "SELECT foto_data, foto_tipo FROM usuarios WHERE id = " . intval($id);
+        $result = $this->db->query($sql);
+        return $result->fetch_assoc();
     }
     
     public function actualizarFoto($id, $foto_nombre, $foto_data, $foto_tipo) {
@@ -16,6 +18,10 @@ class Usuario extends Model {
     
     public function obtenerPorApellidoYCarnet($apellido, $carnet) {
         return $this->fetchOne("SELECT id, nombre, apellido_paterno, apellido_materno, password, rol, sucursal_id FROM usuarios WHERE (apellido_paterno = ? OR apellido_materno = ?) AND carnet = ? AND activo = 1", [$apellido, $apellido, $carnet]);
+    }
+    
+    public function obtenerPorCarnet($carnet) {
+        return $this->fetchOne("SELECT id, nombre, apellido_paterno FROM usuarios WHERE carnet = ?", [$carnet]);
     }
     
     public function obtenerTodosPorSucursal($sucursal_id) {

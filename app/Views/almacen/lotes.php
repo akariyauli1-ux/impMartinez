@@ -1,51 +1,5 @@
-<?php $titulo = 'Lotes FIFO - ' . ($repuesto['nombre'] ?? ''); ob_start(); ?>
+<?php $titulo = 'Lotes FIFO - ' . ($repuesto['nombre'] ?? ''); $css_extra = 'almacen.css'; ob_start(); ?>
 
-<style>
-.lotes-header {
-    background: linear-gradient(135deg, #1565C0, #1976D2);
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-.lotes-header h2 {
-    margin: 0 0 10px 0;
-}
-.precios-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-top: 15px;
-}
-.precio-card {
-    background: rgba(255,255,255,0.15);
-    padding: 12px;
-    border-radius: 6px;
-    text-align: center;
-}
-.precio-card .label {
-    font-size: 0.85rem;
-    opacity: 0.9;
-}
-.precio-card .value {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-top: 4px;
-}
-.lote-activo {
-    background: #E8F5E9 !important;
-}
-.lote-agotado {
-    opacity: 0.5;
-}
-.badge-fifo {
-    background: #1565C0;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.75rem;
-}
-</style>
 
 <div class="lotes-header">
     <div style="display: flex; justify-content: space-between; align-items: start;">

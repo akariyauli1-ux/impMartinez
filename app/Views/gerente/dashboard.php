@@ -2,20 +2,20 @@
 
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-value"><?= count($sucursales) ?></div>
+        <div class="stat-value"><?= isset($sucursales) ? count($sucursales) : 0 ?></div>
         <div class="stat-label">Sucursales Activas</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value"><?= $total_equipos ?></div>
+        <div class="stat-value"><?= $total_equipos ?? 0 ?></div>
         <div class="stat-label">Total Equipos</div>
     </div>
     <div class="stat-card negro">
-        <div class="stat-value"><?= $en_reparacion ?></div>
+        <div class="stat-value"><?= $en_reparacion ?? 0 ?></div>
         <div class="stat-label">En Reparacion</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value"><?= $completados ?></div>
-        <div class="stat-label">CompletadoS</div>
+        <div class="stat-value"><?= $completados ?? 0 ?></div>
+        <div class="stat-label">Completados</div>
     </div>
 </div>
 
@@ -73,7 +73,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-    const colores = ['#D32F2F', '#1a1a1a', '#F57C00', '#1976D2', '#388E3C', '#7B1FA2', '#00796B', '#C2185B'];
+    const colores = ['#2E7D32', '#1a1a1a', '#F57C00', '#1976D2', '#388E3C', '#7B1FA2', '#00796B', '#C2185B'];
     const coloresAlpha = colores.map(c => c + '33');
     const urlAjax = '<?= APP_URL ?>/public/gerente/estadisticas-ajax';
 
@@ -177,10 +177,10 @@
         });
     });
 
-    const labelsTrabajos = <?= json_encode(array_column($trabajosPorSucursal, 'sucursal')) ?>;
-    const datosCompletados = <?= json_encode(array_column($trabajosPorSucursal, 'completados')) ?>;
-    const datosEnReparacion = <?= json_encode(array_column($trabajosPorSucursal, 'en_reparacion')) ?>;
-    const datosPendientes = <?= json_encode(array_column($trabajosPorSucursal, 'pendientes')) ?>;
+    const labelsTrabajos = <?= json_encode(array_column($trabajosPorSucursal ?? [], 'sucursal')) ?>;
+    const datosCompletados = <?= json_encode(array_column($trabajosPorSucursal ?? [], 'completados')) ?>;
+    const datosEnReparacion = <?= json_encode(array_column($trabajosPorSucursal ?? [], 'en_reparacion')) ?>;
+    const datosPendientes = <?= json_encode(array_column($trabajosPorSucursal ?? [], 'pendientes')) ?>;
 
     chartTrabajos = new Chart(document.getElementById('chartTrabajos'), {
         type: 'bar',
@@ -203,8 +203,8 @@
         }
     });
 
-    const labelsSolicitudes = <?= json_encode(array_column($solicitudesPorSucursal, 'sucursal')) ?>;
-    const datosSolicitudes = <?= json_encode(array_column($solicitudesPorSucursal, 'total_solicitudes')) ?>;
+    const labelsSolicitudes = <?= json_encode(array_column($solicitudesPorSucursal ?? [], 'sucursal')) ?>;
+    const datosSolicitudes = <?= json_encode(array_column($solicitudesPorSucursal ?? [], 'total_solicitudes')) ?>;
 
     chartSolicitudes = new Chart(document.getElementById('chartSolicitudes'), {
         type: 'doughnut',
@@ -226,8 +226,8 @@
         }
     });
 
-    const labelsProductos = <?= json_encode(array_column($productosMasSolicitados, 'nombre')) ?>;
-    const datosProductos = <?= json_encode(array_column($productosMasSolicitados, 'total')) ?>;
+    const labelsProductos = <?= json_encode(array_column($productosMasSolicitados ?? [], 'nombre')) ?>;
+    const datosProductos = <?= json_encode(array_column($productosMasSolicitados ?? [], 'total')) ?>;
 
     chartProductos = new Chart(document.getElementById('chartProductos'), {
         type: 'bar',
@@ -255,35 +255,5 @@
     });
 </script>
 
-<style>
-    .filtro-periodo {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-    .btn-filtro {
-        padding: 8px 18px;
-        border: 2px solid var(--negro, #1a1a1a);
-        background: white;
-        color: var(--negro, #1a1a1a);
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.85rem;
-        transition: all 0.2s;
-    }
-    .btn-filtro:hover {
-        background: var(--blanco-humo, #f5f5f5);
-    }
-    .btn-filtro.active {
-        background: var(--negro, #1a1a1a);
-        color: white;
-    }
-    @media (max-width: 768px) {
-        div[style*="grid-template-columns: 1fr 1fr"] {
-            grid-template-columns: 1fr !important;
-        }
-    }
-</style>
 
-<?php $contenido = ob_get_clean(); require __DIR__ . '/../layouts/main.php'; ?>
+<?php $css_extra = 'gerente.css'; $contenido = ob_get_clean(); require __DIR__ . '/../layouts/main.php'; ?>

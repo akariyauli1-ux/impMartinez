@@ -2,16 +2,47 @@
 require_once __DIR__ . '/../Core/Controller.php';
 require_once __DIR__ . '/../Models/Usuario.php';
 require_once __DIR__ . '/../Models/Sucursal.php';
+require_once __DIR__ . '/../Models/Asistencia.php';
 
 class AuthController extends Controller {
     private $usuarioModel;
+    private $asistenciaModel;
     
     public function __construct() {
         $this->usuarioModel = new Usuario();
+        $this->asistenciaModel = new Asistencia();
     }
     
     public function login() {
         if (isset($_SESSION['usuario_id'])) {
+            // Verificar si necesita registrar asistencia (excluir gerente y rrhh)
+            $roles_excluidos = ['gerente', 'rrhh'];
+            $necesita_asistencia = false;
+            
+            if (isset($_SESSION['usuario_roles'])) {
+                foreach ($_SESSION['usuario_roles'] as $rol) {
+                    if (!in_array($rol, $roles_excluidos)) {
+                        $necesita_asistencia = true;
+                        break;
+                    }
+                }
+            }
+            
+            if ($necesita_asistencia) {
+                $hoy = date('Y-m-d');
+                $asistencia_hoy = $this->asistenciaModel->obtenerPorUsuarioYFecha($_SESSION['usuario_id'], $hoy);
+                
+                if (!$asistencia_hoy) {
+                    // Mostrar vista de registro de asistencia
+                    $usuario = $this->usuarioModel->obtenerPorId($_SESSION['usuario_id']);
+                    $this->view('auth/registrar_asistencia', [
+                        'usuario' => $usuario,
+                        'roles' => $_SESSION['usuario_roles']
+                    ]);
+                    return;
+                }
+            }
+            
             // Si tiene múltiples roles y no ha seleccionado uno, ir a selección de roles
             if (isset($_SESSION['usuario_roles']) && count($_SESSION['usuario_roles']) > 1 && !isset($_SESSION['rol_activo'])) {
                 $this->redirect('auth/seleccionar-rol');
@@ -65,6 +96,31 @@ class AuthController extends Controller {
         $_SESSION['usuario_rol'] = $usuario['rol']; // Mantener compatibilidad con el primer rol
         $_SESSION['usuario_roles'] = $roles_nombres; // Array con todos los roles
         $_SESSION['sucursal_id'] = $usuario['sucursal_id'];
+        
+        // Verificar si necesita registrar asistencia (excluir gerente y rrhh)
+        $roles_excluidos = ['gerente', 'rrhh'];
+        $necesita_asistencia = false;
+        
+        foreach ($roles_nombres as $rol) {
+            if (!in_array($rol, $roles_excluidos)) {
+                $necesita_asistencia = true;
+                break;
+            }
+        }
+        
+        if ($necesita_asistencia) {
+            $hoy = date('Y-m-d');
+            $asistencia_hoy = $this->asistenciaModel->obtenerPorUsuarioYFecha($usuario['id'], $hoy);
+            
+            if (!$asistencia_hoy) {
+                // Mostrar vista de registro de asistencia
+                $this->view('auth/registrar_asistencia', [
+                    'usuario' => $usuario,
+                    'roles' => $roles_nombres
+                ]);
+                return;
+            }
+        }
         
         // Si tiene múltiples roles, mostrar selector
         if (count($roles_nombres) > 1) {
@@ -120,6 +176,39 @@ class AuthController extends Controller {
         $this->redirect('');
     }
     
+    public function guardarAsistencia() {
+        if (!isset($_SESSION['usuario_id'])) {
+            $this->redirect('');
+            return;
+        }
+        
+        $usuario_id = $_SESSION['usuario_id'];
+        $hoy = date('Y-m-d');
+        $hora_entrada = date('H:i:s');
+        
+        // Determinar estado (tardanza si es después de las 9:00 AM)
+        $hora_limite = '09:00:00';
+        $estado = ($hora_entrada > $hora_limite) ? 'tardanza' : 'presente';
+        
+        $this->asistenciaModel->registrar([
+            'usuario_id' => $usuario_id,
+            'fecha' => $hoy,
+            'hora_entrada' => $hora_entrada,
+            'estado' => $estado,
+            'registrado_por' => $usuario_id
+        ]);
+        
+        // Después de registrar asistencia, continuar con el flujo normal
+        $roles_nombres = $_SESSION['usuario_roles'];
+        
+        if (count($roles_nombres) > 1) {
+            $this->redirect('auth/seleccionar-rol');
+        } else {
+            $_SESSION['rol_activo'] = $roles_nombres[0];
+            $this->redirect($this->obtenerRedireccion($roles_nombres[0]));
+        }
+    }
+    
     public function captcha() {
         $codigo = substr(str_shuffle('ABCDEFGHJKLMNPQRSTUVWXYZ23456789'), 0, 5);
         $_SESSION['captcha_codigo'] = $codigo;
@@ -129,7 +218,7 @@ class AuthController extends Controller {
         $imagen = imagecreatetruecolor($ancho, $alto);
         
         $color_fondo = imagecolorallocate($imagen, 245, 245, 245);
-        $color_texto = imagecolorallocate($imagen, 211, 47, 47);
+        $color_texto = imagecolorallocate($imagen, 46, 125, 50);
         $color_linea = imagecolorallocate($imagen, 180, 180, 180);
         
         imagefilledrectangle($imagen, 0, 0, $ancho, $alto, $color_fondo);

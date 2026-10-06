@@ -7,39 +7,6 @@
 </div>
 <?php endif; ?>
 
-<style>
-.solicitudes-tecnicos {
-    background: #FFF3E0;
-    border: 2px solid #FF9800;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-.solicitudes-tecnicos h2 {
-    color: #E65100;
-    margin-bottom: 15px;
-}
-.badge-solicitado {
-    background: #FF9800;
-    color: white;
-}
-.badge-entregado {
-    background: #4CAF50;
-    color: white;
-}
-.btn-entregar {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85em;
-}
-.btn-entregar:hover {
-    background: #45a049;
-}
-</style>
 
 <div class="stats-grid">
     <div class="stat-card">

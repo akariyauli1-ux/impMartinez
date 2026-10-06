@@ -1,21 +1,18 @@
 <?php
 require_once __DIR__ . '/../Core/Controller.php';
 require_once __DIR__ . '/../Models/Usuario.php';
-require_once __DIR__ . '/../Models/Asistencia.php';
 require_once __DIR__ . '/../Models/Inspeccion.php';
 require_once __DIR__ . '/../Models/AsignacionTecnico.php';
 require_once __DIR__ . '/../Models/Sucursal.php';
 
 class RRHHController extends Controller {
     private $usuarioModel;
-    private $asistenciaModel;
     private $inspeccionModel;
     private $asignacionTecnicoModel;
     private $sucursalModel;
     
     public function __construct() {
         $this->usuarioModel = new Usuario();
-        $this->asistenciaModel = new Asistencia();
         $this->inspeccionModel = new Inspeccion();
         $this->asignacionTecnicoModel = new AsignacionTecnico();
         $this->sucursalModel = new Sucursal();
@@ -31,30 +28,10 @@ class RRHHController extends Controller {
     
     public function dashboard() {
         $total_personal = count($this->usuarioModel->obtenerTodos());
-        $fecha = date('Y-m-d');
-        $stats = $this->asistenciaModel->obtenerCountPorFecha($fecha);
         
         $this->view('rrhh/dashboard', [
             'usuario' => $this->obtenerUsuarioActual(),
-            'total_personal' => $total_personal,
-            'presentes' => $stats['presentes'] ?? 0,
-            'tardanzas' => $stats['tardanzas'] ?? 0,
-            'ausentes' => $stats['ausentes'] ?? 0
-        ]);
-    }
-    
-    public function asistencia() {
-        $fecha = $_GET['fecha'] ?? date('Y-m-d');
-        $sucursal_id = $_GET['sucursal'] ?? null;
-        
-        $asistencias = $this->asistenciaModel->obtenerReporte($fecha, $sucursal_id);
-        $sucursales = $this->sucursalModel->obtenerTodas();
-        
-        $this->view('rrhh/asistencia', [
-            'usuario' => $this->obtenerUsuarioActual(),
-            'asistencias' => $asistencias,
-            'fecha' => $fecha,
-            'sucursales' => $sucursales
+            'total_personal' => $total_personal
         ]);
     }
     

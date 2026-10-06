@@ -1,55 +1,5 @@
-<?php $titulo = 'Nueva Venta'; ob_start(); ?>
+<?php $titulo = 'Nueva Venta'; $css_extra = 'pedidos.css'; ob_start(); ?>
 
-<style>
-.form-card {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: var(--sombra);
-    max-width: 700px;
-    margin: 0 auto;
-}
-.form-card h2 {
-    margin-bottom: 20px;
-    color: var(--negro);
-}
-.repuesto-info {
-    background: var(--blanco-humo);
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-top: 8px;
-    font-size: 0.85rem;
-    display: none;
-}
-.repuesto-info.visible {
-    display: block;
-}
-.repuesto-info .stock-ok {
-    color: #2E7D32;
-    font-weight: 600;
-}
-.repuesto-info .stock-bajo {
-    color: #C62828;
-    font-weight: 600;
-}
-.btn-volver {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: var(--negro);
-    color: white;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 16px;
-}
-.btn-volver:hover {
-    background: var(--negro-suave);
-    color: white;
-}
-</style>
 
 <a href="<?= APP_URL ?>/public/pedidos" class="btn-volver">
     <span>&#8592;</span> Volver a Mis Ventas

@@ -5,63 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= APP_NAME ?> - Iniciar Sesión</title>
     <link rel="stylesheet" href="<?= APP_URL ?>/public/css/style.css">
-    <style>
-        .captcha-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .captcha-container img {
-            border-radius: 8px;
-            border: 2px solid #E0E0E0;
-            max-width: 100%;
-            height: auto;
-        }
-        .captcha-refresh {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #D32F2F;
-            padding: 5px;
-        }
-        .captcha-container input {
-            flex: 1;
-            min-width: 100px;
-        }
-        
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 20px;
-                margin: 10px;
-            }
-            
-            .login-header h1 {
-                font-size: 1.5rem;
-            }
-            
-            .login-header p {
-                font-size: 0.85rem;
-            }
-            
-            .captcha-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .captcha-container img {
-                width: 100%;
-                max-width: 200px;
-                margin: 0 auto;
-            }
-            
-            .captcha-refresh {
-                align-self: center;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="<?= APP_URL ?>/public/css/auth.css">
 </head>
 <body class="login-body">
     <div class="login-container">
@@ -96,8 +40,8 @@
             <div class="form-group">
                 <label>Código de Verificación</label>
                 <div class="captcha-container">
-                    <img id="captcha-img" src="<?= APP_URL ?>/public/captcha?t=<?= time() ?>" alt="Captcha" width="150" height="50">
-                    <button type="button" class="captcha-refresh" onclick="document.getElementById('captcha-img').src='<?= APP_URL ?>/public/captcha?t='+Date.now()" title="Actualizar código">↻</button>
+                    <img id="captcha-img" src="<?= APP_URL ?>/captcha_image.php?t=<?= time() ?>" alt="Captcha" width="150" height="50">
+                    <button type="button" class="captcha-refresh" onclick="document.getElementById('captcha-img').src='<?= APP_URL ?>/captcha_image.php?t='+Date.now()" title="Actualizar código">↻</button>
                     <input type="text" name="captcha" placeholder="Código" required maxlength="5" autocomplete="off">
                 </div>
             </div>

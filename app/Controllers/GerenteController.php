@@ -6,7 +6,6 @@ require_once __DIR__ . '/../Models/Usuario.php';
 require_once __DIR__ . '/../Models/AsignacionTecnico.php';
 require_once __DIR__ . '/../Models/Repuesto.php';
 require_once __DIR__ . '/../Models/PedidoRepuesto.php';
-require_once __DIR__ . '/../Models/Asistencia.php';
 require_once __DIR__ . '/../Models/Inspeccion.php';
 require_once __DIR__ . '/../Models/SolicitudComponente.php';
 
@@ -17,7 +16,6 @@ class GerenteController extends Controller {
     private $asignacionTecnicoModel;
     private $repuestoModel;
     private $pedidoModel;
-    private $asistenciaModel;
     private $inspeccionModel;
     private $solicitudComponenteModel;
     
@@ -28,7 +26,6 @@ class GerenteController extends Controller {
         $this->asignacionTecnicoModel = new AsignacionTecnico();
         $this->repuestoModel = new Repuesto();
         $this->pedidoModel = new PedidoRepuesto();
-        $this->asistenciaModel = new Asistencia();
         $this->inspeccionModel = new Inspeccion();
         $this->solicitudComponenteModel = new SolicitudComponente();
         $this->verificarSesion();
@@ -164,21 +161,6 @@ class GerenteController extends Controller {
         $this->view('gerente/administradores', [
             'usuario' => $this->obtenerUsuarioActual(),
             'admins' => $admins
-        ]);
-    }
-    
-    public function asistencia() {
-        $fecha = $_GET['fecha'] ?? date('Y-m-d');
-        $sucursal_id = $_GET['sucursal'] ?? null;
-        
-        $asistencias = $this->asistenciaModel->obtenerReporte($fecha, $sucursal_id);
-        $sucursales = $this->sucursalModel->obtenerTodas();
-        
-        $this->view('gerente/asistencia', [
-            'usuario' => $this->obtenerUsuarioActual(),
-            'asistencias' => $asistencias,
-            'fecha' => $fecha,
-            'sucursales' => $sucursales
         ]);
     }
     

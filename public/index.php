@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -13,6 +13,8 @@ session_start();
 $uri = $_SERVER['REQUEST_URI'];
 $uri = parse_url($uri, PHP_URL_PATH);
 $uri = str_replace('/laboratorioIA/public', '', $uri);
+$uri = str_replace('/laboratorioIA', '', $uri);
+$uri = str_replace('/index.php', '', $uri);
 $uri = rtrim($uri, '/') ?: '/';
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -20,15 +22,16 @@ $method = $_SERVER['REQUEST_METHOD'];
 $router = new Router();
 
 $router->add('GET', '/', 'AuthController', 'login');
+$router->add('GET', '/login', 'AuthController', 'login');
 $router->add('POST', '/login', 'AuthController', 'authenticate');
 $router->add('GET', '/logout', 'AuthController', 'logout');
 $router->add('GET', '/captcha', 'AuthController', 'captcha');
 $router->add('GET', '/auth/seleccionar-rol', 'AuthController', 'seleccionarRol');
 $router->add('GET', '/auth/cambiar-rol', 'AuthController', 'cambiarRol');
+$router->add('POST', '/auth/guardar-asistencia', 'AuthController', 'guardarAsistencia');
 
 $router->add('GET', '/recepcion', 'RecepcionController', 'dashboard');
-$router->add('GET', '/recepcion/nuevo-cliente', 'RecepcionController', 'nuevoCliente');
-$router->add('POST', '/recepcion/guardar-cliente', 'RecepcionController', 'guardarCliente');
+
 $router->add('GET', '/recepcion/nuevo-equipo', 'RecepcionController', 'nuevoEquipo');
 $router->add('POST', '/recepcion/guardar-equipo', 'RecepcionController', 'guardarEquipo');
 $router->add('GET', '/recepcion/mis-registros', 'RecepcionController', 'misRegistros');
@@ -48,14 +51,17 @@ $router->add('GET', '/admin-sucursal', 'AdminSucursalController', 'dashboard');
 $router->add('GET', '/admin-sucursal/pendientes', 'AdminSucursalController', 'pendientes');
 $router->add('GET', '/admin-sucursal/asignar', 'AdminSucursalController', 'redirigirAsignar');
 $router->add('POST', '/admin-sucursal/guardar-asignacion', 'AdminSucursalController', 'guardarAsignacion');
-$router->add('GET', '/admin-sucursal/asistencia', 'AdminSucursalController', 'asistencia');
-$router->add('POST', '/admin-sucursal/guardar-asistencia', 'AdminSucursalController', 'guardarAsistencia');
 $router->add('GET', '/admin-sucursal/inspecciones', 'AdminSucursalController', 'inspecciones');
 $router->add('POST', '/admin-sucursal/guardar-inspecciones', 'AdminSucursalController', 'guardarInspecciones');
 $router->add('GET', '/admin-sucursal/reportes', 'AdminSucursalController', 'reportes');
 $router->add('GET', '/admin-sucursal/entregas', 'AdminSucursalController', 'entregas');
 $router->add('GET', '/admin-sucursal/limpieza-local', 'AdminSucursalController', 'limpiezaLocal');
 $router->add('POST', '/admin-sucursal/guardar-limpieza-local', 'AdminSucursalController', 'guardarLimpiezaLocal');
+
+// Gestión de Asistencia (solo para admin_sucursal)
+$router->add('GET', '/gestion-asistencia', 'GestionAsistenciaController', 'index');
+$router->add('POST', '/gestion-asistencia/aprobar', 'GestionAsistenciaController', 'aprobar');
+$router->add('POST', '/gestion-asistencia/rechazar', 'GestionAsistenciaController', 'rechazar');
 
 $router->add('GET', '/tecnico', 'TecnicoController', 'dashboard');
 $router->add('GET', '/tecnico/mis-trabajos', 'TecnicoController', 'misTrabajos');
@@ -75,6 +81,9 @@ $router->add('POST', '/jefe-tecnico/guardar-asignacion', 'JefeTecnicoController'
 $router->add('GET', '/jefe-tecnico/seguimiento', 'JefeTecnicoController', 'seguimiento');
 $router->add('GET', '/jefe-tecnico/obtener-detalles-equipo', 'JefeTecnicoController', 'obtenerDetallesEquipo');
 $router->add('POST', '/jefe-tecnico/aprobar-trabajo', 'JefeTecnicoController', 'aprobarTrabajo');
+$router->add('GET', '/jefe-tecnico/calificar', 'JefeTecnicoController', 'calificar');
+$router->add('POST', '/jefe-tecnico/guardar-calificacion', 'JefeTecnicoController', 'guardarCalificacion');
+$router->add('GET', '/jefe-tecnico/obtener-asistencias', 'JefeTecnicoController', 'obtenerAsistencias');
 
 $router->add('GET', '/almacen', 'AlmacenController', 'dashboard');
 $router->add('GET', '/almacen/inventario', 'AlmacenController', 'inventario');
@@ -114,14 +123,12 @@ $router->add('POST', '/gerente/subir-logo', 'GerenteController', 'subirLogo');
 $router->add('GET', '/gerente/tecnicos', 'GerenteController', 'tecnicos');
 $router->add('GET', '/gerente/almacen', 'GerenteController', 'almacen');
 $router->add('GET', '/gerente/administradores', 'GerenteController', 'administradores');
-$router->add('GET', '/gerente/asistencia', 'GerenteController', 'asistencia');
 $router->add('GET', '/gerente/inspecciones', 'GerenteController', 'inspecciones');
 $router->add('GET', '/gerente/trazabilidad', 'GerenteController', 'trazabilidad');
 $router->add('GET', '/gerente/trazabilidad-detalle', 'GerenteController', 'trazabilidadDetalle');
 $router->add('GET', '/gerente/estadisticas-ajax', 'GerenteController', 'estadisticasAjax');
 
 $router->add('GET', '/rrhh', 'RRHHController', 'dashboard');
-$router->add('GET', '/rrhh/asistencia', 'RRHHController', 'asistencia');
 $router->add('GET', '/rrhh/inspecciones', 'RRHHController', 'inspecciones');
 $router->add('GET', '/rrhh/productividad', 'RRHHController', 'productividad');
 

@@ -22,7 +22,7 @@
     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
         <a href="<?= APP_URL ?>/public/admin-sucursal/pendientes" class="btn btn-primary">Ver Pendientes</a>
         <a href="<?= APP_URL ?>/public/admin-sucursal/asignar" class="btn btn-secondary">Asignar a Sucursal</a>
-        <a href="<?= APP_URL ?>/public/admin-sucursal/asistencia" class="btn btn-outline">Asistencia</a>
+        <a href="<?= APP_URL ?>/public/gestion-asistencia" class="btn btn-outline">Gestión Asistencia</a>
         <a href="<?= APP_URL ?>/public/admin-sucursal/inspecciones" class="btn btn-outline">Inspecciones</a>
     </div>
 </div>

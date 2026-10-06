@@ -67,12 +67,19 @@ class Repuesto extends Model {
     }
     
     public function obtenerMasSolicitados($limite = 10) {
-        $sql = "SELECT r.id, r.nombre, r.codigo, r.marca, r.categoria, r.solicitudes, r.ventas, s.nombre as sucursal_nombre FROM repuestos r LEFT JOIN sucursales s ON r.sucursal_id = s.id ORDER BY r.solicitudes DESC, r.ventas DESC LIMIT ?";
+        $sql = "SELECT r.id, r.nombre, r.codigo, r.marca, r.categoria,
+                (SELECT COUNT(*) FROM solicitudes_componentes sc WHERE sc.repuesto_id = r.id) as solicitudes,
+                (SELECT COALESCE(SUM(p.cantidad), 0) FROM pedidos_repuestos p WHERE p.repuesto_id = r.id) as ventas,
+                s.nombre as sucursal_nombre
+                FROM repuestos r
+                LEFT JOIN sucursales s ON r.sucursal_id = s.id
+                ORDER BY solicitudes DESC, ventas DESC
+                LIMIT ?";
         return $this->fetchAll($sql, [$limite]);
     }
     
     public function obtenerPedidosPorSucursal() {
-        $sql = "SELECT s.id, s.nombre, COUNT(p.id) as total_pedidos, SUM(p.cantidad) as total_unidades, COALESCE(SUM(p.total), 0) as total_monto FROM sucursales s LEFT JOIN pedidos_repuestos p ON s.id = p.sucursal_id GROUP BY s.id, s.nombre ORDER BY total_pedidos DESC";
+        $sql = "SELECT s.id, s.nombre, COUNT(p.id) as total_pedidos, SUM(p.cantidad) as total_unidades, COALESCE(SUM(p.cantidad * r.precio_unitario), 0) as total_monto FROM sucursales s LEFT JOIN pedidos_repuestos p ON s.id = p.sucursal_id LEFT JOIN repuestos r ON p.repuesto_id = r.id GROUP BY s.id, s.nombre ORDER BY total_pedidos DESC";
         return $this->fetchAll($sql);
     }
     

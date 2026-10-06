@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verificación de Recibo - <?= htmlspecialchars($orden) ?></title>
+    <link rel="stylesheet" href="<?= APP_URL ?>/public/css/recepcion.css">
     <style>
         * {
             margin: 0;
@@ -135,15 +136,6 @@
             font-weight: bold;
         }
         
-        @media (max-width: 600px) {
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 22px;
-            }
-        }
     </style>
 </head>
 <body>

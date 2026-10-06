@@ -5,9 +5,9 @@
 }
 
 :root {
-    --rojo: #D32F2F;
-    --rojo-oscuro: #B71C1C;
-    --rojo-claro: #EF5350;
+    --verde: #2E7D32;
+    --verde-oscuro: #1B5E20;
+    --verde-claro: #4CAF50;
     --negro: #1a1a1a;
     --negro-suave: #2d2d2d;
     --gris-oscuro: #424242;
@@ -32,7 +32,7 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, var(--negro) 0%, var(--negro-suave) 50%, var(--rojo-oscuro) 100%);
+    background: linear-gradient(135deg, var(--negro) 0%, var(--negro-suave) 50%, var(--verde-oscuro) 100%);
 }
 
 .login-container {
@@ -50,7 +50,7 @@ body {
 }
 
 .login-header h1 {
-    color: var(--rojo);
+    color: var(--verde);
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: 8px;
@@ -84,7 +84,7 @@ body {
 
 .login-form input:focus {
     outline: none;
-    border-color: var(--rojo);
+    border-color: var(--verde);
 }
 
 /* BOTONES */
@@ -102,12 +102,12 @@ body {
 }
 
 .btn-primary {
-    background-color: var(--rojo);
+    background-color: var(--verde);
     color: var(--blanco);
 }
 
 .btn-primary:hover {
-    background-color: var(--rojo-oscuro);
+    background-color: var(--verde-oscuro);
 }
 
 .btn-secondary {
@@ -121,12 +121,12 @@ body {
 
 .btn-outline {
     background-color: transparent;
-    border: 2px solid var(--rojo);
-    color: var(--rojo);
+    border: 2px solid var(--verde);
+    color: var(--verde);
 }
 
 .btn-outline:hover {
-    background-color: var(--rojo);
+    background-color: var(--verde);
     color: var(--blanco);
 }
 
@@ -141,7 +141,7 @@ body {
 }
 
 .btn-danger {
-    background-color: var(--rojo);
+    background-color: var(--verde);
     color: var(--blanco);
 }
 
@@ -155,7 +155,7 @@ body {
 
 .alert-error {
     background-color: #FFEBEE;
-    color: var(--rojo-oscuro);
+    color: #C62828;
     border: 1px solid #FFCDD2;
 }
 
@@ -199,7 +199,7 @@ body {
 }
 
 .sidebar-header h2 {
-    color: var(--rojo);
+    color: var(--verde);
     font-size: 1.3rem;
     font-weight: 700;
 }
@@ -230,7 +230,7 @@ body {
 .sidebar-nav a.active {
     background-color: var(--negro-suave);
     color: var(--blanco);
-    border-left-color: var(--rojo);
+    border-left-color: var(--verde);
 }
 
 .sidebar-nav a .icon {
@@ -297,7 +297,7 @@ body {
 
 .welcome-role {
     font-size: 0.85rem;
-    color: var(--rojo);
+    color: var(--verde);
     font-weight: 500;
 }
 
@@ -341,7 +341,7 @@ body {
     border-radius: 12px;
     padding: 20px;
     box-shadow: var(--sombra);
-    border-left: 4px solid var(--rojo);
+    border-left: 4px solid var(--verde);
 }
 
 .stat-card .stat-value {
@@ -408,9 +408,9 @@ table tbody tr:hover {
     text-transform: uppercase;
 }
 
-.badge-rojo {
-    background-color: #FFEBEE;
-    color: var(--rojo);
+.badge-verde {
+    background-color: #E8F5E9;
+    color: var(--verde);
 }
 
 .badge-negro {
@@ -462,7 +462,7 @@ table tbody tr:hover {
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: var(--rojo);
+    border-color: var(--verde);
 }
 
 .form-group textarea {
@@ -528,13 +528,13 @@ table tbody tr:hover {
 }
 
 .modal-close:hover {
-    color: var(--rojo);
+    color: var(--verde);
 }
 
 /* BOTÓN MENÚ */
 .menu-toggle {
     display: block;
-    background: var(--rojo);
+    background: var(--verde);
     color: var(--blanco);
     border: none;
     padding: 10px 15px;
@@ -546,7 +546,7 @@ table tbody tr:hover {
 }
 
 .menu-toggle:hover {
-    background: var(--rojo-oscuro);
+    background: var(--verde-oscuro);
 }
 
 /* OVERLAY PARA MÓVIL */
@@ -1174,7 +1174,7 @@ table tbody tr:hover {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: var(--rojo);
+    background: var(--verde);
     border: 2px solid var(--blanco);
 }
 

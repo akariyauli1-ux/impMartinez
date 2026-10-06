@@ -79,6 +79,12 @@ class TecnicoController extends Controller {
             $componentes_por_equipo[$trabajo['id']] = $this->solicitudModel->contarPendientesPorEquipo($trabajo['id']);
         }
         
+        // Obtener historial de seguimiento para cada trabajo
+        $historial_por_equipo = [];
+        foreach ($trabajos as $trabajo) {
+            $historial_por_equipo[$trabajo['id']] = $this->seguimientoModel->obtenerPorEquipo($trabajo['id']);
+        }
+        
         $this->solicitudModel->marcarNotificacionesLeidas($tecnico_id);
         
         $this->view('tecnico/mis_trabajos', [
@@ -90,6 +96,7 @@ class TecnicoController extends Controller {
             'compras_externas_pendientes' => $compras_externas_pendientes,
             'componentes_pendientes' => $componentes_pendientes,
             'componentes_por_equipo' => $componentes_por_equipo,
+            'historial_por_equipo' => $historial_por_equipo,
             'filtros' => $filtros
         ]);
     }
@@ -132,6 +139,14 @@ class TecnicoController extends Controller {
             'motivo' => $motivo,
             'estado' => 'solicitado'
         ]);
+        
+        // Registrar en el seguimiento
+        $this->seguimientoModel->registrar(
+            $equipo_id,
+            $_SESSION['usuario_id'],
+            'solicitar_componente',
+            "Solicitó {$cantidad} unidad(es) de {$repuesto['nombre']} ({$repuesto['marca']})"
+        );
         
         $this->repuestoModel->descontarStockReservado($repuesto_id, $cantidad);
         
@@ -182,6 +197,11 @@ class TecnicoController extends Controller {
             $this->equipoModel->actualizar($equipo_id, ['estado' => 'en_reparacion']);
         } elseif ($accion === 'reanudar') {
             $this->equipoModel->actualizar($equipo_id, ['estado' => 'en_reparacion']);
+        } elseif ($accion === 'devolucion') {
+            $this->equipoModel->actualizar($equipo_id, [
+                'estado' => 'entregado',
+                'fecha_entrega' => date('Y-m-d H:i:s')
+            ]);
         }
         
         $this->redirect('tecnico/mis-trabajos');

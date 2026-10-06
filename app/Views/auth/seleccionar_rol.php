@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seleccionar Rol - <?= APP_NAME ?></title>
     <link rel="stylesheet" href="<?= APP_URL ?>/public/css/style.css">
+    <link rel="stylesheet" href="<?= APP_URL ?>/public/css/auth.css">
 </head>
 <body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
     
@@ -51,12 +52,5 @@
         </div>
     </div>
     
-    <style>
-        .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: #667eea;
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
-        }
-    </style>
 </body>
 </html>

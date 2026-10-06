@@ -1,54 +1,5 @@
-<?php $titulo = 'Equipos Listos para Entregar'; ob_start(); ?>
+<?php $titulo = 'Equipos Listos para Entregar'; $css_extra = 'recepcion.css'; ob_start(); ?>
 
-<style>
-.componentes-lista {
-    margin-top: 8px;
-    padding: 8px;
-    background: #f9f9f9;
-    border-radius: 4px;
-    font-size: 0.8rem;
-}
-.componente-item {
-    padding: 4px 0;
-    border-bottom: 1px dashed #ddd;
-}
-.componente-item:last-child {
-    border-bottom: none;
-}
-.costo-desglose {
-    margin-top: 8px;
-    padding: 8px;
-    background: #E3F2FD;
-    border-radius: 4px;
-    font-size: 0.8rem;
-}
-.costo-desglose .linea {
-    display: flex;
-    justify-content: space-between;
-    padding: 2px 0;
-}
-.costo-desglose .total {
-    border-top: 2px solid #1565C0;
-    margin-top: 4px;
-    padding-top: 4px;
-    font-weight: bold;
-    color: #1565C0;
-}
-.btn-entregar {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    text-decoration: none;
-    display: inline-block;
-}
-.btn-entregar:hover {
-    background: #45a049;
-}
-</style>
 
 <div class="card">
     <div class="card-header">

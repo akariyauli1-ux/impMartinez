@@ -5,18 +5,21 @@ require_once __DIR__ . '/../Models/Usuario.php';
 require_once __DIR__ . '/../Models/AsignacionTecnico.php';
 require_once __DIR__ . '/../Models/Sucursal.php';
 require_once __DIR__ . '/../Models/SeguimientoTrabajo.php';
+require_once __DIR__ . '/../Models/CalificacionTecnico.php';
 
 class JefeTecnicoController extends Controller {
     private $equipoModel;
     private $usuarioModel;
     private $asignacionTecnicoModel;
     private $seguimientoModel;
+    private $calificacionModel;
     
     public function __construct() {
         $this->equipoModel = new Equipo();
         $this->usuarioModel = new Usuario();
         $this->asignacionTecnicoModel = new AsignacionTecnico();
         $this->seguimientoModel = new SeguimientoTrabajo();
+        $this->calificacionModel = new CalificacionTecnico();
         $this->verificarSesion();
         $this->verificarRol(['jefe_tecnico']);
     }
@@ -97,6 +100,65 @@ class JefeTecnicoController extends Controller {
         $this->equipoModel->actualizar($equipo_id, ['estado' => 'entregado']);
         
         header('HTTP/1.1 200 OK');
+        exit;
+    }
+    
+    public function calificar() {
+        $sucursal_id = $_SESSION['sucursal_id'];
+        $mes = $_GET['mes'] ?? date('m');
+        $anio = $_GET['anio'] ?? date('Y');
+        
+        $tecnicos = $this->calificacionModel->obtenerTecnicosPorSucursal($sucursal_id);
+        $ranking = $this->calificacionModel->obtenerRankingPorMes($sucursal_id, $mes, $anio);
+        
+        $this->view('jefe_tecnico/calificar', [
+            'usuario' => $this->obtenerUsuarioActual(),
+            'tecnicos' => $tecnicos,
+            'ranking' => $ranking,
+            'mes' => $mes,
+            'anio' => $anio
+        ]);
+    }
+    
+    public function guardarCalificacion() {
+        $tecnico_id = $_POST['tecnico_id'];
+        $puntuacion_trabajo = floatval($_POST['puntuacion_trabajo']);
+        $puntuacion_asistencia = floatval($_POST['puntuacion_asistencia'] ?? 0);
+        $observaciones = $_POST['observaciones'] ?? '';
+        
+        $mes = intval($_POST['mes']);
+        $anio = intval($_POST['anio']);
+        
+        $puntuacion_total = ($puntuacion_trabajo + $puntuacion_asistencia) / 2;
+        
+        $this->calificacionModel->guardar([
+            'tecnico_id' => $tecnico_id,
+            'jefe_tecnico_id' => $_SESSION['usuario_id'],
+            'mes' => $mes,
+            'anio' => $anio,
+            'puntuacion_trabajo' => $puntuacion_trabajo,
+            'puntuacion_asistencia' => $puntuacion_asistencia,
+            'puntuacion_total' => $puntuacion_total,
+            'observaciones' => $observaciones
+        ]);
+        
+        $_SESSION['mensaje_exito'] = 'Calificación guardada correctamente';
+        $this->redirect('jefe-tecnico/calificar?mes=' . $mes . '&anio=' . $anio);
+    }
+    
+    public function obtenerAsistencias() {
+        $tecnico_id = $_GET['tecnico_id'] ?? null;
+        $mes = $_GET['mes'] ?? date('m');
+        $anio = $_GET['anio'] ?? date('Y');
+        
+        if (!$tecnico_id) {
+            echo json_encode(['error' => 'Técnico no especificado']);
+            exit;
+        }
+        
+        $asistencias = $this->calificacionModel->obtenerAsistenciasAprobadasPorTecnicoYMes($tecnico_id, $mes, $anio);
+        
+        echo json_encode($asistencias);
         exit;
     }
     

@@ -1,0 +1,81 @@
+/* ===== calificar.php ===== */
+.form-group {
+    margin-bottom: 20px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+}
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+.btn-primary:hover {
+    background: #5568d3;
+}
+.badge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    display: inline-block;
+}
+.badge-verde {
+    background: #4CAF50;
+    color: white;
+}
+.badge-amarillo {
+    background: #FF9800;
+    color: white;
+}
+.badge-rojo {
+    background: #f44336;
+    color: white;
+}
+.badge-azul {
+    background: #2196F3;
+    color: white;
+}
+.badge-gris {
+    background: #9e9e9e;
+    color: white;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+th {
+    background: #f5f5f5;
+    font-weight: bold;
+    color: #333;
+}
+tr:hover {
+    background: #f9f9f9;
+}

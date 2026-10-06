@@ -1,4 +1,4 @@
-<?php $titulo = 'Mis Trabajos'; ob_start(); ?>
+<?php $titulo = 'Mis Trabajos'; $css_extra = 'tecnico.css'; ob_start(); ?>
 
 <?php if (!empty($_SESSION['mensaje_exito'])): ?>
 <div style="background: #E8F5E9; border: 2px solid #4CAF50; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
@@ -14,154 +14,6 @@
 </div>
 <?php endif; ?>
 
-<style>
-.costo-badge {
-    background: #2196F3;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.85em;
-    font-weight: bold;
-    display: inline-block;
-    margin-top: 5px;
-}
-.btn-solicitar {
-    background: #FF9800;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85em;
-    margin-top: 5px;
-    display: inline-block;
-}
-.btn-solicitar:hover {
-    background: #F57C00;
-}
-.solicitudes-lista {
-    max-height: 200px;
-    overflow-y: auto;
-    margin-top: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 10px;
-}
-.solicitud-item {
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-    font-size: 0.9em;
-}
-.solicitud-item:last-child {
-    border-bottom: none;
-}
-.alerta-envio {
-    background: #E3F2FD;
-    border: 2px solid #1565C0;
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-}
-.alerta-envio h3 {
-    color: #1565C0;
-    margin-bottom: 10px;
-}
-.btn-recibir {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-}
-.btn-recibir:hover {
-    background: #45a049;
-}
-.filtros-container {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
-}
-.filtros-container h3 {
-    margin: 0 0 10px 0;
-    font-size: 1em;
-    color: #333;
-}
-.filtros-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: end;
-}
-.filtros-row .form-group {
-    margin: 0;
-    min-width: 120px;
-}
-.filtros-row label {
-    font-size: 0.85em;
-    margin-bottom: 3px;
-    display: block;
-}
-.filtros-row select, .filtros-row input {
-    padding: 6px 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 0.9em;
-}
-.btn-filtrar {
-    background: #2196F3;
-    color: white;
-    border: none;
-    padding: 7px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-}
-.btn-filtrar:hover {
-    background: #1976D2;
-}
-.btn-limpiar {
-    background: #757575;
-    color: white;
-    border: none;
-    padding: 7px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-    text-decoration: none;
-    display: inline-block;
-}
-.btn-limpiar:hover {
-    background: #616161;
-}
-.badge-pendiente {
-    background: #FF9800;
-    color: white;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 0.75em;
-    font-weight: bold;
-}
-.badge-pausa {
-    background: #9C27B0;
-    color: white;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 0.75em;
-    font-weight: bold;
-}
-.badge-naranja {
-    background: #FF9800;
-    color: white;
-}
-.badge-morado {
-    background: #9C27B0;
-    color: white;
-}
-</style>
 
 <!-- Filtros -->
 <div class="filtros-container">
@@ -178,6 +30,7 @@
                     <option value="asignado_sucursal" <?= ($filtros['estado'] ?? '') === 'asignado_sucursal' ? 'selected' : '' ?>>Asignado a Sucursal</option>
                     <option value="recibido" <?= ($filtros['estado'] ?? '') === 'recibido' ? 'selected' : '' ?>>Recibido</option>
                     <option value="en_reparacion" <?= ($filtros['estado'] ?? '') === 'en_reparacion' ? 'selected' : '' ?>>En Reparación</option>
+                    <option value="pausado" <?= ($filtros['estado'] ?? '') === 'pausado' ? 'selected' : '' ?>>Pausado</option>
                     <option value="completado" <?= ($filtros['estado'] ?? '') === 'completado' ? 'selected' : '' ?>>Completado</option>
                     <option value="entregado" <?= ($filtros['estado'] ?? '') === 'entregado' ? 'selected' : '' ?>>Entregado</option>
                 </select>
@@ -623,19 +476,11 @@ foreach ($trabajos as $t) {
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if ($trabajo['estado'] === 'asignado_sucursal'): ?>
-                                <button onclick="confirmarRecibido(<?= $trabajo['id'] ?>)" class="btn btn-success btn-sm">✓ Recibido</button>
-                                <button onclick="abrirModalRechazo(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>')" class="btn btn-danger btn-sm">✗ Rechazar</button>
-                            <?php elseif ($trabajo['estado'] === 'recibido'): ?>
-                                <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>', 'recibido')" class="btn btn-primary btn-sm">▶ Iniciar Reparación</button>
-                            <?php elseif ($trabajo['estado'] === 'en_reparacion'): ?>
-                                <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>', 'en_reparacion')" class="btn btn-primary btn-sm">⚙ Actualizar</button>
-                            <?php elseif ($trabajo['estado'] === 'pausado'): ?>
-                                <button onclick="abrirModalActualizar(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>', 'pausado')" class="btn btn-warning btn-sm" style="background: #9C27B0;">▶ Reanudar</button>
-                            <?php elseif ($trabajo['estado'] === 'completado'): ?>
-                                <span style="color: #999; font-weight: bold;">✓ Finalizado</span>
+                            <button onclick="abrirModalHistorial(<?= $trabajo['id'] ?>)" class="btn btn-secondary btn-sm" style="margin-bottom: 5px; width: 100%;"> Ver Historial</button>
+                            <?php if ($trabajo['estado'] !== 'entregado'): ?>
+                                <button onclick="abrirModalAcciones(<?= $trabajo['id'] ?>, '<?= htmlspecialchars($trabajo['tipo_equipo'] . ' ' . $trabajo['marca'] . ' ' . $trabajo['modelo']) ?>', '<?= $trabajo['estado'] ?>')" class="btn btn-primary btn-sm" style="width: 100%;">⚙ Actualizar</button>
                             <?php else: ?>
-                                <span style="color: #999;">-</span>
+                                <span style="color: #999; font-weight: bold;">✓ Entregado</span>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -868,7 +713,7 @@ foreach ($trabajos as $t) {
 </div>
 
 <script>
-function abrirModalActualizar(equipoId, equipoNombre, estadoActual) {
+function abrirModalAcciones(equipoId, equipoNombre, estadoActual) {
     document.getElementById('equipo_id').value = equipoId;
     document.getElementById('equipo_nombre').value = equipoNombre;
     document.getElementById('estado_actual').value = estadoActual;
@@ -879,25 +724,42 @@ function abrirModalActualizar(equipoId, equipoNombre, estadoActual) {
     
     // Configurar opciones según el estado actual
     const selectAccion = document.getElementById('select_accion');
-    selectAccion.innerHTML = '<option value="">Seleccionar...</option>';
+    selectAccion.innerHTML = '<option value="">Seleccionar acción...</option>';
     
-    if (estadoActual === 'recibido') {
-        // Solo puede iniciar reparación
-        selectAccion.innerHTML += '<option value="inicio_reparacion">▶ Iniciar Reparación</option>';
+    // Si el equipo está asignado o recibido, solo puede iniciar reparación
+    if (estadoActual === 'asignado_sucursal' || estadoActual === 'recibido') {
+        selectAccion.innerHTML += '<option value="inicio_reparacion">🔧 Iniciar Reparación</option>';
         document.getElementById('label_descripcion').textContent = 'Observaciones (opcional)';
-    } else if (estadoActual === 'en_reparacion') {
-        // Puede agregar nota técnica, pausar o completar
-        selectAccion.innerHTML += '<option value="nota_tecnica">📝 Agregar Nota Técnica</option>';
+        document.getElementById('textarea_descripcion').placeholder = 'Describe las observaciones iniciales...';
+    }
+    // Si está en reparación, puede pausar, terminar o devolver
+    else if (estadoActual === 'en_reparacion') {
         selectAccion.innerHTML += '<option value="pausado">⏸️ Pausar Trabajo</option>';
-        selectAccion.innerHTML += '<option value="completado">✓ Marcar como Completado</option>';
+        selectAccion.innerHTML += '<option value="completado">✓ Terminar Trabajo</option>';
+        selectAccion.innerHTML += '<option value="devolucion">↩ Devolver Equipo</option>';
         document.getElementById('label_descripcion').textContent = 'Descripción / Observaciones';
-    } else if (estadoActual === 'pausado') {
-        // Solo puede reanudar
+        document.getElementById('textarea_descripcion').placeholder = 'Describe el trabajo realizado, repuestos utilizados, etc.';
+    }
+    // Si está pausado, puede reanudar, terminar o devolver
+    else if (estadoActual === 'pausado') {
         selectAccion.innerHTML += '<option value="reanudar">▶ Reanudar Trabajo</option>';
-        document.getElementById('label_descripcion').textContent = 'Motivo de reanudación (opcional)';
+        selectAccion.innerHTML += '<option value="completado">✓ Terminar Trabajo</option>';
+        selectAccion.innerHTML += '<option value="devolucion">↩ Devolver Equipo</option>';
+        document.getElementById('label_descripcion').textContent = 'Motivo / Observaciones';
+        document.getElementById('textarea_descripcion').placeholder = 'Describe el motivo de la acción...';
+    }
+    // Si está completado, solo puede devolver
+    else if (estadoActual === 'completado') {
+        selectAccion.innerHTML += '<option value="devolucion">↩ Devolver Equipo</option>';
+        document.getElementById('label_descripcion').textContent = 'Motivo de Devolución';
+        document.getElementById('textarea_descripcion').placeholder = 'Indica el motivo de la devolución...';
     }
     
     document.getElementById('modalActualizar').classList.add('active');
+}
+
+function abrirModalActualizar(equipoId, equipoNombre, estadoActual) {
+    abrirModalAcciones(equipoId, equipoNombre, estadoActual);
 }
 
 function validarAccion() {
@@ -905,14 +767,18 @@ function validarAccion() {
     const textarea = document.getElementById('textarea_descripcion');
     const label = document.getElementById('label_descripcion');
     
-    // Si se selecciona pausar, hacer obligatorio el motivo
+    // Si se selecciona pausar o devolución, hacer obligatorio el motivo
     if (accion === 'pausado') {
         textarea.setAttribute('required', 'required');
         textarea.placeholder = 'Indica la razón por la que se pausa el trabajo *';
         label.innerHTML = 'Motivo de Pausa <span style="color: red;">*</span>';
+    } else if (accion === 'devolucion') {
+        textarea.setAttribute('required', 'required');
+        textarea.placeholder = 'Indica el motivo de la devolución *';
+        label.innerHTML = 'Motivo de Devolución <span style="color: red;">*</span>';
     } else {
         textarea.removeAttribute('required');
-        textarea.placeholder = 'Describe el trabajo realizado, repuestos utilizados, etc.';
+        textarea.placeholder = 'Describe el trabajo realizado, observaciones, etc.';
         label.textContent = 'Descripción / Observaciones';
     }
 }
@@ -1180,6 +1046,97 @@ function cerrarModalRepuestoNuevo() {
 document.getElementById('modalRepuestoNuevo').addEventListener('click', function(e) {
     if (e.target === this) cerrarModalRepuestoNuevo();
 });
+
+function abrirModalHistorial(equipoId) {
+    document.getElementById('historial_equipo_id').value = equipoId;
+    
+    const historial = <?= json_encode($historial_por_equipo ?? []) ?>;
+    const eventos = historial[equipoId] || [];
+    
+    const contenedor = document.getElementById('historial_contenido');
+    
+    if (eventos.length === 0) {
+        contenedor.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No hay registros de historial para este trabajo</p>';
+    } else {
+        let html = '<div class="timeline">';
+        eventos.forEach(evento => {
+            const fecha = new Date(evento.fecha_registro);
+            const fechaFormateada = fecha.toLocaleDateString('es-BO', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            let icono = '';
+            let color = '#2196F3';
+            
+            if (evento.accion === 'inicio_reparacion') {
+                icono = '🔧';
+                color = '#FF9800';
+            } else if (evento.accion === 'pausado') {
+                icono = '⏸️';
+                color = '#9C27B0';
+            } else if (evento.accion === 'reanudar') {
+                icono = '▶️';
+                color = '#4CAF50';
+            } else if (evento.accion === 'completado') {
+                icono = '✅';
+                color = '#4CAF50';
+            } else if (evento.accion === 'devolucion') {
+                icono = '↩️';
+                color = '#F44336';
+            } else if (evento.accion === 'recibido') {
+                icono = '📥';
+                color = '#2196F3';
+            } else if (evento.accion === 'solicitar_componente') {
+                icono = '📦';
+                color = '#FF9800';
+            }
+            
+            html += `
+                <div class="timeline-item" style="border-left: 3px solid ${color}; padding-left: 15px; margin-bottom: 20px; position: relative;">
+                    <div style="position: absolute; left: -9px; top: 0; width: 15px; height: 15px; border-radius: 50%; background: ${color};"></div>
+                    <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">
+                        <strong>${icono} ${fechaFormateada}</strong>
+                    </div>
+                    <div style="font-weight: bold; color: #333; margin-bottom: 5px;">
+                        ${evento.accion.replace('_', ' ').toUpperCase()}
+                    </div>
+                    ${evento.descripcion ? `<div style="color: #555; font-size: 0.9em;">${evento.descripcion}</div>` : ''}
+                </div>
+            `;
+        });
+        html += '</div>';
+        contenedor.innerHTML = html;
+    }
+    
+    document.getElementById('modalHistorial').classList.add('active');
+}
+
+function cerrarModalHistorial() {
+    document.getElementById('modalHistorial').classList.remove('active');
+}
+
+document.getElementById('modalHistorial').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalHistorial();
+});
 </script>
+
+<div id="modalHistorial" class="modal-overlay">
+    <div class="modal" style="max-width: 700px;">
+        <div class="modal-header">
+            <h2> Historial Completo del Trabajo</h2>
+            <button class="modal-close" onclick="cerrarModalHistorial()">×</button>
+        </div>
+        <input type="hidden" id="historial_equipo_id">
+        <div id="historial_contenido" style="max-height: 500px; overflow-y: auto; padding: 10px;">
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+            <button type="button" class="btn btn-outline" onclick="cerrarModalHistorial()">Cerrar</button>
+        </div>
+    </div>
+</div>
 
 <?php $contenido = ob_get_clean(); require __DIR__ . '/../layouts/main.php'; ?>

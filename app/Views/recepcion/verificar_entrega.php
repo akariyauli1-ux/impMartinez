@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verificación de Entrega - <?= APP_NAME ?></title>
+    <link rel="stylesheet" href="<?= APP_URL ?>/public/css/recepcion.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -174,16 +175,6 @@
             margin-bottom: 8px;
         }
         
-        @keyframes scaleIn {
-            0% { transform: scale(0); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
     </style>
 </head>
 <body>

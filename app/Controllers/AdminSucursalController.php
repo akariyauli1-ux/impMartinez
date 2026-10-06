@@ -5,7 +5,6 @@ require_once __DIR__ . '/../Models/Usuario.php';
 require_once __DIR__ . '/../Models/Sucursal.php';
 require_once __DIR__ . '/../Models/AsignacionSucursal.php';
 require_once __DIR__ . '/../Models/AsignacionTecnico.php';
-require_once __DIR__ . '/../Models/Asistencia.php';
 require_once __DIR__ . '/../Models/Inspeccion.php';
 require_once __DIR__ . '/../Models/LimpiezaLocal.php';
 
@@ -15,7 +14,6 @@ class AdminSucursalController extends Controller {
     private $sucursalModel;
     private $asignacionSucursalModel;
     private $asignacionTecnicoModel;
-    private $asistenciaModel;
     private $inspeccionModel;
     private $limpiezaLocalModel;
     
@@ -25,7 +23,6 @@ class AdminSucursalController extends Controller {
         $this->sucursalModel = new Sucursal();
         $this->asignacionSucursalModel = new AsignacionSucursal();
         $this->asignacionTecnicoModel = new AsignacionTecnico();
-        $this->asistenciaModel = new Asistencia();
         $this->inspeccionModel = new Inspeccion();
         $this->limpiezaLocalModel = new LimpiezaLocal();
         $this->verificarSesion();
@@ -88,38 +85,6 @@ class AdminSucursalController extends Controller {
         );
         
         $this->redirect('admin-sucursal/asignar');
-    }
-    
-    public function asistencia() {
-        $fecha = $_GET['fecha'] ?? date('Y-m-d');
-        $sucursal_id = $_SESSION['sucursal_id'];
-        $personal = $this->asistenciaModel->obtenerPorFechaYSucursal($fecha, $sucursal_id);
-        
-        $this->view('admin_sucursal/asistencia', [
-            'usuario' => $this->obtenerUsuarioActual(),
-            'personal' => $personal,
-            'fecha' => $fecha
-        ]);
-    }
-    
-    public function guardarAsistencia() {
-        $fecha = $_POST['fecha'];
-        
-        if (isset($_POST['empleados'])) {
-            foreach ($_POST['empleados'] as $emp_id => $datos) {
-                $this->asistenciaModel->registrar([
-                    'usuario_id' => $emp_id,
-                    'fecha' => $fecha,
-                    'hora_entrada' => $datos['hora_entrada'] ?? null,
-                    'hora_salida' => $datos['hora_salida'] ?? null,
-                    'estado' => $datos['estado'] ?? 'ausente',
-                    'observaciones' => $datos['observaciones'] ?? '',
-                    'registrado_por' => $_SESSION['usuario_id']
-                ]);
-            }
-        }
-        
-        $this->redirect('admin-sucursal/asistencia?fecha=' . $fecha);
     }
     
     public function inspecciones() {

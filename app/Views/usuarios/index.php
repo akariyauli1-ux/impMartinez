@@ -1,5 +1,12 @@
 <?php $titulo = 'Gestión de Usuarios'; ob_start(); ?>
 
+<?php if (isset($_SESSION['error_usuario'])): ?>
+<div class="alert alert-error" style="margin-bottom: 20px;">
+    <strong>Error:</strong> <?= htmlspecialchars($_SESSION['error_usuario']) ?>
+    <?php unset($_SESSION['error_usuario']); ?>
+</div>
+<?php endif; ?>
+
 <div class="card">
     <div class="card-header">
         <h2>Crear Nuevo Usuario</h2>
@@ -8,22 +15,22 @@
         <div class="form-row">
             <div class="form-group">
                 <label>Nombre *</label>
-                <input type="text" name="nombre" required>
+                <input type="text" name="nombre" required value="<?= htmlspecialchars($_SESSION['datos_formulario']['nombre'] ?? '') ?>">
             </div>
             <div class="form-group">
                 <label>Apellido Paterno *</label>
-                <input type="text" name="apellido_paterno" required>
+                <input type="text" name="apellido_paterno" required value="<?= htmlspecialchars($_SESSION['datos_formulario']['apellido_paterno'] ?? '') ?>">
             </div>
             <div class="form-group">
                 <label>Apellido Materno</label>
-                <input type="text" name="apellido_materno">
+                <input type="text" name="apellido_materno" value="<?= htmlspecialchars($_SESSION['datos_formulario']['apellido_materno'] ?? '') ?>">
             </div>
         </div>
         
         <div class="form-row">
             <div class="form-group">
                 <label>Carnet *</label>
-                <input type="text" name="carnet" required>
+                <input type="text" name="carnet" required value="<?= htmlspecialchars($_SESSION['datos_formulario']['carnet'] ?? '') ?>">
             </div>
             <div class="form-group">
                 <label>Contraseña *</label>
@@ -31,21 +38,21 @@
             </div>
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" name="email">
+                <input type="email" name="email" value="<?= htmlspecialchars($_SESSION['datos_formulario']['email'] ?? '') ?>">
             </div>
         </div>
         
         <div class="form-row">
             <div class="form-group">
                 <label>Teléfono</label>
-                <input type="tel" name="telefono">
+                <input type="tel" name="telefono" value="<?= htmlspecialchars($_SESSION['datos_formulario']['telefono'] ?? '') ?>">
             </div>
             <div class="form-group">
                 <label>Sucursal *</label>
                 <select name="sucursal_id" required>
                     <option value="">Seleccione</option>
                     <?php foreach ($sucursales as $s): ?>
-                        <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['nombre']) ?></option>
+                        <option value="<?= $s['id'] ?>" <?= (isset($_SESSION['datos_formulario']['sucursal_id']) && $_SESSION['datos_formulario']['sucursal_id'] == $s['id']) ? 'selected' : '' ?>><?= htmlspecialchars($s['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -56,7 +63,7 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
                 <?php foreach ($roles as $rol): ?>
                     <label style="display: flex; align-items: center; gap: 5px;">
-                        <input type="checkbox" name="roles[]" value="<?= $rol['id'] ?>">
+                        <input type="checkbox" name="roles[]" value="<?= $rol['id'] ?>" <?= (isset($_SESSION['datos_formulario']['roles']) && in_array($rol['id'], $_SESSION['datos_formulario']['roles'])) ? 'checked' : '' ?>>
                         <?= htmlspecialchars($rol['descripcion']) ?>
                     </label>
                 <?php endforeach; ?>
@@ -71,6 +78,8 @@
         <button type="submit" class="btn btn-primary">Crear Usuario</button>
     </form>
 </div>
+
+<?php unset($_SESSION['datos_formulario']); ?>
 
 <div class="card">
     <div class="card-header">
@@ -94,10 +103,16 @@
                 <?php foreach ($usuarios as $u): ?>
                 <tr>
                     <td>
-                        <?php if (!empty($u['foto'])): ?>
+                        <?php 
+                        // Debug: verificar si foto_data existe
+                        $has_foto = !empty($u['foto_data']);
+                        ?>
+                        <?php if ($has_foto): ?>
                             <img src="<?= APP_URL ?>/public/imagen/foto-usuario?id=<?= $u['id'] ?>" alt="Foto" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                         <?php else: ?>
-                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #E0E0E0;"></div>
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #2E7D32, #1B5E20); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px;">
+                                <?= strtoupper(substr($u['nombre'], 0, 1) . substr($u['apellido_paterno'], 0, 1)) ?>
+                            </div>
                         <?php endif; ?>
                     </td>
                     <td><?= htmlspecialchars($u['nombre'] . ' ' . $u['apellido_paterno'] . ' ' . ($u['apellido_materno'] ?? '')) ?></td>

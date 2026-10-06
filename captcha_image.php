@@ -11,7 +11,7 @@ $alto = 50;
 $imagen = imagecreatetruecolor($ancho, $alto);
 
 $color_fondo = imagecolorallocate($imagen, 245, 245, 245);
-$color_texto = imagecolorallocate($imagen, 211, 47, 47);
+$color_texto = imagecolorallocate($imagen, 46, 125, 50);
 $color_linea = imagecolorallocate($imagen, 180, 180, 180);
 
 imagefilledrectangle($imagen, 0, 0, $ancho, $alto, $color_fondo);

@@ -36,6 +36,15 @@ class UsuariosController extends Controller {
     }
     
     public function guardar() {
+        // Verificar si el carnet ya existe
+        $carnet_existente = $this->usuarioModel->obtenerPorCarnet($_POST['carnet']);
+        if ($carnet_existente) {
+            $_SESSION['error_usuario'] = 'El número de carnet "' . $_POST['carnet'] . '" ya existe. Por favor, vuelve a llenar los datos con un carnet diferente.';
+            $_SESSION['datos_formulario'] = $_POST;
+            $this->redirect('usuarios');
+            return;
+        }
+        
         $foto_nombre = null;
         $foto_data = null;
         $foto_tipo = null;
@@ -78,14 +87,22 @@ class UsuariosController extends Controller {
             'registrado_por' => $_SESSION['usuario_id']
         ];
         
-        $usuario_id = $this->usuarioModel->crear($data);
-        
-        // Asignar múltiples roles
-        if (!empty($roles_ids) && $usuario_id) {
-            $this->usuarioModel->actualizarRoles($usuario_id, $roles_ids);
+        try {
+            $usuario_id = $this->usuarioModel->crear($data);
+            
+            // Asignar múltiples roles
+            if (!empty($roles_ids) && $usuario_id) {
+                $this->usuarioModel->actualizarRoles($usuario_id, $roles_ids);
+            }
+            
+            unset($_SESSION['error_usuario']);
+            unset($_SESSION['datos_formulario']);
+            $this->redirect('usuarios');
+        } catch (Exception $e) {
+            $_SESSION['error_usuario'] = 'Error al crear el usuario: ' . $e->getMessage();
+            $_SESSION['datos_formulario'] = $_POST;
+            $this->redirect('usuarios');
         }
-        
-        $this->redirect('usuarios');
     }
     
     public function editar() {

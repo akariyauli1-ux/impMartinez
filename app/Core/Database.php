@@ -9,6 +9,8 @@ class Database {
             die("Error de conexión: " . $this->conn->connect_error);
         }
         $this->conn->set_charset(DB_CHARSET);
+        $this->conn->query("SET NAMES utf8mb4 COLLATE utf8mb4_general_ci");
+        $this->conn->query("SET CHARACTER SET utf8mb4");
     }
     
     public static function getInstance() {

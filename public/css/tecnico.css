@@ -1,0 +1,169 @@
+/* ===== mis_trabajos.php (block 1) ===== */
+.costo-badge {
+    background: #2196F3;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 5px;
+}
+.btn-solicitar {
+    background: #FF9800;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    margin-top: 5px;
+    display: inline-block;
+}
+.btn-solicitar:hover {
+    background: #F57C00;
+}
+.solicitudes-lista {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+}
+.solicitud-item {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+}
+.solicitud-item:last-child {
+    border-bottom: none;
+}
+.alerta-envio {
+    background: #E3F2FD;
+    border: 2px solid #1565C0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+.alerta-envio h3 {
+    color: #1565C0;
+    margin-bottom: 10px;
+}
+.btn-recibir {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-recibir:hover {
+    background: #45a049;
+}
+.filtros-container {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+.filtros-container h3 {
+    margin: 0 0 10px 0;
+    font-size: 1em;
+    color: #333;
+}
+.filtros-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: end;
+}
+.filtros-row .form-group {
+    margin: 0;
+    min-width: 120px;
+}
+.filtros-row label {
+    font-size: 0.85em;
+    margin-bottom: 3px;
+    display: block;
+}
+.filtros-row select, .filtros-row input {
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+.btn-filtrar {
+    background: #2196F3;
+    color: white;
+    border: none;
+    padding: 7px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.btn-filtrar:hover {
+    background: #1976D2;
+}
+.btn-limpiar {
+    background: #757575;
+    color: white;
+    border: none;
+    padding: 7px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-limpiar:hover {
+    background: #616161;
+}
+.badge-pendiente {
+    background: #FF9800;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    font-weight: bold;
+}
+.badge-pausa {
+    background: #9C27B0;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    font-weight: bold;
+}
+.badge-naranja {
+    background: #FF9800;
+    color: white;
+}
+.badge-morado-tecnico {
+    background: #9C27B0;
+    color: white;
+}
+
+/* ===== mis_trabajos.php (block 2 - timeline) ===== */
+.timeline {
+    position: relative;
+    padding-left: 20px;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ddd;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+.timeline-item:last-child {
+    margin-bottom: 0;
+}

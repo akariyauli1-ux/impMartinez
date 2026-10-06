@@ -1,6 +1,6 @@
-<?php $titulo = 'Historial de Auditoría'; ob_start(); ?>
+﻿<?php $titulo = 'Historial de Auditoría'; $css_extra = 'almacen.css'; ob_start(); ?>
 
-<style>
+
 .badge-crear { background: #4caf50; color: white; }
 .badge-editar { background: #2196f3; color: white; }
 .badge-eliminar { background: #f44336; color: white; }

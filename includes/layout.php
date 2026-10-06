@@ -3,7 +3,7 @@ function renderSidebar($usuario, $pagina_actual = '') {
     $menus = [
         'recepcionista' => [
             ['url' => '/laboratorioIA/modules/recepcion/dashboard.php', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
-            ['url' => '/laboratorioIA/modules/recepcion/nuevo_cliente.php', 'icon' => '👤', 'label' => 'Nuevo Cliente', 'key' => 'nuevo_cliente'],
+
             ['url' => '/laboratorioIA/modules/recepcion/nuevo_equipo.php', 'icon' => '📱', 'label' => 'Registrar Equipo', 'key' => 'nuevo_equipo'],
             ['url' => '/laboratorioIA/modules/recepcion/mis_registros.php', 'icon' => '📋', 'label' => 'Mis Registros', 'key' => 'mis_registros'],
         ],
@@ -15,7 +15,6 @@ function renderSidebar($usuario, $pagina_actual = '') {
             ['url' => '/laboratorioIA/modules/admin_sucursal/dashboard.php', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
             ['url' => '/laboratorioIA/modules/admin_sucursal/pendientes.php', 'icon' => '📥', 'label' => 'Equipos Pendientes', 'key' => 'pendientes'],
             ['url' => '/laboratorioIA/modules/admin_sucursal/asignar.php', 'icon' => '🔀', 'label' => 'Asignar a Sucursal', 'key' => 'asignar'],
-            ['url' => '/laboratorioIA/modules/admin_sucursal/asistencia.php', 'icon' => '📅', 'label' => 'Asistencia', 'key' => 'asistencia'],
             ['url' => '/laboratorioIA/modules/admin_sucursal/inspecciones.php', 'icon' => '👔', 'label' => 'Limpieza/Uniforme', 'key' => 'inspecciones'],
             ['url' => '/laboratorioIA/modules/admin_sucursal/reportes.php', 'icon' => '📈', 'label' => 'Reportes', 'key' => 'reportes'],
         ],
@@ -34,7 +33,6 @@ function renderSidebar($usuario, $pagina_actual = '') {
             ['url' => '/laboratorioIA/modules/gerente/dashboard.php', 'icon' => '📊', 'label' => 'Dashboard General', 'key' => 'dashboard'],
             ['url' => '/laboratorioIA/modules/usuarios/index.php', 'icon' => '👥', 'label' => 'Gestión Usuarios', 'key' => 'usuarios'],
             ['url' => '/laboratorioIA/modules/gerente/sucursales.php', 'icon' => '🏢', 'label' => 'Sucursales', 'key' => 'sucursales'],
-            ['url' => '/laboratorioIA/modules/gerente/asistencia.php', 'icon' => '📅', 'label' => 'Reporte Asistencia', 'key' => 'asistencia'],
             ['url' => '/laboratorioIA/modules/gerente/inspecciones.php', 'icon' => '👔', 'label' => 'Reporte Inspecciones', 'key' => 'inspecciones'],
             ['url' => '/laboratorioIA/modules/gerente/tecnicos.php', 'icon' => '🔧', 'label' => 'Trabajo Técnicos', 'key' => 'tecnicos'],
             ['url' => '/laboratorioIA/modules/gerente/almacen.php', 'icon' => '📦', 'label' => 'Estado Almacén', 'key' => 'almacen'],
@@ -43,7 +41,6 @@ function renderSidebar($usuario, $pagina_actual = '') {
         'rrhh' => [
             ['url' => '/laboratorioIA/modules/rrhh/dashboard.php', 'icon' => '📊', 'label' => 'Dashboard', 'key' => 'dashboard'],
             ['url' => '/laboratorioIA/modules/usuarios/index.php', 'icon' => '👥', 'label' => 'Gestión Usuarios', 'key' => 'usuarios'],
-            ['url' => '/laboratorioIA/modules/rrhh/asistencia.php', 'icon' => '📅', 'label' => 'Asistencia', 'key' => 'asistencia'],
             ['url' => '/laboratorioIA/modules/rrhh/inspecciones.php', 'icon' => '👔', 'label' => 'Limpieza/Uniforme', 'key' => 'inspecciones'],
             ['url' => '/laboratorioIA/modules/rrhh/productividad.php', 'icon' => '📈', 'label' => 'Productividad', 'key' => 'productividad'],
         ]

@@ -104,7 +104,7 @@ function verDetallesCompletado(equipoId, equipoNombre, tecnicoNombre) {
                     html += `
                         <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ddd;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <strong style="color: #D32F2F;">${accion}</strong>
+                                <strong style="color: #2E7D32;">${accion}</strong>
                                 <small style="color: #666;">${fecha}</small>
                             </div>
                             ${item.descripcion ? `<p style="margin: 0; color: #555;">${item.descripcion}</p>` : ''}
@@ -130,7 +130,7 @@ function verDetallesCompletado(equipoId, equipoNombre, tecnicoNombre) {
         })
         .catch(error => {
             document.getElementById('contenidoDetalles').innerHTML = `
-                <div style="padding: 20px; text-align: center; color: #D32F2F;">
+                <div style="padding: 20px; text-align: center; color: #2E7D32;">
                     <p>Error al cargar los detalles</p>
                 </div>
             `;

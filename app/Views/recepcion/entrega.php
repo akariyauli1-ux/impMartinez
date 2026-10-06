@@ -1,51 +1,5 @@
-<?php $titulo = 'Entrega de Equipo'; ob_start(); ?>
+<?php $titulo = 'Entrega de Equipo'; $css_extra = 'recepcion.css'; ob_start(); ?>
 
-<style>
-.componentes-entrega {
-    background: #f9f9f9;
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 10px;
-}
-.componente-fila {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px dashed #ddd;
-}
-.componente-fila:last-child {
-    border-bottom: none;
-}
-.resumen-costos {
-    background: #E3F2FD;
-    border: 2px solid #1565C0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 15px;
-}
-.resumen-linea {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 0;
-    font-size: 0.95rem;
-}
-.resumen-total {
-    border-top: 2px solid #1565C0;
-    margin-top: 8px;
-    padding-top: 8px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #1565C0;
-}
-.diferencia-positiva {
-    color: #C62828;
-    font-weight: bold;
-}
-.diferencia-negativa {
-    color: #2E7D32;
-    font-weight: bold;
-}
-</style>
 
 <div class="card">
     <div class="card-header">

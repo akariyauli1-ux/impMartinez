@@ -1,5 +1,2 @@
-﻿<?php
-// Redirigir a la carpeta public
-header('Location: /laboratorioIA/public/');
-exit;
-?>
+<?php
+require_once __DIR__ . '/public/index.php';
